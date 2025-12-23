@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>H2 TechService Rechnung</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@media print {
+  .no-print { display:none !important; }
+}
+textarea.desc {
+  min-height: 80px;
+  resize: vertical;
+}
+input.qty {
+  width: 70px;
+}
+</style>
+</head>
+
+<body class="bg-gray-100 p-4">
+
+<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+
+<!-- HEADER -->
+<div class="flex justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">H2 TechService</h1>
+    <p>Osman Tuncer</p>
+    <p>Suntal Str. 48 – 31552 Rodenberg</p>
+    <p>📞 <a href="tel:+4917666658777" class="text-blue-600">+49 176 66658777</a></p>
+    <p>📧 <a href="mailto:74star@gmail.com" class="text-blue-600">74star@gmail.com</a></p>
+    <p>Steuernr.: 41320887966</p>
+  </div>
+
+  <div class="text-right">
+    <h2 class="text-xl font-bold">Rechnung</h2>
+    <p id="invoiceNr"></p>
+    <p>Datum: <input type="date" id="date"></p>
+    <p>Fällig: <input type="date" id="due"></p>
+  </div>
+</div>
+
+<!-- EMPFÄNGER -->
+<h3 class="font-bold mb-2">Empfänger</h3>
+
+<select id="customerSelect" class="w-full mb-2" onchange="loadCustomer()">
+  <option value="">Kunde auswählen</option>
+</select>
+
+<textarea id="customerData" class="w-full border p-2 mb-2"
+placeholder="Kundendaten (Name, Firma, Adresse, E-Mail)"></textarea>
+
+<div class="no-print mb-6">
+  <button onclick="saveCustomer()" class="bg-blue-600 text-white px-3 py-1 rounded">💾 Kunde speichern</button>
+  <button onclick="deleteCustomer()" class="bg-red-600 text-white px-3 py-1 rounded">🗑 Kunde löschen</button>
+</div>
+
+<!-- POSITIONEN -->
+<table class="w-full border mb-4">
+<thead>
+<tr class="bg-gray-200">
+  <th class="border p-2">Beschreibung</th>
+  <th class="border p-2 w-24">Menge</th>
+  <th class="border p-2 w-32">Preis €</th>
+  <th class="border p-2 w-32">Gesamt €</th>
+</tr>
+</thead>
+
+<tbody id="rows">
+<tr>
+  <td class="border p-2">
+    <textarea class="desc w-full" placeholder="Leistungsbeschreibung"></textarea>
+  </td>
+  <td class="border p-2 text-center">
+    <input type="number" min="1" max="10000" value="1" class="qty" oninput="calc()">
+  </td>
+  <td class="border p-2 text-right">
+    <input type="number" value="0" oninput="calc()">
+  </td>
+  <td class="border p-2 text-right row-total">0.00 €</td>
+</tr>
+</tbody>
+</table>
+
+<div class="no-print mb-4">
+<button onclick="addRow()" class="bg-gray-700 text-white px-3 py-1 rounded">+ Position</button>
+</div>
+
+<!-- SUMMEN -->
+<div class="text-right space-y-1">
+<p>Netto: <span id="sub">0.00 €</span></p>
+<p>MwSt (19%): <span id="tax">0.00 €</span></p>
+<p class="text-xl font-bold">Gesamt: <span id="total">0.00 €</span></p>
+</div>
+
+<!-- AKTIONEN -->
+<div class="no-print mt-6 flex gap-3">
+<button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded">PDF</button>
+
+<a id="mailBtn" class="bg-green-600 text-white px-4 py-2 rounded"
+   href="mailto:?subject=Rechnung&body=Im Anhang die Rechnung">
+E-Mail
+</a>
+
+<a id="waBtn" class="bg-green-500 text-white px-4 py-2 rounded"
+   target="_blank">WhatsApp</a>
+</div>
+
+</div>
+
+<script>
+// Rechnung Nummer
+let nr = localStorage.getItem("h2_nr") || 0;
+nr++;
+localStorage.setItem("h2_nr", nr);
+invoiceNr.innerText = "RE-2025-" + String(nr).padStart(3,"0");
+
+// Datum
+let t = new Date();
+date.valueAsDate = t;
+let d = new Date();
+d.setDate(t.getDate()+14);
+due.valueAsDate = d;
+
+// Kunden
+let customers = JSON.parse(localStorage.getItem("h2_customers")) || [];
+function refreshCustomers(){
+  customerSelect.innerHTML = '<option value="">Kunde auswählen</option>';
+  customers.forEach((c,i)=>{
+    let o=document.createElement("option");
+    o.value=i;
+    o.textContent=c.split("\n")[0];
+    customerSelect.appendChild(o);
+  });
+}
+function saveCustomer(){
+  customers.push(customerData.value);
+  localStorage.setItem("h2_customers", JSON.stringify(customers));
+  refreshCustomers();
+}
+function deleteCustomer(){
+  let i=customerSelect.value;
+  if(i==="") return;
+  customers.splice(i,1);
+  localStorage.setItem("h2_customers", JSON.stringify(customers));
+  customerData.value="";
+  refreshCustomers();
+}
+function loadCustomer(){
+  if(customerSelect.value==="") return;
+  customerData.value = customers[customerSelect.value];
+}
+refreshCustomers();
+
+// Berechnung
+function calc(){
+  let sum=0;
+  document.querySelectorAll("#rows tr").forEach(r=>{
+    let q=r.querySelector(".qty").value||0;
+    let p=r.querySelectorAll("input")[1].value||0;
+    let t=q*p;
+    r.querySelector(".row-total").innerText=t.toFixed(2)+" €";
+    sum+=t;
+  });
+  sub.innerText=sum.toFixed(2)+" €";
+  tax.innerText=(sum*0.19).toFixed(2)+" €";
+  total.innerText=(sum*1.19).toFixed(2)+" €";
+
+  waBtn.href="https://wa.me/?text=Rechnung%20"+invoiceNr.innerText;
+}
+
+function addRow(){
+  rows.insertAdjacentHTML("beforeend", rows.children[0].outerHTML);
+}
+</script>
+
+</body>
+</html>
