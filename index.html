@@ -12,28 +12,26 @@
             .card { box-shadow: none !important; margin: 0 !important; max-width: 100% !important; border: none !important; }
             textarea, input { border: none !important; outline: none !important; background: transparent !important; }
         }
-        body { background: #f1f5f9; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #f1f5f9; font-family: 'Segoe UI', Roboto, sans-serif; color: #1e293b; }
         .card { max-width: 850px; margin: 20px auto; background: white; border-radius: 15px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #e2e8f0; }
         .header-bg { background: #1e40af; color: white; padding: 35px; }
         textarea { resize: none; overflow: hidden; }
         input[type="number"]::-webkit-inner-spin-button { display: none; }
         
-        /* Schwebende Leiste Styling */
         .floating-menu {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(15px);
-            padding: 15px 40px;
+            padding: 15px 45px;
             border-radius: 40px;
             display: flex;
-            gap: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            gap: 45px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
             border: 1px solid rgba(255,255,255,0.5);
             z-index: 1000;
-            align-items: center;
         }
         .icon-btn {
             display: flex;
@@ -43,14 +41,9 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        .icon-btn:hover { transform: translateY(-5px) scale(1.1); }
-        .icon-btn img {
-            width: 55px;
-            height: 55px;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-        }
-        .icon-label { font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
+        .icon-btn:hover { transform: translateY(-5px); }
+        .icon-btn img { width: 50px; height: 50px; object-fit: contain; }
+        .icon-label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; }
     </style>
 </head>
 
@@ -70,37 +63,51 @@
 
     <div class="p-8 grid grid-cols-2 gap-10 text-sm border-b">
         <div class="space-y-1">
-            <b class="text-blue-700 text-xs uppercase">Absender</b>
-            <p class="font-bold">H2 TechService</p>
-            <p>Suntal Str. 48, 31552 Rodenberg</p>
-            <p>📞 +49 176 66658777</p>
-            <p>✉️ 74star@gmail.com</p>
-            <p class="pt-2 text-slate-400">Steuernr: 41320887966</p>
+            <b class="text-blue-700 text-xs uppercase tracking-wider">Absender</b>
+            <p class="font-bold text-lg">H2 TechService</p>
+            <p class="text-slate-600">Suntal Str. 48<br>31552 Rodenberg</p>
+            <div class="pt-3 text-slate-500 text-xs space-y-1">
+                <p>📞 +49 176 66658777</p>
+                <p>✉️ 74star@gmail.com</p>
+                <p class="mt-2 font-mono">Steuernr: 41320887966</p>
+            </div>
         </div>
 
         <div class="text-right">
-            <b class="text-blue-700 text-xs uppercase">Empfänger</b>
-            <select id="customerSelect" class="admin-only w-full mb-1 p-1 border rounded text-[10px]" onchange="loadCustomer()">
+            <b class="text-blue-700 text-xs uppercase tracking-wider">Empfänger</b>
+            <select id="customerSelect" class="admin-only w-full mb-1 p-1 border rounded text-[10px] bg-slate-50" onchange="loadCustomer()">
                 <option value="">— Gespeicherte Kunden —</option>
             </select>
-            <textarea id="customerData" class="w-full border-b focus:border-blue-500 outline-none p-1 text-right bg-transparent" rows="3" placeholder="Name & Adresse..."></textarea>
+            
+            <textarea id="customerData" 
+                class="w-full border-b border-blue-100 focus:border-blue-500 outline-none p-1 text-right bg-transparent leading-relaxed" 
+                rows="9" 
+                placeholder="Firma / Name&#10;z. Hd. Ansprechpartner&#10;Straße Hausnr.&#10;PLZ Stadt&#10;&#10;📞 Tel:&#10;📠 Fax:&#10;✉️ Mail:&#10;🆔 Steuernr:"></textarea>
+                
             <div class="admin-only mt-1 text-[10px] space-x-2">
-                <button onclick="saveCustomer()" class="text-green-600 font-bold hover:underline">Speichern</button>
-                <button onclick="deleteCustomer()" class="text-red-600 font-bold hover:underline">Löschen</button>
-            </div>
-            <div class="mt-4">
-                <p>Datum: <input type="date" id="date" class="outline-none"></p>
-                <p class="font-bold text-red-600">Fällig: <input type="date" id="due" class="outline-none text-red-600"></p>
+                <button onclick="saveCustomer()" class="text-green-600 font-bold hover:underline">💾 Speichern</button>
+                <button onclick="deleteCustomer()" class="text-red-600 font-bold hover:underline">🗑 Löschen</button>
             </div>
         </div>
     </div>
 
+    <div class="px-8 py-4 bg-slate-50 flex justify-between items-center border-b text-sm">
+        <div class="flex gap-4 items-center">
+            <span class="text-blue-700 font-bold uppercase text-[10px]">Betreff:</span>
+            <input type="text" class="bg-transparent border-b border-transparent focus:border-blue-400 outline-none w-64" placeholder="z.B. Reparatur / Wartung">
+        </div>
+        <div class="flex gap-4 items-center">
+            <span class="text-blue-700 font-bold uppercase text-[10px]">Auftrags-Nr:</span>
+            <input type="text" class="bg-transparent border-b border-transparent focus:border-blue-400 outline-none text-right w-32" placeholder="000000">
+        </div>
+    </div>
+
     <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+        <thead class="bg-slate-100/50 text-slate-500 uppercase text-[10px] font-bold">
             <tr>
-                <th class="p-4 text-left">Beschreibung</th>
+                <th class="p-4 text-left">Leistungsbeschreibung</th>
                 <th class="p-4 w-20 text-center">Menge</th>
-                <th class="p-4 w-32 text-right">Preis</th>
+                <th class="p-4 w-32 text-right">Einzelpreis</th>
                 <th class="p-4 w-32 text-right">Gesamt</th>
                 <th class="p-4 w-8 admin-only"></th>
             </tr>
@@ -108,39 +115,40 @@
         <tbody id="rows">
             <tr class="border-b">
                 <td class="p-4">
-                    <textarea class="w-full p-1 focus:bg-slate-50 outline-none rounded" rows="1" oninput="autoGrow(this)" placeholder="Leistung..."></textarea>
+                    <textarea class="w-full p-1 focus:bg-slate-50 outline-none rounded" rows="1" oninput="autoGrow(this)" placeholder="Beschreibung der Arbeit..."></textarea>
                 </td>
-                <td class="p-4 text-center">
-                    <input type="number" min="1" value="1" class="qty w-10 text-center font-bold bg-transparent" oninput="upd()">
+                <td class="p-4 text-center font-bold">
+                    <input type="number" min="1" value="1" class="qty w-10 text-center outline-none bg-transparent" oninput="upd()">
                 </td>
                 <td class="p-4 text-right">
-                    <input type="number" step="0.01" class="price w-20 text-right outline-none bg-transparent" oninput="upd()"> €
+                    <input type="number" step="0.01" class="price w-20 text-right outline-none bg-transparent" oninput="upd()" placeholder="0,00"> €
                 </td>
                 <td class="p-4 text-right font-bold row-total">0,00 €</td>
                 <td class="p-4 admin-only">
-                    <button onclick="this.closest('tr').remove(); upd()" class="text-red-300 hover:text-red-600">✕</button>
+                    <button onclick="this.closest('tr').remove(); upd()" class="text-red-300 hover:text-red-600 font-bold">✕</button>
                 </td>
             </tr>
         </tbody>
     </table>
 
-    <div class="p-4 admin-only">
+    <div class="p-4 admin-only border-b">
         <button onclick="addRow()" class="text-blue-600 hover:text-blue-800 text-xs font-bold transition">
-            + Position hinzufügen
+            + Weitere Position hinzufügen
         </button>
     </div>
 
-    <div class="p-8 grid grid-cols-2 border-t bg-slate-50/50">
+    <div class="p-8 grid grid-cols-2 bg-white">
         <div class="text-[11px] text-slate-500">
-            <p class="font-bold uppercase text-blue-800 mb-1">Zahlungsziel</p>
+            <p class="font-bold uppercase text-blue-800 mb-2">Zahlungsinformationen</p>
+            <p>Kontoinhaber: <b>Osman Tuncer</b></p>
             <p>IBAN: <b>LT83 2500 9251 8928 659</b></p>
             <p>BIC: <b>Revolut21</b></p>
-            <p class="mt-4 italic font-bold text-slate-400">Vielen Dank!</p>
+            <p class="mt-6 italic font-bold text-slate-400">Vielen Dank für Ihren Auftrag!</p>
         </div>
         <div class="space-y-1 text-right">
             <p class="text-slate-500">Netto: <span id="sub">0,00 €</span></p>
             <p class="text-slate-500 border-b pb-1">MwSt 19%: <span id="tax">0,00 €</span></p>
-            <p class="text-2xl font-black text-blue-900 pt-1">Gesamt: <span id="total">0,00 €</span></p>
+            <p class="text-3xl font-black text-blue-900 pt-1">Gesamt: <span id="total">0,00 €</span></p>
         </div>
     </div>
 </div>
@@ -202,8 +210,12 @@ function autoGrow(el) {
 let n = localStorage.getItem("inv_h2") || 0;
 n++; localStorage.setItem("inv_h2", n);
 document.getElementById('inv').value = "RE-" + new Date().getFullYear() + "-" + String(n).padStart(3, "0");
+document.getElementById('inv').addEventListener('input', (e) => localStorage.setItem("inv_h2", e.target.value.split('-').pop()));
+
+// Datum einstellen
 document.getElementById('date').valueAsDate = new Date();
-let d = new Date(); d.setDate(d.getDate() + 14); document.getElementById('due').valueAsDate = d;
+let d = new Date(); d.setDate(d.getDate() + 14); 
+document.getElementById('due').valueAsDate = d;
 
 // Kundenverwaltung
 let customers = JSON.parse(localStorage.getItem("cust_h2") || "[]");
@@ -227,18 +239,18 @@ function loadCustomer() {
     document.getElementById("customerData").value = customers[idx] || "";
 }
 
-// Funktionen für die Buttons
+// Aktionen
 function sendPDF() { window.print(); }
 function sendMail() {
     const subject = encodeURIComponent("Rechnung " + document.getElementById('inv').value);
     location.href = `mailto:?subject=${subject}`;
 }
 function shareWhatsApp() {
-    const text = encodeURIComponent("Rechnung " + document.getElementById('inv').value);
+    const text = encodeURIComponent("H2 TechService - Rechnung " + document.getElementById('inv').value);
     window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 function sendTelegram() {
-    const text = encodeURIComponent("Rechnung " + document.getElementById('inv').value);
+    const text = encodeURIComponent("H2 TechService - Rechnung " + document.getElementById('inv').value);
     window.open(`https://t.me/share/url?url=${window.location.href}&text=${text}`, '_blank');
 }
 
