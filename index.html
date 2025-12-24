@@ -10,150 +10,161 @@
             .no-print, .admin-only { display:none !important; }
             body { background: white !important; padding: 0 !important; }
             .card { box-shadow: none !important; margin: 0 !important; max-width: 100% !important; border: none !important; }
-            textarea, input { border: none !important; outline: none !important; }
+            textarea, input { border: none !important; outline: none !important; background: transparent !important; }
         }
         body { background: #f1f5f9; font-family: 'Segoe UI', Roboto, sans-serif; }
-        .card { max-width: 900px; margin: 30px auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
-        .header-bg { background: #1e40af; color: white; padding: 40px; }
+        .card { max-width: 850px; margin: 20px auto; background: white; border-radius: 15px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #e2e8f0; }
+        .header-bg { background: #1e40af; color: white; padding: 35px; }
         textarea { resize: none; overflow: hidden; }
         input[type="number"]::-webkit-inner-spin-button { display: none; }
+        
+        /* Schwebende Leiste Styling */
+        .floating-menu {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 15px 40px;
+            border-radius: 40px;
+            display: flex;
+            gap: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            z-index: 1000;
+            align-items: center;
+        }
+        .icon-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .icon-btn:hover { transform: translateY(-5px) scale(1.1); }
+        .icon-btn img {
+            width: 55px;
+            height: 55px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        .icon-label { font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 </head>
 
-<body class="pb-60"> <div class="card" id="invoice-content">
+<body class="pb-48">
+
+<div class="card">
     <div class="header-bg flex justify-between items-center">
         <div>
-            <h1 class="text-4xl font-black tracking-tight">H2 TechService</h1>
-            <p class="opacity-90 text-lg">Osman Tuncer</p>
+            <h1 class="text-3xl font-black">H2 TechService</h1>
+            <p class="opacity-90">Osman Tuncer</p>
         </div>
         <div class="text-right">
-            <p class="text-sm uppercase tracking-widest opacity-80">Rechnung</p>
-            <input id="inv" class="bg-transparent text-right font-bold text-2xl text-white outline-none w-64">
+            <p class="text-xs uppercase tracking-widest opacity-70">Rechnungsnummer</p>
+            <input id="inv" class="bg-transparent text-right font-bold text-xl text-white outline-none">
         </div>
     </div>
 
     <div class="p-8 grid grid-cols-2 gap-10 text-sm border-b">
-        <div>
-            <b class="text-blue-800 uppercase text-xs mb-2 block">Absender</b>
-            <div class="space-y-1 text-slate-600">
-                <p class="font-bold text-slate-800">H2 TechService</p>
-                <p>Suntal Str. 48</p>
-                <p>31552 Rodenberg</p>
-                <p>📞 +49 176 66658777</p>
-                <p>✉️ 74star@gmail.com</p>
-                <p class="pt-2 italic">Steuernr.: 41320887966</p>
-            </div>
+        <div class="space-y-1">
+            <b class="text-blue-700 text-xs uppercase">Absender</b>
+            <p class="font-bold">H2 TechService</p>
+            <p>Suntal Str. 48, 31552 Rodenberg</p>
+            <p>📞 +49 176 66658777</p>
+            <p>✉️ 74star@gmail.com</p>
+            <p class="pt-2 text-slate-400">Steuernr: 41320887966</p>
         </div>
 
-        <div class="text-right flex flex-col items-end">
-            <b class="text-blue-800 uppercase text-xs mb-2 block">Empfänger</b>
-            
-            <select id="customerSelect" class="admin-only w-full mb-2 p-1 border rounded text-xs bg-slate-50" onchange="loadCustomer()">
-                <option value="">— Kunde auswählen —</option>
+        <div class="text-right">
+            <b class="text-blue-700 text-xs uppercase">Empfänger</b>
+            <select id="customerSelect" class="admin-only w-full mb-1 p-1 border rounded text-[10px]" onchange="loadCustomer()">
+                <option value="">— Gespeicherte Kunden —</option>
             </select>
-
-            <textarea id="customerData" class="w-full border-b focus:border-blue-500 outline-none p-1 text-right bg-transparent" rows="3" placeholder="Kundendaten eingeben..."></textarea>
-
-            <div class="admin-only mt-2 text-xs space-x-2">
-                <button onclick="saveCustomer()" class="text-green-600 font-bold hover:underline">💾 Speichern</button>
-                <button onclick="deleteCustomer()" class="text-red-600 font-bold hover:underline">🗑 Löschen</button>
+            <textarea id="customerData" class="w-full border-b focus:border-blue-500 outline-none p-1 text-right bg-transparent" rows="3" placeholder="Name & Adresse..."></textarea>
+            <div class="admin-only mt-1 text-[10px] space-x-2">
+                <button onclick="saveCustomer()" class="text-green-600 font-bold hover:underline">Speichern</button>
+                <button onclick="deleteCustomer()" class="text-red-600 font-bold hover:underline">Löschen</button>
             </div>
-
-            <div class="mt-6 space-y-1">
+            <div class="mt-4">
                 <p>Datum: <input type="date" id="date" class="outline-none"></p>
-                <p class="font-bold text-red-600">Fällig: <input type="date" id="due" class="outline-none text-red-600 font-bold"></p>
+                <p class="font-bold text-red-600">Fällig: <input type="date" id="due" class="outline-none text-red-600"></p>
             </div>
         </div>
     </div>
 
     <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
             <tr>
                 <th class="p-4 text-left">Beschreibung</th>
                 <th class="p-4 w-20 text-center">Menge</th>
-                <th class="p-4 w-32 text-right">Einzelpreis</th>
+                <th class="p-4 w-32 text-right">Preis</th>
                 <th class="p-4 w-32 text-right">Gesamt</th>
-                <th class="p-4 w-10 admin-only"></th>
+                <th class="p-4 w-8 admin-only"></th>
             </tr>
         </thead>
         <tbody id="rows">
             <tr class="border-b">
                 <td class="p-4">
-                    <textarea class="w-full p-1 desc focus:bg-blue-50 outline-none rounded" rows="1" oninput="autoGrow(this)" placeholder="Leistungsbeschreibung..."></textarea>
+                    <textarea class="w-full p-1 focus:bg-slate-50 outline-none rounded" rows="1" oninput="autoGrow(this)" placeholder="Leistung..."></textarea>
                 </td>
                 <td class="p-4 text-center">
-                    <input type="number" min="1" value="1" class="qty w-12 text-center font-bold bg-transparent" oninput="upd()">
+                    <input type="number" min="1" value="1" class="qty w-10 text-center font-bold bg-transparent" oninput="upd()">
                 </td>
                 <td class="p-4 text-right">
-                    <input type="number" step="0.01" class="price w-24 text-right outline-none bg-transparent" placeholder="0,00" oninput="upd()"> €
+                    <input type="number" step="0.01" class="price w-20 text-right outline-none bg-transparent" oninput="upd()"> €
                 </td>
-                <td class="p-4 text-right font-bold row-total text-slate-700">0,00 €</td>
+                <td class="p-4 text-right font-bold row-total">0,00 €</td>
                 <td class="p-4 admin-only">
-                    <button onclick="this.closest('tr').remove(); upd()" class="text-red-400 hover:text-red-600">✕</button>
+                    <button onclick="this.closest('tr').remove(); upd()" class="text-red-300 hover:text-red-600">✕</button>
                 </td>
             </tr>
         </tbody>
     </table>
 
     <div class="p-4 admin-only">
-        <button onclick="addRow()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm transition font-bold border border-blue-200">
-            + Neue Position hinzufügen
+        <button onclick="addRow()" class="text-blue-600 hover:text-blue-800 text-xs font-bold transition">
+            + Position hinzufügen
         </button>
     </div>
 
-    <div class="p-8 grid grid-cols-2 border-t bg-slate-50 mt-10">
-        <div>
-            <b class="text-blue-800 uppercase text-xs mb-2 block">Zahlungsinformationen</b>
-            <div class="text-slate-600 space-y-1">
-                <p>IBAN: <strong class="text-slate-800">LT83 2500 9251 8928 659</strong></p>
-                <p>BIC: <strong class="text-slate-800">Revolut21</strong></p>
-                <p class="text-xs mt-6 italic text-slate-400 font-bold uppercase">Vielen Dank für das Vertrauen!</p>
-            </div>
+    <div class="p-8 grid grid-cols-2 border-t bg-slate-50/50">
+        <div class="text-[11px] text-slate-500">
+            <p class="font-bold uppercase text-blue-800 mb-1">Zahlungsziel</p>
+            <p>IBAN: <b>LT83 2500 9251 8928 659</b></p>
+            <p>BIC: <b>Revolut21</b></p>
+            <p class="mt-4 italic font-bold text-slate-400">Vielen Dank!</p>
         </div>
-
-        <div class="space-y-2 text-right">
-            <div class="flex justify-between text-slate-500">
-                <span>Netto:</span>
-                <span id="sub">0,00 €</span>
-            </div>
-            <div class="flex justify-between text-slate-500 border-b pb-2">
-                <span>MwSt 19%:</span>
-                <span id="tax">0,00 €</span>
-            </div>
-            <div class="flex justify-between text-3xl font-black text-blue-900 pt-2">
-                <span>Gesamt:</span>
-                <span id="total">0,00 €</span>
-            </div>
+        <div class="space-y-1 text-right">
+            <p class="text-slate-500">Netto: <span id="sub">0,00 €</span></p>
+            <p class="text-slate-500 border-b pb-1">MwSt 19%: <span id="tax">0,00 €</span></p>
+            <p class="text-2xl font-black text-blue-900 pt-1">Gesamt: <span id="total">0,00 €</span></p>
         </div>
     </div>
 </div>
 
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-12 no-print bg-white/95 backdrop-blur-md px-14 py-8 rounded-[40px] shadow-[0_25px_60px_rgba(0,0,0,0.4)] border border-slate-200 items-center">
-  
-    <button onclick="sendPDF()" title="Als PDF speichern" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg" alt="PDF" class="w-24 h-24">
-        <span class="text-xs font-black text-slate-600 tracking-wider">PDF</span>
-    </button>
-
-    <button onclick="sendMail()" title="Per Gmail senden" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Gmail" class="w-24 h-24">
-        <span class="text-xs font-black text-slate-600 tracking-wider">GMAIL</span>
-    </button>
-
-    <button onclick="shareWhatsApp()" title="Per WhatsApp teilen" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="w-24 h-24">
-        <span class="text-xs font-black text-slate-600 tracking-wider">WHATSAPP</span>
-    </button>
-
-    <button onclick="sendTelegram()" title="Per Telegram senden" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram" class="w-24 h-24">
-        <span class="text-xs font-black text-slate-600 tracking-wider">TELEGRAM</span>
-    </button>
-
+<div class="floating-menu no-print">
+    <div class="icon-btn" onclick="sendPDF()">
+        <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF">
+        <span class="icon-label">PDF</span>
+    </div>
+    <div class="icon-btn" onclick="sendMail()">
+        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968534.png" alt="Gmail">
+        <span class="icon-label">E-Mail</span>
+    </div>
+    <div class="icon-btn" onclick="shareWhatsApp()">
+        <img src="https://cdn-icons-png.flaticon.com/512/3670/3670051.png" alt="WhatsApp">
+        <span class="icon-label">WhatsApp</span>
+    </div>
+    <div class="icon-btn" onclick="sendTelegram()">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+        <span class="icon-label">Telegram</span>
+    </div>
 </div>
 
 <script>
-// Hilfsfunktionen
 function formatCurr(num) {
     return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(num);
 }
@@ -167,13 +178,10 @@ function upd() {
         r.querySelector(".row-total").innerText = formatCurr(t);
         subtotal += t;
     });
-    
     let tax = subtotal * 0.19;
-    let total = subtotal + tax;
-
     document.getElementById("sub").innerText = formatCurr(subtotal);
     document.getElementById("tax").innerText = formatCurr(tax);
-    document.getElementById("total").innerText = formatCurr(total);
+    document.getElementById("total").innerText = formatCurr(subtotal + tax);
 }
 
 function addRow() {
@@ -190,71 +198,48 @@ function autoGrow(el) {
     el.style.height = (el.scrollHeight) + "px";
 }
 
-// Rechnungsnummer & Daten initialisieren
-let n = localStorage.getItem("inv_count_h2") || 0;
-n++; 
-localStorage.setItem("inv_count_h2", n);
+// Rechnungsnummer & Daten
+let n = localStorage.getItem("inv_h2") || 0;
+n++; localStorage.setItem("inv_h2", n);
 document.getElementById('inv').value = "RE-" + new Date().getFullYear() + "-" + String(n).padStart(3, "0");
-
 document.getElementById('date').valueAsDate = new Date();
-let d = new Date(); d.setDate(d.getDate() + 14); 
-document.getElementById('due').valueAsDate = d;
+let d = new Date(); d.setDate(d.getDate() + 14); document.getElementById('due').valueAsDate = d;
 
 // Kundenverwaltung
-let customers = JSON.parse(localStorage.getItem("cust_db_h2") || "[]");
+let customers = JSON.parse(localStorage.getItem("cust_h2") || "[]");
 function refreshCust() {
     const sel = document.getElementById("customerSelect");
-    sel.innerHTML = '<option value="">— Kunde auswählen —</option>';
+    sel.innerHTML = '<option value="">— Gespeicherte Kunden —</option>';
     customers.forEach((c, i) => {
-        let o = document.createElement("option");
-        o.value = i; 
-        o.textContent = c.split("\n")[0] || "Kunde " + (i+1);
-        sel.appendChild(o);
+        let o = document.createElement("option"); o.value = i; o.textContent = c.split("\n")[0]; sel.appendChild(o);
     });
 }
-
 function saveCustomer() {
     const data = document.getElementById("customerData").value;
-    if(!data) return;
-    customers.push(data);
-    localStorage.setItem("cust_db_h2", JSON.stringify(customers));
-    refreshCust();
-    alert("Kunde in Datenbank gespeichert!");
+    if(data) { customers.push(data); localStorage.setItem("cust_h2", JSON.stringify(customers)); refreshCust(); }
 }
-
 function deleteCustomer() {
     const idx = document.getElementById("customerSelect").value;
-    if(idx === "") return;
-    customers.splice(idx, 1);
-    localStorage.setItem("cust_db_h2", JSON.stringify(customers));
-    document.getElementById("customerData").value = "";
-    refreshCust();
+    if(idx !== "") { customers.splice(idx, 1); localStorage.setItem("cust_h2", JSON.stringify(customers)); document.getElementById("customerData").value = ""; refreshCust(); }
 }
-
 function loadCustomer() {
     const idx = document.getElementById("customerSelect").value;
     document.getElementById("customerData").value = customers[idx] || "";
 }
 
-// AKTIONEN
-function sendPDF() {
-    window.print();
-}
-
+// Funktionen für die Buttons
+function sendPDF() { window.print(); }
 function sendMail() {
-    const subject = "Rechnung " + document.getElementById('inv').value;
-    const body = "Guten Tag, im Anhang finden Sie die Rechnung für die erbrachten Leistungen. Beste Grüße, Osman Tuncer (H2 TechService)";
-    location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const subject = encodeURIComponent("Rechnung " + document.getElementById('inv').value);
+    location.href = `mailto:?subject=${subject}`;
 }
-
 function shareWhatsApp() {
-    const text = "H2 TechService - Rechnung " + document.getElementById('inv').value;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const text = encodeURIComponent("Rechnung " + document.getElementById('inv').value);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
 }
-
 function sendTelegram() {
-    const text = "H2 TechService - Rechnung " + document.getElementById('inv').value;
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`, '_blank');
+    const text = encodeURIComponent("Rechnung " + document.getElementById('inv').value);
+    window.open(`https://t.me/share/url?url=${window.location.href}&text=${text}`, '_blank');
 }
 
 refreshCust();
