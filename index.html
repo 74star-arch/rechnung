@@ -19,8 +19,11 @@
         .card { max-width: 850px; margin: 20px auto; background: white; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
         .stamp { position: absolute; top: 180px; right: 50px; padding: 10px 25px; border: 6px solid; border-radius: 15px; font-size: 30px; font-weight: 900; text-transform: uppercase; transform: rotate(-15deg); opacity: 0.15; pointer-events: none; display: none; z-index: 100; }
         .stamp-paid { display: block; color: #16a34a; border-color: #16a34a; }
-        .theme-blue .header-bg { background: #1e3a8a; }
-        .theme-blue .accent-text { color: #60a5fa; }
+        
+        /* FARBEN AN LOGO ANGEPASST */
+        .theme-blue .header-bg { background: #1a365d; } /* Dunkelblau vom Logo */
+        .theme-blue .accent-text { color: #2dd4bf; }    /* Cyan/Teal von der '2' */
+        
         .theme-gold .header-bg { background: #111111; border-bottom: 2px solid #d4af37; }
         .theme-gold .accent-text { color: #d4af37; }
         .theme-red .header-bg { background: #991b1b; }
@@ -89,8 +92,8 @@
     <div id="statusStamp" class="stamp">Bezahlt</div>
     <div class="header-bg p-12 text-white flex justify-between items-center transition-all duration-500">
         <div class="flex items-center gap-6">
-            <div class="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-md">
-                <img id="firmLogo" src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png" class="w-14 h-14 object-contain">
+            <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center border border-white/20 shadow-inner overflow-hidden">
+                <img id="firmLogo" src="1000079067.jpg" class="w-16 h-16 object-contain" alt="H2 Logo">
             </div>
             <div>
                 <h1 class="text-4xl font-black italic tracking-tighter uppercase">H2 <span class="accent-text">Tech</span>Service</h1>
@@ -277,9 +280,7 @@
         reader.readAsText(file);
     }
 
-    // KOMBINIERTE FUNKTION: BEZAHLT + DRUCKEN
     function processPaidAndPrint() {
-        // 1. Bezahlt markieren
         document.getElementById('statusStamp').classList.add('stamp-paid');
         const entry = { date: new Date().toLocaleDateString(), num: document.getElementById("inv").value, client: document.getElementById("c_n").value || "Kunde", amount: currentTotal, id: Date.now() };
         
@@ -291,15 +292,12 @@
         stats.history.push({ date: new Date().toISOString(), amount: currentTotal });
         localStorage.setItem("h2_stats", JSON.stringify(stats));
 
-        // 2. Nächste Nummer im Speicher erhöhen
         let currentNum = parseInt(document.getElementById("inv").value);
         localStorage.setItem("h2_num", currentNum + 1);
 
-        // 3. UI updaten
         updateStatsDisplay(); renderArchive();
 
-        // 4. Druckvorgang starten
-        setTimeout(() => { doPrint(); }, 300); // Kurze Verzögerung für den visuellen Stempel
+        setTimeout(() => { doPrint(); }, 300);
     }
 
     function updateStatsDisplay() {
@@ -324,7 +322,6 @@
     function delArch(id) { let a = JSON.parse(localStorage.getItem("h2_arch")||"[]"); a = a.filter(x => x.id != id); localStorage.setItem("h2_arch", JSON.stringify(a)); renderArchive(); }
     function toggleArchive() { document.getElementById("archive-list").classList.toggle("hidden"); }
 
-    // Init beim Start
     document.getElementById("inv").value = localStorage.getItem("h2_num") || 1001;
 
     let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
