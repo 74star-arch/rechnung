@@ -5,46 +5,58 @@
 <title>H2 TechService Rechnung</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
-body{font-family:Arial;background:#f2f2f2}
-.container{max-width:900px;margin:20px auto;background:#fff;padding:20px}
-h1{text-align:center}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ccc;padding:6px;text-align:left}
-th{background:#eee}
-textarea{width:100%;min-height:90px}
-input[type=number]{width:90px}
-.total{text-align:right;font-size:18px;margin-top:10px}
-.actions button{margin:5px;padding:8px 12px}
-.no-print{display:inline-block}
-@media print{.no-print{display:none}}
+@media print {
+  .no-print { display: none !important; }
+}
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+input.qty {
+  width: 80px;
+}
 </style>
 </head>
 
-<body>
-<div class="container">
+<body class="bg-gray-100 p-4">
+<div id="invoice" class="max-w-3xl mx-auto bg-white p-6 shadow">
 
-<h1>Rechnung</h1>
+<h1 class="text-2xl font-bold mb-4 text-center">Rechnung</h1>
 
-<b>H2 TechService</b><br>
-Inhaber: Osman Tuncer<br>
-Suntal Str. 48, 31552 Rodenberg<br>
-Tel: +49 176 66658777<br>
-E-Mail: 74star@gmail.com<br>
-IBAN: LT83 2500 9251 8928 659<br>
-BIC: REVOLT21
+<p class="font-bold">H2 TechService</p>
+<p>Inhaber: Osman Tuncer</p>
+<p>Suntal Str. 48, 31552 Rodenberg</p>
+<p>Tel: +49 176 66658777</p>
+<p>E-Mail: 74star@gmail.com</p>
+<p>IBAN: LT83 2500 9251 8928 659</p>
+<p>BIC: REVOLT21</p>
 
-<hr>
+<hr class="my-4">
 
-Kunde:<br>
-<input id="kunde" style="width:100%"><br><br>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label>Kunde:</label>
+<input id="kunde" class="border w-full p-1">
+</div>
+<div>
+<label>Rechnungsnr:</label>
+<div id="rnr" class="font-mono"></div>
+</div>
 
-Rechnungsnr: <b id="nr"></b><br>
-Datum: <span id="datum"></span><br>
+<div>
+Datum: <span id="datum"></span>
+</div>
+<div>
 Fällig: <span id="faellig"></span>
+</div>
+</div>
 
-<table>
-<thead>
+<table class="w-full mt-4 border">
+<thead class="bg-gray-200">
 <tr>
 <th>Beschreibung</th>
 <th>Menge</th>
@@ -55,69 +67,72 @@ Fällig: <span id="faellig"></span>
 <tbody>
 <tr>
 <td><textarea id="desc"></textarea></td>
-<td><input type="number" id="qty" value="1" min="1" max="10000"></td>
+<td><input type="number" class="qty" id="qty" value="1" min="1" max="10000"></td>
 <td><input type="number" id="price" value="0"></td>
-<td id="rowTotal">0.00</td>
+<td id="rowtotal">0.00</td>
 </tr>
 </tbody>
 </table>
 
-<div class="total">
-Zwischensumme: <span id="sub">0.00</span> €<br>
-MwSt 19 %: <span id="vat">0.00</span> €<br>
-<b>Gesamt: <span id="total">0.00</span> €</b>
+<div class="text-right mt-4">
+<p>Zwischensumme: <span id="sub">0.00</span> €</p>
+<p>MwSt 19%: <span id="vat">0.00</span> €</p>
+<p class="font-bold text-lg">Gesamt: <span id="total">0.00</span> €</p>
 </div>
 
-<div class="actions no-print">
-<button onclick="save()">💾 Speichern</button>
-<button onclick="clearData()">🗑 Löschen</button>
-<button onclick="window.print()">📄 PDF</button>
-<button onclick="email()">✉️ Email</button>
-<button onclick="whatsapp()">📱 WhatsApp</button>
+<div class="flex gap-2 mt-6 no-print">
+<button onclick="saveInvoice()" class="border p-2">💾 Speichern</button>
+<button onclick="clearInvoice()" class="border p-2">🗑 Löschen</button>
+<button onclick="makePDF()" class="border p-2">📄 PDF</button>
+<button onclick="sendEmail()" class="border p-2">✉ Email</button>
+<button onclick="sendWhats()" class="border p-2">📱 WhatsApp</button>
 </div>
 
 </div>
 
 <script>
-const n="H2-"+Date.now();
-nr.innerText=n;
-datum.innerText=new Date().toLocaleDateString();
-faellig.innerText=new Date(Date.now()+12096e5).toLocaleDateString();
+const today = new Date();
+document.getElementById("datum").innerText = today.toLocaleDateString();
+const due = new Date(today); due.setDate(today.getDate()+14);
+document.getElementById("faellig").innerText = due.toLocaleDateString();
+
+document.getElementById("rnr").innerText = "H2-" + Date.now();
 
 function calc(){
-let q=qty.value,p=price.value;
-let s=q*p;
-rowTotal.innerText=s.toFixed(2);
-sub.innerText=s.toFixed(2);
-let v=s*0.19;
-vat.innerText=v.toFixed(2);
-total.innerText=(s+v).toFixed(2);
+ let q = qty.value || 0;
+ let p = price.value || 0;
+ let sum = q*p;
+ rowtotal.innerText = sum.toFixed(2);
+ sub.innerText = sum.toFixed(2);
+ let v = sum*0.19;
+ vat.innerText = v.toFixed(2);
+ total.innerText = (sum+v).toFixed(2);
 }
-qty.oninput=price.oninput=calc;
+qty.oninput = price.oninput = calc;
+calc();
 
-function save(){
-localStorage.setItem(n,JSON.stringify({
-kunde:kunde.value,
-desc:desc.value,
-qty:qty.value,
-price:price.value
-}));
-alert("Gespeichert (nur Admin sichtbar)");
+function makePDF(){
+ html2pdf().from(invoice).save("Rechnung.pdf");
 }
 
-function clearData(){
-if(confirm("Wirklich löschen?")){
-localStorage.removeItem(n);
-location.reload();
-}
+function sendEmail(){
+ location.href="mailto:?subject=Rechnung&body=Rechnung im Anhang";
 }
 
-function email(){
-location.href=`mailto:?subject=Rechnung ${n}&body=Gesamt ${total.innerText} €`;
+function sendWhats(){
+ window.open("https://wa.me/?text=Meine Rechnung");
 }
 
-function whatsapp(){
-window.open(`https://wa.me/?text=Rechnung ${n} Gesamt ${total.innerText} €`);
+function saveInvoice(){
+ localStorage.setItem("invoice", invoice.innerHTML);
+ alert("Gespeichert (nur Admin)");
+}
+
+function clearInvoice(){
+ if(confirm("Löschen?")){
+  localStorage.removeItem("invoice");
+  location.reload();
+ }
 }
 </script>
 
