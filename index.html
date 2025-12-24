@@ -2,173 +2,191 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>H2 TechService Rechnung</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H2 TechService Rechnung</title>
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 @media print {
-  .no-print, .admin-only { display:none !important; }
-  body { background:white; }
+  .no-print { display:none !important }
 }
-textarea { resize: vertical; }
+textarea { resize:vertical; min-height:60px }
+.qty { max-width:70px }
 </style>
 </head>
 
-<body class="bg-slate-100 p-4">
+<body class="bg-slate-100 pb-24">
 
-<div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
+<div class="max-w-4xl mx-auto bg-white mt-6 rounded-xl shadow-xl p-6">
 
 <!-- HEADER -->
-<div class="flex justify-between items-center border-b pb-4">
-  <div>
-    <h1 class="text-2xl font-black">H2 TechService</h1>
-    <p>Osman Tuncer</p>
-    <p>Tel: <a href="tel:+4917666658777">+49 176 66658777</a></p>
-    <p>E-Mail: <a href="mailto:74star@gmail.com">74star@gmail.com</a></p>
-  </div>
-  <div class="text-right">
-    <h2 class="text-xl">RECHNUNG</h2>
-    <div id="inv"></div>
-  </div>
+<div class="flex justify-between items-start border-b pb-4">
+<div>
+<h1 class="text-2xl font-black">H2 TechService</h1>
+<p>Inhaber: Osman Tuncer</p>
+<p>Tel: +49 176 66658777</p>
+<p>E-Mail: 74star@gmail.com</p>
+<p class="text-sm text-slate-500">Steuernr.: 41320887966</p>
+</div>
+
+<div class="text-right">
+<p class="text-xl font-bold">RECHNUNG</p>
+<input id="inv" class="font-bold text-right">
+</div>
 </div>
 
 <!-- EMPFÄNGER -->
-<div class="mt-4 grid grid-cols-2 gap-4">
-  <div>
-    <b>Empfänger</b>
+<div class="mt-6">
+<b>Empfänger</b>
 
-    <!-- ADMIN -->
-    <select id="customerSelect" class="admin-only w-full border p-1 mt-1" onchange="loadCustomer()">
-      <option value="">Kunde wählen</option>
-    </select>
+<select id="customerSelect" class="w-full p-2 bg-slate-100 admin-only"
+onchange="loadCustomer()">
+<option value="">— Kunde auswählen —</option>
+</select>
 
-    <textarea id="customerData" class="w-full border p-2 mt-1" rows="5"
-      placeholder="Kundendaten"></textarea>
+<textarea id="customerData"
+class="w-full bg-slate-50 p-2 mt-2"
+placeholder="Kundendaten"></textarea>
 
-    <div class="admin-only flex gap-2 mt-1">
-      <button onclick="saveCustomer()" class="text-xs bg-blue-600 text-white px-2">Speichern</button>
-      <button onclick="deleteCustomer()" class="text-xs bg-red-600 text-white px-2">Löschen</button>
-    </div>
-  </div>
+<button onclick="saveCustomer()"
+class="admin-only mt-2 text-blue-600 font-bold">
+💾 Kunde speichern
+</button>
+</div>
 
-  <div class="text-right">
-    Datum: <input type="date" id="date"><br>
-    Fällig: <input type="date" id="due"><br>
-    Leistungsdatum: <input type="date">
-  </div>
+<!-- DATUM -->
+<div class="mt-4 text-sm">
+Datum: <input type="date" id="date">
+Fällig: <input type="date" id="due">
 </div>
 
 <!-- POSITIONEN -->
-<table class="w-full mt-6 border text-sm">
-<thead class="bg-slate-200">
+<table class="w-full mt-6 text-sm border">
+<thead class="bg-slate-100">
 <tr>
-  <th>Beschreibung</th>
-  <th class="w-20">Menge</th>
-  <th class="w-24">Preis</th>
-  <th class="w-24">Gesamt</th>
+<th>Beschreibung</th>
+<th>Menge</th>
+<th>Preis €</th>
+<th>Gesamt €</th>
 </tr>
 </thead>
+
 <tbody id="rows">
 <tr>
-  <td>
-    <textarea class="w-full border p-1 desc" rows="3"></textarea>
-  </td>
-  <td>
-    <input type="number" max="10000" value="1" class="qty w-full border text-center" oninput="calc()">
-  </td>
-  <td>
-    <input type="number" class="price w-full border text-right" oninput="calc()">
-  </td>
-  <td class="row-total text-right p-2">0.00 €</td>
+<td>
+<textarea class="w-full desc"
+placeholder="Leistungsbeschreibung"
+oninput="autoGrow(this)"></textarea>
+</td>
+<td>
+<input type="number" value="1" min="1" max="10000"
+class="qty text-center" oninput="upd()">
+</td>
+<td>
+<input type="number" class="price text-right" oninput="upd()">
+</td>
+<td class="row-total text-right font-bold">0.00 €</td>
 </tr>
 </tbody>
 </table>
 
-<button onclick="addRow()" class="admin-only mt-2 text-blue-600">+ Position</button>
+<button onclick="add()" class="admin-only mt-2 text-blue-600">
++ Position
+</button>
 
-<!-- SUMME -->
+<!-- SUMMEN -->
 <div class="mt-6 text-right">
-  Netto: <span id="sub">0.00 €</span><br>
-  MwSt 19%: <span id="tax">0.00 €</span><br>
-  <b class="text-xl">GESAMT: <span id="total">0.00 €</span></b>
+<p>Netto: <span id="sub">0.00 €</span></p>
+<p>MwSt 19%: <span id="tax">0.00 €</span></p>
+<p class="text-2xl font-black">GESAMT: <span id="total">0.00 €</span></p>
 </div>
 
-<!-- SHARE -->
-<div class="no-print mt-6 flex gap-4 justify-center">
-  <button onclick="window.print()">📄 PDF</button>
-  <a id="mail" href="#">📧 Mail</a>
-  <a id="wa" href="#" target="_blank">🟢 WhatsApp</a>
-  <a id="tg" href="#" target="_blank">✈️ Telegram</a>
+<!-- TEILEN -->
+<div class="mt-6 flex gap-4 no-print">
+<button onclick="sendMail()" class="bg-blue-600 text-white px-4 py-2 rounded">
+📧 Mail
+</button>
+<button onclick="sendWhatsApp()" class="bg-green-600 text-white px-4 py-2 rounded">
+🟢 WhatsApp
+</button>
+<button onclick="sendTelegram()" class="bg-sky-500 text-white px-4 py-2 rounded">
+🔵 Telegram
+</button>
+<button onclick="window.print()" class="bg-black text-white px-4 py-2 rounded">
+📄 PDF
+</button>
 </div>
 
 </div>
 
 <script>
-/* Rechnung */
-let year=new Date().getFullYear();
-let n=localStorage.getItem("h2_inv")||0; n++;
-localStorage.setItem("h2_inv",n);
-inv.innerText="RE-"+year+"-"+String(n).padStart(3,"0");
+// RECHNUNGSNUMMER
+let nr = localStorage.getItem("h2_inv") || 0;
+nr++;
+localStorage.setItem("h2_inv", nr);
+inv.value = "RE-2025-" + String(nr).padStart(3,"0");
 
-let t=new Date(); let d=new Date(); d.setDate(t.getDate()+14);
+// DATUM
+const t=new Date(),d=new Date();d.setDate(t.getDate()+14);
 date.valueAsDate=t; due.valueAsDate=d;
 
-function addRow(){
- rows.innerHTML+=`
- <tr>
-  <td><textarea class="w-full border p-1 desc" rows="3"></textarea></td>
-  <td><input type="number" max="10000" value="1" class="qty w-full border text-center" oninput="calc()"></td>
-  <td><input type="number" class="price w-full border text-right" oninput="calc()"></td>
-  <td class="row-total text-right p-2">0.00 €</td>
- </tr>`;
+// POSITIONEN
+const VAT=0.19;
+function upd(){
+let s=0;
+document.querySelectorAll("#rows tr").forEach(r=>{
+let q=r.querySelector(".qty").value||0;
+let p=r.querySelector(".price").value||0;
+let t=q*p;
+r.querySelector(".row-total").innerText=t.toFixed(2)+" €";
+s+=t;
+});
+sub.innerText=s.toFixed(2)+" €";
+tax.innerText=(s*VAT).toFixed(2)+" €";
+total.innerText=(s*1.19).toFixed(2)+" €";
 }
 
-function calc(){
- let s=0;
- document.querySelectorAll("#rows tr").forEach(r=>{
-  let q=r.querySelector(".qty").value||0;
-  let p=r.querySelector(".price").value||0;
-  let t=q*p;
-  r.querySelector(".row-total").innerText=t.toFixed(2)+" €";
-  s+=t;
- });
- let tax=s*0.19;
- sub.innerText=s.toFixed(2)+" €";
- document.getElementById("tax").innerText=tax.toFixed(2)+" €";
- total.innerText=(s+tax).toFixed(2)+" €";
-
- let txt="Rechnung "+inv.innerText+" Gesamt "+(s+tax).toFixed(2)+" €";
- mail.href="mailto:?subject=Rechnung&body="+encodeURIComponent(txt);
- wa.href="https://wa.me/?text="+encodeURIComponent(txt);
- tg.href="https://t.me/share/url?text="+encodeURIComponent(txt);
+function add(){
+rows.insertAdjacentHTML("beforeend",`
+<tr>
+<td><textarea class="w-full desc" oninput="autoGrow(this)"></textarea></td>
+<td><input type="number" value="1" min="1" max="10000"
+class="qty text-center" oninput="upd()"></td>
+<td><input type="number" class="price text-right" oninput="upd()"></td>
+<td class="row-total text-right font-bold">0.00 €</td>
+</tr>`);
 }
 
-/* Kunden */
+function autoGrow(t){ t.style.height="auto"; t.style.height=t.scrollHeight+"px"; }
+
+// KUNDEN
 let customers=JSON.parse(localStorage.getItem("h2_customers"))||[];
-
-function refresh(){
- customerSelect.innerHTML='<option value="">Kunde wählen</option>';
- customers.forEach((c,i)=>{
-  let o=document.createElement("option");
-  o.value=i; o.text=c.split("\n")[0];
-  customerSelect.appendChild(o);
- });
-}
 function saveCustomer(){
- customers.push(customerData.value);
- localStorage.setItem("h2_customers",JSON.stringify(customers));
- refresh();
+customers.push(customerData.value);
+localStorage.setItem("h2_customers",JSON.stringify(customers));
+refresh();
 }
 function loadCustomer(){
- customerData.value=customers[customerSelect.value]||"";
+customerData.value=customers[customerSelect.value];
 }
-function deleteCustomer(){
- customers.splice(customerSelect.value,1);
- localStorage.setItem("h2_customers",JSON.stringify(customers));
- refresh(); customerData.value="";
+function refresh(){
+customerSelect.innerHTML=`<option value="">— Kunde auswählen —</option>`;
+customers.forEach((c,i)=>{
+customerSelect.innerHTML+=`<option value="${i}">${c.split("\n")[0]}</option>`;
+});
 }
 refresh();
+
+// TEILEN
+function sendMail(){
+location.href=`mailto:?subject=Rechnung ${inv.value}&body=Siehe Rechnung`;
+}
+function sendWhatsApp(){
+window.open("https://wa.me/?text=Rechnung "+inv.value);
+}
+function sendTelegram(){
+window.open("https://t.me/share/url?text=Rechnung "+inv.value);
+}
 </script>
 
 </body>
