@@ -2,118 +2,213 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>H2 TechService Rechnung</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-.no-print { display: block; }
-@media print { .no-print { display:none !important; } }
-textarea { min-height:120px; resize:vertical; }
-input.qty { width:80px; }
+@media print {
+  .no-print, .admin-only { display:none !important; }
+  body { background:white }
+}
+body { background:#f8fafc; font-family:'Segoe UI',sans-serif }
+.card { max-width:900px; margin:20px auto; background:white; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.1) }
+.header-bg { background:#1e40af; color:white; padding:30px }
+textarea { resize:none }
 </style>
 </head>
 
-<body class="bg-gray-100 p-4">
-
-<div id="invoice" class="max-w-3xl mx-auto bg-white p-6 shadow rounded">
+<body class="pb-20">
+<div class="card">
 
 <!-- HEADER -->
-<div class="bg-blue-700 text-white p-4 rounded">
-  <h1 class="text-2xl font-bold">H2 TechService</h1>
-  <p>Osman Tuncer</p>
+<div class="header-bg flex justify-between">
+<div>
+<h1 class="text-3xl font-black">H2 TechService</h1>
+<p class="opacity-80">Osman Tuncer</p>
+</div>
+<div class="text-right">
+<p class="text-xl">Rechnung</p>
+<input id="inv" class="bg-transparent text-right font-bold text-white">
+</div>
 </div>
 
-<!-- FIRMA -->
-<div class="mt-4 text-sm">
-  Suntal Str. 48, 31552 Rodenberg<br>
-  📞 +49 176 66658777<br>
-  ✉️ 74star@gmail.com<br>
-  Steuernr.: 41320887966<br>
-  IBAN: LT83 2500 9251 8928 659<br>
-  BIC: Revolut21
+<!-- ADRESSEN -->
+<div class="p-6 grid grid-cols-2 gap-6 text-sm">
+<div>
+<b>Absender</b>
+<p>H2 TechService</p>
+<p>Suntal Str. 48</p>
+<p>31552 Rodenberg</p>
+<p>📞 <a href="tel:+4917666658777">+49 176 66658777</a></p>
+<p>✉️ <a href="mailto:74star@gmail.com">74star@gmail.com</a></p>
+<p>Steuernr.: 41320887966</p>
 </div>
 
-<hr class="my-4">
+<div class="text-right">
+<b>Empfänger</b>
 
-<!-- KUNDE -->
-<div class="grid grid-cols-2 gap-4">
-  <div>
-    <label>Kunde</label>
-    <input id="customer" class="border p-2 w-full">
-    <div class="no-print mt-2">
-      <button onclick="saveCustomer()">💾 speichern</button>
-      <button onclick="deleteCustomer()">🗑 löschen</button>
-    </div>
-  </div>
-  <div>
-    <label>Rechnungsnr.</label>
-    <div id="invnr" class="font-bold"></div>
-    <label>Datum</label>
-    <input type="date" id="date" class="border p-1 w-full">
-    <label>Fällig</label>
-    <input type="date" id="due" class="border p-1 w-full">
-  </div>
+<select id="customerSelect" class="admin-only w-full mb-1 p-1 border"
+onchange="loadCustomer()">
+<option value="">— Kunde auswählen —</option>
+</select>
+
+<textarea id="customerData"
+class="w-full border p-2"
+placeholder="Kundendaten"></textarea>
+
+<div class="admin-only mt-1 text-xs">
+<button onclick="saveCustomer()">💾 speichern</button>
+<button onclick="deleteCustomer()">🗑 löschen</button>
 </div>
 
-<!-- POSITION -->
-<table class="w-full mt-4 border">
-<tr class="bg-gray-200">
-<th>Beschreibung</th><th>Menge</th><th>Preis €</th><th>Gesamt €</th>
-</tr>
+<p class="mt-2">
+Datum: <input type="date" id="date"><br>
+Fällig: <input type="date" id="due">
+</p>
+</div>
+</div>
+
+<!-- POSITIONEN -->
+<table class="w-full text-sm border-t">
+<thead class="bg-slate-100">
 <tr>
-<td><textarea id="desc"></textarea></td>
-<td><input type="number" id="qty" class="qty" value="1" min="1" max="10000"></td>
-<td><input type="number" id="price" value="0"></td>
-<td id="rowTotal">0.00</td>
+<th class="p-2 text-left">Beschreibung</th>
+<th class="p-2 w-20">Menge</th>
+<th class="p-2 w-32">Preis €</th>
+<th class="p-2 w-32">Gesamt €</th>
 </tr>
+</thead>
+
+<tbody id="rows">
+<tr>
+<td class="p-2">
+<textarea class="w-full p-1 desc" rows="2"
+oninput="autoGrow(this)"></textarea>
+</td>
+<td class="p-2">
+<input type="number" min="1" max="10000" value="1"
+class="qty w-16 text-center" oninput="upd()">
+</td>
+<td class="p-2">
+<input type="number" class="price w-full text-right" oninput="upd()">
+</td>
+<td class="p-2 text-right font-bold row-total">0.00 €</td>
+</tr>
+</tbody>
 </table>
 
+<button onclick="addRow()" class="admin-only m-3 text-blue-600">
++ Neue Position
+</button>
+
 <!-- SUMMEN -->
-<div class="text-right mt-4">
-  Netto: <span id="net">0.00</span> €<br>
-  MwSt 19 %: <span id="vat">0.00</span> €<br>
-  <b>Gesamt: <span id="total">0.00</span> €</b>
+<div class="p-6 grid grid-cols-2 border-t bg-slate-50">
+<div>
+<p><b>Zahlungsinformationen</b></p>
+<p>IBAN: LT83 2500 9251 8928 659</p>
+<p>BIC: Revolut21</p>
 </div>
 
-<!-- BUTTONS -->
-<div class="no-print flex gap-3 mt-6">
-  <button onclick="makePDF()" class="bg-blue-600 text-white px-4 py-2 rounded">📄 PDF</button>
-  <button onclick="sendMail()" class="bg-green-600 text-white px-4 py-2 rounded">✉️ E-Mail</button>
-  <button onclick="sendWhatsApp()" class="bg-green-500 text-white px-4 py-2 rounded">WhatsApp</button>
-  <button onclick="sendTelegram()" class="bg-blue-400 text-white px-4 py-2 rounded">Telegram</button>
+<div>
+<p>Netto: <span id="sub">0.00 €</span></p>
+<p>MwSt 19%: <span id="tax">0.00 €</span></p>
+<p class="text-xl font-bold">Gesamt: <span id="total">0.00 €</span></p>
+</div>
+</div>
 </div>
 
+<!-- AKTIONEN -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-3 no-print">
+<button onclick="sendPDF()" class="bg-blue-600 text-white px-6 py-3 rounded">PDF</button>
+<button onclick="sendMail()" class="bg-green-600 text-white px-6 py-3 rounded">E-Mail</button>
+<button onclick="share()" class="bg-emerald-600 text-white px-6 py-3 rounded">WhatsApp</button>
 </div>
 
 <script>
-function calc(){
- let q=qty.value,p=price.value;
- let net=q*p;
- let vat=net*0.19;
- rowTotal.innerText=net.toFixed(2);
- netSpan.innerText=net.toFixed(2);
- vatSpan.innerText=vat.toFixed(2);
- total.innerText=(net+vat).toFixed(2);
+// ===== Admin Sichtbarkeit =====
+function hideAdmin(){
+ document.querySelectorAll('.admin-only').forEach(e=>e.style.display='none');
 }
-qty.oninput=price.oninput=calc;
+function showAdmin(){
+ document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
+}
 
-invnr.innerText="H2-"+Date.now();
-date.valueAsDate=new Date();
-due.valueAsDate=new Date(Date.now()+14*86400000);
+// ===== Rechnungsnummer =====
+let n = localStorage.getItem("inv")||0;
+n++; localStorage.setItem("inv",n);
+inv.value = "RE-" + new Date().getFullYear()+"-"+String(n).padStart(3,"0");
 
-function makePDF(){
- html2pdf().from(document.getElementById("invoice")).save("Rechnung.pdf");
+// ===== Datum =====
+date.valueAsDate = new Date();
+let d=new Date(); d.setDate(d.getDate()+14); due.valueAsDate=d;
+
+// ===== Positionen =====
+const VAT=0.19;
+function upd(){
+ let s=0;
+ document.querySelectorAll("#rows tr").forEach(r=>{
+  let q=r.querySelector(".qty").value||0;
+  let p=r.querySelector(".price").value||0;
+  let t=q*p;
+  r.querySelector(".row-total").innerText=t.toFixed(2)+" €";
+  s+=t;
+ });
+ sub.innerText=s.toFixed(2)+" €";
+ tax.innerText=(s*VAT).toFixed(2)+" €";
+ total.innerText=(s*1.19).toFixed(2)+" €";
+}
+
+function addRow(){
+ const tr=document.createElement("tr");
+ tr.innerHTML=document.querySelector("#rows tr").innerHTML;
+ rows.appendChild(tr);
+}
+
+function autoGrow(el){
+ el.style.height="auto";
+ el.style.height=(el.scrollHeight)+"px";
+}
+
+// ===== Kunden =====
+let customers=JSON.parse(localStorage.getItem("cust")||"[]");
+function refresh(){
+ customerSelect.innerHTML='<option value="">— Kunde auswählen —</option>';
+ customers.forEach((c,i)=>{
+  let o=document.createElement("option");
+  o.value=i; o.textContent=c.split("\n")[0];
+  customerSelect.appendChild(o);
+ });
+}
+function saveCustomer(){
+ customers.push(customerData.value);
+ localStorage.setItem("cust",JSON.stringify(customers));
+ refresh();
+}
+function deleteCustomer(){
+ customers.splice(customerSelect.value,1);
+ localStorage.setItem("cust",JSON.stringify(customers));
+ refresh();
+ customerData.value="";
+}
+function loadCustomer(){
+ customerData.value=customers[customerSelect.value]||"";
+}
+refresh();
+
+// ===== Aktionen =====
+function sendPDF(){
+ hideAdmin(); window.print(); setTimeout(showAdmin,500);
 }
 function sendMail(){
- location.href="mailto:?subject=Rechnung&body=Bitte Rechnung ansehen.";
+ hideAdmin();
+ location.href="mailto:?subject=Rechnung "+inv.value;
+ setTimeout(showAdmin,500);
 }
-function sendWhatsApp(){
- window.open("https://wa.me/?text=Meine Rechnung");
-}
-function sendTelegram(){
- window.open("https://t.me/share/url?text=Meine Rechnung");
+function share(){
+ hideAdmin();
+ navigator.share?.({title:"Rechnung",text:"Rechnung "+inv.value});
+ setTimeout(showAdmin,500);
 }
 </script>
 
