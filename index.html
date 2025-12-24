@@ -20,9 +20,7 @@
     </style>
 </head>
 
-<body class="pb-32">
-
-<div class="card" id="invoice-content">
+<body class="pb-60"> <div class="card" id="invoice-content">
     <div class="header-bg flex justify-between items-center">
         <div>
             <h1 class="text-4xl font-black tracking-tight">H2 TechService</h1>
@@ -30,7 +28,7 @@
         </div>
         <div class="text-right">
             <p class="text-sm uppercase tracking-widest opacity-80">Rechnung</p>
-            <input id="inv" class="bg-transparent text-right font-bold text-2xl text-white outline-none w-48">
+            <input id="inv" class="bg-transparent text-right font-bold text-2xl text-white outline-none w-64">
         </div>
     </div>
 
@@ -43,27 +41,27 @@
                 <p>31552 Rodenberg</p>
                 <p>📞 +49 176 66658777</p>
                 <p>✉️ 74star@gmail.com</p>
-                <p class="pt-2">Steuernr.: 41320887966</p>
+                <p class="pt-2 italic">Steuernr.: 41320887966</p>
             </div>
         </div>
 
-        <div class="text-right">
-            <b class="text-blue-800 uppercase text-xs mb-2 block text-right">Empfänger</b>
+        <div class="text-right flex flex-col items-end">
+            <b class="text-blue-800 uppercase text-xs mb-2 block">Empfänger</b>
             
-            <select id="customerSelect" class="admin-only w-full mb-2 p-1 border rounded text-xs" onchange="loadCustomer()">
+            <select id="customerSelect" class="admin-only w-full mb-2 p-1 border rounded text-xs bg-slate-50" onchange="loadCustomer()">
                 <option value="">— Kunde auswählen —</option>
             </select>
 
-            <textarea id="customerData" class="w-full border-b focus:border-blue-500 outline-none p-1 text-right" rows="3" placeholder="Kundendaten eingeben..."></textarea>
+            <textarea id="customerData" class="w-full border-b focus:border-blue-500 outline-none p-1 text-right bg-transparent" rows="3" placeholder="Kundendaten eingeben..."></textarea>
 
             <div class="admin-only mt-2 text-xs space-x-2">
-                <button onclick="saveCustomer()" class="text-green-600 font-bold">💾 Speichern</button>
-                <button onclick="deleteCustomer()" class="text-red-600 font-bold">🗑 Löschen</button>
+                <button onclick="saveCustomer()" class="text-green-600 font-bold hover:underline">💾 Speichern</button>
+                <button onclick="deleteCustomer()" class="text-red-600 font-bold hover:underline">🗑 Löschen</button>
             </div>
 
             <div class="mt-6 space-y-1">
                 <p>Datum: <input type="date" id="date" class="outline-none"></p>
-                <p class="font-bold text-red-600">Fällig: <input type="date" id="due" class="outline-none text-red-600"></p>
+                <p class="font-bold text-red-600">Fällig: <input type="date" id="due" class="outline-none text-red-600 font-bold"></p>
             </div>
         </div>
     </div>
@@ -81,15 +79,15 @@
         <tbody id="rows">
             <tr class="border-b">
                 <td class="p-4">
-                    <textarea class="w-full p-1 desc focus:bg-yellow-50 outline-none" rows="1" oninput="autoGrow(this)" placeholder="Leistungsbeschreibung..."></textarea>
+                    <textarea class="w-full p-1 desc focus:bg-blue-50 outline-none rounded" rows="1" oninput="autoGrow(this)" placeholder="Leistungsbeschreibung..."></textarea>
                 </td>
                 <td class="p-4 text-center">
-                    <input type="number" min="1" value="1" class="qty w-12 text-center font-bold" oninput="upd()">
+                    <input type="number" min="1" value="1" class="qty w-12 text-center font-bold bg-transparent" oninput="upd()">
                 </td>
                 <td class="p-4 text-right">
-                    <input type="number" step="0.01" class="price w-24 text-right outline-none" placeholder="0,00" oninput="upd()"> €
+                    <input type="number" step="0.01" class="price w-24 text-right outline-none bg-transparent" placeholder="0,00" oninput="upd()"> €
                 </td>
-                <td class="p-4 text-right font-bold row-total">0,00 €</td>
+                <td class="p-4 text-right font-bold row-total text-slate-700">0,00 €</td>
                 <td class="p-4 admin-only">
                     <button onclick="this.closest('tr').remove(); upd()" class="text-red-400 hover:text-red-600">✕</button>
                 </td>
@@ -98,7 +96,7 @@
     </table>
 
     <div class="p-4 admin-only">
-        <button onclick="addRow()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-md text-sm transition font-bold">
+        <button onclick="addRow()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm transition font-bold border border-blue-200">
             + Neue Position hinzufügen
         </button>
     </div>
@@ -107,9 +105,9 @@
         <div>
             <b class="text-blue-800 uppercase text-xs mb-2 block">Zahlungsinformationen</b>
             <div class="text-slate-600 space-y-1">
-                <p>IBAN: <strong>LT83 2500 9251 8928 659</strong></p>
-                <p>BIC: <strong>Revolut21</strong></p>
-                <p class="text-xs mt-4 italic text-slate-400 font-bold">Vielen Dank für Ihren Auftrag!</p>
+                <p>IBAN: <strong class="text-slate-800">LT83 2500 9251 8928 659</strong></p>
+                <p>BIC: <strong class="text-slate-800">Revolut21</strong></p>
+                <p class="text-xs mt-6 italic text-slate-400 font-bold uppercase">Vielen Dank für das Vertrauen!</p>
             </div>
         </div>
 
@@ -122,7 +120,7 @@
                 <span>MwSt 19%:</span>
                 <span id="tax">0,00 €</span>
             </div>
-            <div class="flex justify-between text-2xl font-black text-blue-900 pt-2">
+            <div class="flex justify-between text-3xl font-black text-blue-900 pt-2">
                 <span>Gesamt:</span>
                 <span id="total">0,00 €</span>
             </div>
@@ -130,53 +128,36 @@
     </div>
 </div>
 
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-5 no-print bg-white/90 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl border border-white/50">
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-12 no-print bg-white/95 backdrop-blur-md px-14 py-8 rounded-[40px] shadow-[0_25px_60px_rgba(0,0,0,0.4)] border border-slate-200 items-center">
   
-    <button onclick="sendPDF()" title="Als PDF speichern" class="hover:scale-125 transition-transform duration-200">
-        <img src="https://www.adobe.com/content/dam/shared/images/product-logos/abc/acrobat.svg" alt="PDF" class="w-12 h-12">
+    <button onclick="sendPDF()" title="Als PDF speichern" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg" alt="PDF" class="w-24 h-24">
+        <span class="text-xs font-black text-slate-600 tracking-wider">PDF</span>
     </button>
 
-    <button onclick="sendMail()" title="Per Gmail senden" class="hover:scale-125 transition-transform duration-200">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Gmail" class="w-12 h-12">
+    <button onclick="sendMail()" title="Per Gmail senden" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Gmail" class="w-24 h-24">
+        <span class="text-xs font-black text-slate-600 tracking-wider">GMAIL</span>
     </button>
 
-    <button onclick="shareWhatsApp()" title="Per WhatsApp teilen" class="hover:scale-125 transition-transform duration-200">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="w-12 h-12">
+    <button onclick="shareWhatsApp()" title="Per WhatsApp teilen" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="w-24 h-24">
+        <span class="text-xs font-black text-slate-600 tracking-wider">WHATSAPP</span>
     </button>
 
-    <button onclick="sendTelegram()" title="Per Telegram senden" class="hover:scale-125 transition-transform duration-200">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram" class="w-12 h-12">
+    <button onclick="sendTelegram()" title="Per Telegram senden" class="hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-3">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram" class="w-24 h-24">
+        <span class="text-xs font-black text-slate-600 tracking-wider">TELEGRAM</span>
     </button>
 
 </div>
 
 <script>
-// Hilfsfunktion zur Formatierung von Währungen
+// Hilfsfunktionen
 function formatCurr(num) {
     return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(num);
 }
 
-// Admin Elemente verstecken/zeigen für sauberen Druck
-function hideAdmin() {
-    document.querySelectorAll('.admin-only').forEach(e => e.style.visibility = 'hidden');
-}
-function showAdmin() {
-    document.querySelectorAll('.admin-only').forEach(e => e.style.visibility = 'visible');
-}
-
-// Rechnungsnummer automatisch generieren
-let n = localStorage.getItem("inv_count") || 0;
-n++; 
-localStorage.setItem("inv_count", n);
-document.getElementById('inv').value = "RE-" + new Date().getFullYear() + "-" + String(n).padStart(3, "0");
-
-// Daten initialisieren
-document.getElementById('date').valueAsDate = new Date();
-let d = new Date(); 
-d.setDate(d.getDate() + 14); 
-document.getElementById('due').valueAsDate = d;
-
-// Berechnungslogik
 function upd() {
     let subtotal = 0;
     document.querySelectorAll("#rows tr").forEach(r => {
@@ -209,8 +190,18 @@ function autoGrow(el) {
     el.style.height = (el.scrollHeight) + "px";
 }
 
+// Rechnungsnummer & Daten initialisieren
+let n = localStorage.getItem("inv_count_h2") || 0;
+n++; 
+localStorage.setItem("inv_count_h2", n);
+document.getElementById('inv').value = "RE-" + new Date().getFullYear() + "-" + String(n).padStart(3, "0");
+
+document.getElementById('date').valueAsDate = new Date();
+let d = new Date(); d.setDate(d.getDate() + 14); 
+document.getElementById('due').valueAsDate = d;
+
 // Kundenverwaltung
-let customers = JSON.parse(localStorage.getItem("cust_db") || "[]");
+let customers = JSON.parse(localStorage.getItem("cust_db_h2") || "[]");
 function refreshCust() {
     const sel = document.getElementById("customerSelect");
     sel.innerHTML = '<option value="">— Kunde auswählen —</option>';
@@ -226,16 +217,16 @@ function saveCustomer() {
     const data = document.getElementById("customerData").value;
     if(!data) return;
     customers.push(data);
-    localStorage.setItem("cust_db", JSON.stringify(customers));
+    localStorage.setItem("cust_db_h2", JSON.stringify(customers));
     refreshCust();
-    alert("Kunde gespeichert!");
+    alert("Kunde in Datenbank gespeichert!");
 }
 
 function deleteCustomer() {
     const idx = document.getElementById("customerSelect").value;
     if(idx === "") return;
     customers.splice(idx, 1);
-    localStorage.setItem("cust_db", JSON.stringify(customers));
+    localStorage.setItem("cust_db_h2", JSON.stringify(customers));
     document.getElementById("customerData").value = "";
     refreshCust();
 }
@@ -252,7 +243,7 @@ function sendPDF() {
 
 function sendMail() {
     const subject = "Rechnung " + document.getElementById('inv').value;
-    const body = "Guten Tag, anbei erhalten Sie die Rechnung von H2 TechService.";
+    const body = "Guten Tag, im Anhang finden Sie die Rechnung für die erbrachten Leistungen. Beste Grüße, Osman Tuncer (H2 TechService)";
     location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
