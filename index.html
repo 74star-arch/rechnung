@@ -33,9 +33,9 @@
         .share-container.active .sub-btn { opacity: 1; transform: scale(1); }
         .share-container.active .main-btn { transform: rotate(45deg); background: #1e1b4b; }
         .icon { width: 14px; height: 14px; opacity: 0.6; margin-right: 6px; flex-shrink: 0; }
-        /* Satır aralıklarını küçülttük */
         #rows tr td { padding: 6px 8px !important; vertical-align: top; }
         #rows tr { border-bottom: 1px solid #e2e8f0; }
+        #sig-lock-btn { position: absolute; top: 8px; right: 8px; z-index: 10; background: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; }
     </style>
 </head>
 <body class="theme-blue">
@@ -55,7 +55,8 @@
             </select>
         </div>
         <div class="flex gap-2 items-center text-xs">
-            <button onclick="resetInvNum()" class="bg-orange-500 text-white px-3 py-2 rounded font-bold uppercase">Nr. Reset</button>
+            <button onclick="resetInvNum()" class="bg-orange-500 text-white px-3 py-2 rounded font-bold uppercase">Reset</button>
+            <button onclick="decreaseInvNum()" class="bg-red-600 text-white px-3 py-2 rounded font-bold uppercase">← Zurück</button>
         </div>
     </div>
 </div>
@@ -75,7 +76,7 @@
         </div>
         <div class="text-right">
             <p class="text-xs opacity-50 uppercase font-black">Rechnung Nr.</p>
-            <input id="inv" class="bg-transparent text-right font-black text-2xl outline-none w-40 accent-text">
+            <p id="inv" class="text-right font-black text-2xl accent-text">H20250001</p>
         </div>
     </div>
 
@@ -83,7 +84,7 @@
         <div>
             <b class="text-blue-700 text-xs uppercase font-black block mb-2">Dienstleister</b>
             <p class="font-black text-lg">Osman Tuncer</p>
-            <p class="text-slate-600 text-sm">Suntalstrasse 43, 31552 Rodenberg</p>
+            <p class="text-slate-600 text-sm">Suntalstrasse 48, 31552 Rodenberg</p>
             <p class="text-xs text-slate-400 font-bold mt-2 uppercase">St.-Nr: 41320887966</p>
             
             <div class="mt-4 space-y-2 text-xs text-slate-600">
@@ -99,6 +100,12 @@
         </div>
 
         <div class="text-right space-y-2">
+            <div class="mb-3">
+                <select id="customerSelect" onchange="loadCustomer()" class="bg-slate-100 text-xs p-2 rounded w-full text-left">
+                    <option value="">— Kunde laden —</option>
+                </select>
+            </div>
+
             <b class="text-blue-700 text-xs uppercase font-black block mb-2">Kunde</b>
             <input type="text" id="c_n" placeholder="Name / Firma" class="w-full text-right font-bold outline-none text-sm mb-1">
             <input type="text" id="c_s" placeholder="Straße" class="w-full text-right text-xs outline-none">
@@ -118,10 +125,11 @@
                     <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                 </div>
             </div>
+
+            <button onclick="saveCustomer()" class="mt-4 text-xs bg-blue-600 text-white px-4 py-2 rounded font-bold">💾 Kunde speichern</button>
         </div>
     </div>
 
-    <!-- TABLO - SATIR ARALIKLARI KÜÇÜLTÜLDÜ -->
     <table class="w-full text-xs">
         <thead class="bg-slate-50 text-xs font-black uppercase text-slate-500">
             <tr>
@@ -155,14 +163,17 @@
         </div>
     </div>
 
-    <div class="p-8 border-t flex justify-between items-end text-xs">
+    <div class="p-8 border-t flex justify-between items-end text-xs relative">
         <div>
             <p class="font-black text-slate-500 uppercase mb-3">Techniker</p>
             <p class="italic text-xl border-b-2 border-slate-900 w-48 pb-1 font-serif">Osman Tuncer</p>
         </div>
-        <div class="text-right">
+        <div class="text-right relative">
             <p class="font-black text-slate-500 uppercase mb-3">Abnahme Kunde</p>
-            <canvas id="sig-canvas" width="240" height="70" class="no-print border-b-2 border-slate-900"></canvas>
+            <div class="relative inline-block">
+                <canvas id="sig-canvas" width="240" height="70" class="border-b-2 border-slate-900 no-print"></canvas>
+                <button id="sig-lock-btn" class="no-print">🔒 Gesperrt</button>
+            </div>
             <img id="sig-image" class="hidden h-16 border-b-2 border-slate-900">
         </div>
     </div>
@@ -184,7 +195,7 @@
         <span class="text-blue-600 font-black text-2xl">+</span>
     </div>
     <div class="sub-btn" title="Logo ändern">
-        <label class="cursor-pointer w-full h-full flex items-center justify-center">
+        <label class="cursor-pointer w-full h-full flex items-center justify-content: center;">
             📷
             <input type="file" id="logoUpload" accept="image/*" class="hidden" onchange="loadLogo(event)">
         </label>
@@ -194,12 +205,15 @@
 <script>
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
     const qrcode = new QRCode(document.getElementById("qrcode"), { width: 70, height: 70 });
-    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'));
+    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'black' });
     let currentTotal = 0;
+    let customers = JSON.parse(localStorage.getItem('h2_customers') || '[]');
+    let sigLocked = true;
 
     function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
     function toggleT() { document.getElementById('tools').classList.toggle('active'); }
 
+    // Logo
     function loadLogo(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -212,13 +226,63 @@
         reader.readAsDataURL(file);
     }
 
-    window.onload = function() {
-        const savedLogo = localStorage.getItem('h2_logo');
-        if (savedLogo) document.getElementById('firmLogo').src = savedLogo;
-        document.getElementById("inv").value = localStorage.getItem("h2_num") || 1001;
-        calc();
-    };
+    // Otomatik Rechnungsnummer (H2 + Jahr + 4-stellig)
+    function generateInvoiceNumber() {
+        const year = new Date().getFullYear();
+        let seq = parseInt(localStorage.getItem('h2_seq_' + year) || 1);
+        const number = `H2\( {year} \){String(seq).padStart(4, '0')}`;
+        localStorage.setItem('h2_seq_' + year, seq + 1);
+        return number;
+    }
 
+    // Müşteri işlemleri
+    function saveCustomer() {
+        const c = {
+            name: document.getElementById('c_n').value.trim(),
+            street: document.getElementById('c_s').value.trim(),
+            city: document.getElementById('c_o').value.trim(),
+            phone: document.getElementById('c_phone').value.trim(),
+            email: document.getElementById('c_m').value.trim(),
+            taxId: document.getElementById('c_id').value.trim()
+        };
+        if (!c.name) return alert("Name/Firma erforderlich!");
+        const idx = customers.findIndex(x => x.name === c.name);
+        if (idx > -1) customers[idx] = c; else customers.push(c);
+        localStorage.setItem('h2_customers', JSON.stringify(customers));
+        updateCustomerList();
+        alert("Kunde gespeichert!");
+    }
+
+    function updateCustomerList() {
+        const sel = document.getElementById('customerSelect');
+        sel.innerHTML = '<option value="">— Kunde laden —</option>';
+        customers.forEach((c, i) => {
+            const opt = document.createElement('option');
+            opt.value = i; opt.textContent = c.name;
+            sel.appendChild(opt);
+        });
+    }
+
+    function loadCustomer() {
+        const idx = document.getElementById('customerSelect').value;
+        if (idx === "") return;
+        const c = customers[idx];
+        document.getElementById('c_n').value = c.name;
+        document.getElementById('c_s').value = c.street;
+        document.getElementById('c_o').value = c.city;
+        document.getElementById('c_phone').value = c.phone;
+        document.getElementById('c_m').value = c.email;
+        document.getElementById('c_id').value = c.taxId;
+    }
+
+    // İmza kilidi
+    document.getElementById('sig-lock-btn').addEventListener('click', () => {
+        sigLocked = !sigLocked;
+        signaturePad.penColor = sigLocked ? 'rgba(0,0,0,0)' : 'black';
+        document.getElementById('sig-lock-btn').textContent = sigLocked ? '🔒 Gesperrt' : '✏️ Freigegeben';
+    });
+
+    // Hesaplama
     function calc() {
         let s = 0;
         document.querySelectorAll("#rows tr").forEach(r => {
@@ -229,10 +293,9 @@
             s += t;
         });
 
-        const type = document.getElementById("docType").value;
         const rate = parseFloat(document.getElementById("taxRate").value);
-        let fee = type === 'M1' ? 5 : (type === 'M2' ? 10 : 0);
-        
+        const fee = document.getElementById("docType").value !== "RE" ? (document.getElementById("docType").value === "M1" ? 5 : 10) : 0;
+
         let net = s + fee;
         let tax = net * rate;
         let total = net + tax;
@@ -245,58 +308,62 @@
         document.getElementById("total").innerText = fmt(total);
         document.getElementById("tax-rate-label").innerText = (rate * 100);
 
-        if(rate === 0) {
-            document.getElementById("small-biz-note").classList.remove("hidden");
-            document.getElementById("tax-line").classList.add("opacity-30");
-        } else {
-            document.getElementById("small-biz-note").classList.add("hidden");
-            document.getElementById("tax-line").classList.remove("opacity-30");
-        }
+        rate === 0 ? document.getElementById("small-biz-note").classList.remove("hidden") : document.getElementById("small-biz-note").classList.add("hidden");
 
-        qrcode.makeCode(`BCD\n001\n1\nSCT\nREVOLT21\nOsman Tuncer\nLT783250092518928659\nEUR\( {total.toFixed(2)}\n\n\nRE- \){document.getElementById('inv').value}`);
+        qrcode.makeCode(`BCD\n001\n1\nSCT\nREVOLT21\nOsman Tuncer\nLT783250092518928659\nEUR\( {total.toFixed(2)}\n\n\nRE- \){document.getElementById('inv').textContent}`);
     }
 
-    // YENİ SATIR EKLERKEN MİKTAR OTOMATİK 1 OLACAK
     function addRow() {
-        const template = document.querySelector("#rows tr");
-        const r = template.cloneNode(true);
-        r.querySelectorAll("textarea, input").forEach(i => {
-            if (i.classList.contains("qty")) {
-                i.value = 1;  // Otomatik 1 yaz
-            } else if (i.type === "number") {
-                i.value = "";
-            } else {
-                i.value = "";
-            }
+        const tr = document.querySelector("#rows tr").cloneNode(true);
+        tr.querySelectorAll("textarea, input").forEach(i => {
+            i.value = i.classList.contains("qty") ? 1 : "";
         });
-        r.querySelector(".row-total").innerText = "0,00 €";
-        document.getElementById("rows").appendChild(r);
-        calc();  // Hesapla ki toplam güncellensin
+        tr.querySelector(".row-total").innerText = "0,00 €";
+        document.getElementById("rows").appendChild(tr);
+        calc();
     }
 
     function doPrint() {
-        if(!signaturePad.isEmpty()){
+        if (!signaturePad.isEmpty()) {
             document.getElementById('sig-image').src = signaturePad.toDataURL();
             document.getElementById('sig-image').classList.remove('hidden');
-            document.getElementById('sig-canvas').classList.add('hidden');
+            document.getElementById('sig-canvas').parentElement.classList.add('hidden');
         }
         window.print();
     }
 
     function processPaidAndPrint() {
         document.getElementById('statusStamp').classList.add('stamp-paid');
-        let currentNum = parseInt(document.getElementById("inv").value);
-        localStorage.setItem("h2_num", currentNum + 1);
-        setTimeout(() => { doPrint(); }, 300);
+        document.getElementById('inv').textContent = generateInvoiceNumber();
+        setTimeout(doPrint, 300);
     }
 
     function resetInvNum() {
-        let newNum = prompt("Nächste Rechnungsnummer:", localStorage.getItem("h2_num") || "1001");
-        if(newNum && !isNaN(newNum)) {
-            localStorage.setItem("h2_num", newNum);
-            document.getElementById("inv").value = newNum;
+        if (confirm("Alle Rechnungsnummern dieses Jahres zurücksetzen?")) {
+            const year = new Date().getFullYear();
+            localStorage.removeItem('h2_seq_' + year);
+            document.getElementById('inv').textContent = generateInvoiceNumber();
         }
     }
+
+    function decreaseInvNum() {
+        if (confirm("Letzte Nummer um 1 zurücksetzen? (Nur bei Fehler)")) {
+            const year = new Date().getFullYear();
+            let seq = parseInt(localStorage.getItem('h2_seq_' + year) || 2);
+            if (seq > 1) {
+                localStorage.setItem('h2_seq_' + year, seq - 1);
+                document.getElementById('inv').textContent = `H2\( {year} \){String(seq - 1).padStart(4, '0')}`;
+            }
+        }
+    }
+
+    window.onload = function() {
+        const logo = localStorage.getItem('h2_logo');
+        if (logo) document.getElementById('firmLogo').src = logo;
+        document.getElementById('inv').textContent = generateInvoiceNumber();
+        updateCustomerList();
+        calc();
+    };
 </script>
 </body>
 </html>
