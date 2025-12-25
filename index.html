@@ -3,267 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Professional ERP v2.0</title>
+    <title>H2 TechService - Professional ERP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         
         @media print {
-            @page { size: A4; margin: 0; }
-            body { background: white !important; padding: 0 !important; margin: 0 !important; }
-            .no-print, .share-container, .stats-panel, .archive-panel, #sig-unlock, button, .sub-btn { display:none !important; }
-            .card { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; height: 100vh; display: flex; flex-direction: column; border: none !important; border-radius: 0 !important; }
-            .content-wrap { flex-grow: 1; }
+            .no-print { display:none !important; }
+            body { background: white !important; padding: 0 !important; }
+            .card { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
         }
 
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; padding-bottom: 120px; -webkit-tap-highlight-color: transparent; }
-        .card { max-width: 800px; margin: 10px auto; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
-        .header-bg { background: #1e3a8a; }
-        .accent-text { color: #2dd4bf; }
-        .logo-box { width: 75px; height: 75px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; color: #1e293b; }
+        .card { max-width: 850px; margin: 20px auto; background: white; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); overflow: hidden; }
         
-        /* Floating Menu */
-        .share-container { position: fixed; bottom: 25px; right: 25px; display: flex; flex-direction: column-reverse; gap: 10px; z-index: 1000; }
-        .main-btn { width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #1e40af; color: white; border: 3px solid white; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); font-size: 28px; transition: 0.3s; }
-        .sub-btn { width: 52px; height: 52px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0); transition: 0.2s; cursor: pointer; border: 1px solid #ddd; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
-        .share-container.active .sub-btn { opacity: 1; transform: scale(1); }
-        .share-container.active .main-btn { transform: rotate(45deg); background: #1e1b4b; }
+        /* Logo Frame - Perfekte Anpassung */
+        .logo-box { width: 110px; height: 110px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid rgba(255,255,255,0.4); cursor: pointer; padding: 10px; }
+        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Signature Touch Fix */
-        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; pointer-events: none; opacity: 0.5; transition: 0.3s; }
-        #sig-canvas.active { pointer-events: auto; opacity: 1; border: 2px solid #1e40af; background: white; touch-action: none; }
+        .header-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); }
+        .accent { color: #38bdf8; }
         
-        textarea { resize: none; overflow: hidden; min-height: 20px; width: 100%; background: transparent; outline: none; }
+        input, textarea { background: transparent; outline: none; width: 100%; }
+        
+        /* Signature Area */
+        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; pointer-events: none; opacity: 0.5; transition: 0.3s; }
+        #sig-canvas.active { pointer-events: auto; opacity: 1; border: 2px solid #1e40af; touch-action: none; background: white; }
+
+        /* Navigation */
+        .share-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column-reverse; gap: 12px; z-index: 9999; }
+        .main-btn { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #1e40af; color: white; box-shadow: 0 10px 25px rgba(30,64,175,0.4); cursor: pointer; transition: 0.4s; font-size: 28px; border: 4px solid white; }
+        .sub-btn { width: 52px; height: 52px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0); transition: 0.3s; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; }
+        .share-container.active .sub-btn { opacity: 1; transform: scale(1); }
+        .share-container.active .main-btn { transform: rotate(135deg); background: #ef4444; }
     </style>
 </head>
 <body>
 
-<div class="max-w-[800px] mx-auto mt-4 px-4 no-print space-y-3">
-    <div class="stats-panel bg-white p-4 rounded-xl shadow-sm border flex justify-around text-center">
-        <div><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Umsatz Gesamt</p><p id="stat-total" class="text-lg font-black text-green-600">0,00 €</p></div>
+<div class="max-w-[850px] mx-auto mt-6 px-4 no-print grid grid-cols-3 gap-4 mb-6">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-blue-500">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Heute verdient</p>
+        <p id="stat-today" class="text-2xl font-black text-slate-800">0,00 €</p>
     </div>
-    <div class="archive-panel bg-slate-800 rounded-xl overflow-hidden shadow-lg text-left">
-        <div onclick="toggleArchive()" class="p-3 text-white text-[9px] font-bold flex justify-between items-center cursor-pointer uppercase tracking-widest">
-            <span>📂 ARCHIV & BACKUP</span><span>Anzeigen ▼</span>
-        </div>
-        <div id="archive-list" class="hidden p-3 bg-white max-h-44 overflow-y-auto">
-            <table class="w-full text-[10px]"><tbody id="archive-body" class="divide-y divide-slate-100"></tbody></table>
-        </div>
+    <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-indigo-500">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Diesen Monat</p>
+        <p id="stat-month" class="text-2xl font-black text-slate-800">0,00 €</p>
+    </div>
+    <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Insgesamt</p>
+        <p id="stat-total" class="text-2xl font-black text-emerald-600">0,00 €</p>
     </div>
 </div>
 
 <div class="card" id="invoice">
-    <div class="content-wrap">
-        <div class="header-bg p-8 text-white flex justify-between items-center">
-            <div class="flex items-center gap-5">
-                <div class="logo-box" onclick="document.getElementById('file-input').click()">
-                    <img id="firmLogo" src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png">
-                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="uploadLogo(this)">
-                </div>
-                <div>
-                    <h1 class="text-3xl font-black italic tracking-tighter uppercase leading-tight">H2 <span class="accent-text">Tech</span>Service</h1>
-                    <p class="opacity-80 text-[10px] font-bold uppercase tracking-widest mt-1">Montage & Technik</p>
-                </div>
+    <div class="header-gradient p-10 text-white flex justify-between items-center">
+        <div class="flex items-center gap-8">
+            <div class="logo-box" onclick="document.getElementById('logo-upload').click()">
+                <img id="display-logo" src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png">
+                <input type="file" id="logo-upload" class="hidden" accept="image/*" onchange="handleLogo(this)">
             </div>
-            <div class="text-right">
-                <p class="text-[8px] opacity-60 uppercase font-black text-right">Rechnungs-Nr.</p>
-                <input id="inv" class="bg-transparent text-right font-black text-2xl outline-none w-52 accent-text" value="">
-            </div>
-        </div>
-
-        <div class="p-8 grid grid-cols-2 gap-10 border-b text-left">
             <div>
-                <b class="text-blue-700 text-[9px] uppercase font-black block mb-2 tracking-widest">Absender</b>
-                <p class="font-black text-slate-900 text-base italic">H2 TechService</p>
-                <p class="font-medium mb-3 text-slate-500">Suntal Str. 48, 31552 Rodenberg</p>
-                <p class="font-bold">+49 176 66658777</p>
-                <p class="mb-3">74star@gmail.com</p>
-                <p class="text-[9px] text-slate-400 font-bold border px-2 py-0.5 rounded inline-block">ST-ID: 41320887966</p>
+                <h1 class="text-4xl font-black tracking-tighter italic uppercase leading-none">H2 <span class="accent">Tech</span>Service</h1>
+                <p class="text-[10px] font-bold tracking-[0.4em] opacity-60 uppercase mt-2">Montage • Technik • Service</p>
             </div>
-
-            <div class="text-right flex flex-col items-end">
-                <b class="text-blue-700 text-[9px] uppercase font-black mb-2 tracking-widest">Empfänger</b>
-                <select id="db_select" class="no-print mb-2 text-[10px] bg-slate-50 border rounded-lg p-1 w-full" onchange="loadCustomer()"><option value="">— Kunde wählen —</option></select>
-                <input type="text" id="c_n" placeholder="Name / Firma" class="w-full text-right font-black outline-none text-base mb-1">
-                <input type="text" id="c_s" placeholder="Straße" class="w-full text-right outline-none text-slate-500 mb-1">
-                <input type="text" id="c_o" placeholder="PLZ & Ort" class="w-full text-right outline-none text-slate-500 mb-2">
-                <input type="text" id="c_t" placeholder="Telefon" class="text-right outline-none w-full italic text-slate-500 mb-1">
-                <input type="text" id="c_m" placeholder="E-Mail" class="text-right outline-none w-full italic text-slate-500 mb-1">
-                <input type="text" id="c_st" placeholder="Kunden Steuer-ID" class="text-right outline-none w-full text-[9px] font-bold text-slate-400">
-                <button onclick="saveCustomer()" class="no-print text-[8px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full mt-2 font-black uppercase shadow-sm">Kunde Speichern</button>
-            </div>
-        </div>
-
-        <table class="w-full text-[13px]">
-            <thead class="bg-slate-50 text-[9px] font-black uppercase text-slate-400 border-b tracking-widest">
-                <tr><th class="p-4 text-left">Leistungsbeschreibung</th><th class="p-4 w-16 text-center">Stk.</th><th class="p-4 w-28 text-right">Summe (€)</th></tr>
-            </thead>
-            <tbody id="rows">
-                <tr class="border-b border-slate-50">
-                    <td class="p-4"><textarea placeholder="Dienstleistung..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';calc()"></textarea></td>
-                    <td class="p-4 text-center"><input type="number" value="1" class="qty w-full text-center font-bold outline-none" oninput="calc()"></td>
-                    <td class="p-4 text-right font-black"><input type="number" step="0.01" placeholder="0,00" class="price w-full text-right outline-none" oninput="calc()"></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="p-8 flex justify-between items-center bg-slate-50/20">
-            <div id="qrcode"></div>
-            <div class="text-right">
-                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Gesamt inkl. 19% MwSt</p>
-                <p class="text-5xl font-black text-slate-900" id="total">0,00 €</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="p-8 border-t flex justify-between items-end gap-10">
-        <div class="flex-1 text-center">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-6">Techniker</p>
-            <p class="italic text-xl font-serif text-slate-800 border-b-2 border-slate-200 pb-2">Osman Tuncer</p>
-        </div>
-        <div class="flex-1 text-right">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Abnahme Kunde</p>
-            <button id="sig-unlock" onclick="toggleSignatureLock()" class="no-print bg-red-600 text-white text-[10px] px-5 py-2 rounded-full mb-3 font-black shadow-lg flex items-center gap-2 ml-auto">
-                <span id="lock-icon">🔒</span> <span id="lock-text">FELD GESPERRT (Klick zum Zeichnen)</span>
-            </button>
-            <canvas id="sig-canvas" width="300" height="100" class="no-print w-full"></canvas>
-            <img id="sig-image" class="hidden h-20 border-b-2 border-slate-300 ml-auto object-contain">
-        </div>
-    </div>
-
-    <div class="header-bg p-6 text-white text-[9px] flex justify-between items-center font-black uppercase">
-        <div class="space-y-1 text-left">
-            <p>IBAN: <span class="accent-text">LT83 2500 9251 8928 659</span></p>
-            <p>BIC: <span class="accent-text">REVOLUT21</span></p>
         </div>
         <div class="text-right">
-            <p>H2 TechService - Rodenberg</p>
+            <p class="text-[10px] font-black opacity-50 uppercase mb-1">Rechnungs-Nr.</p>
+            <input id="inv-num" class="bg-transparent text-right text-3xl font-black outline-none accent w-72" readonly>
         </div>
+    </div>
+
+    <div class="p-10 grid grid-cols-2 gap-20 border-b border-slate-100 text-left">
+        <div class="text-[13px] text-slate-600 space-y-3">
+            <b class="text-blue-600 text-[10px] uppercase font-black tracking-widest block mb-4">Absender</b>
+            <p class="text-xl font-black text-slate-900 italic">H2 TechService</p>
+            <p>Suntal Str. 48, 31552 Rodenberg</p>
+            <div class="pt-4 space-y-1 font-bold text-slate-800">
+                <div class="flex items-center gap-3"><span>📞</span> +49 176 66658777</div>
+                <div class="flex items-center gap-3 font-normal italic text-slate-600"><span>✉️</span> 74star@gmail.com</div>
+                <div class="flex items-center gap-3 pt-2">
+                    <span>🆔</span> <span class="text-[10px] font-black bg-slate-100 px-2 py-1 rounded text-slate-500">ST-ID: 41320887966</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-end text-[13px]">
+            <b class="text-blue-600 text-[10px] uppercase font-black tracking-widest mb-4">Empfänger</b>
+            <select id="db-load" class="no-print w-full mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold" onchange="loadCustomerData()">
+                <option value="">— Kunde laden —</option>
+            </select>
+            <input type="text" id="c-name" placeholder="Name / Firma" class="text-right font-black text-slate-900 text-base mb-1">
+            <input type="text" id="c-street" placeholder="Straße & Hausnummer" class="text-right mb-1">
+            <input type="text" id="c-city" placeholder="PLZ & Ort" class="text-right mb-4">
+            
+            <div class="w-full flex flex-col gap-1 items-end pt-4 border-t border-slate-50">
+                <div class="flex items-center gap-2 text-slate-500"><input type="text" id="c-phone" placeholder="Telefon" class="text-right"><span>📞</span></div>
+                <div class="flex items-center gap-2 text-slate-500"><input type="text" id="c-mail" placeholder="E-Mail" class="text-right"><span>✉️</span></div>
+                <div class="flex items-center gap-2 text-slate-400"><input type="text" id="c-tax" placeholder="Steuer-ID Kunde" class="text-right font-bold text-[11px]"><span>🆔</span></div>
+            </div>
+            <button onclick="saveToDB()" class="no-print mt-5 text-[10px] bg-slate-900 text-white px-5 py-2.5 rounded-full font-black uppercase shadow-lg active:scale-95 transition">In Datenbank speichern</button>
+        </div>
+    </div>
+
+    <table class="w-full">
+        <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400 border-b border-slate-100">
+            <tr><th class="p-6 text-left">Beschreibung</th><th class="p-6 w-24 text-center">Stk.</th><th class="p-6 w-36 text-right">Summe (€)</th></tr>
+        </thead>
+        <tbody id="invoice-rows">
+            <tr class="border-b border-slate-50">
+                <td class="p-6 text-left"><textarea placeholder="Dienstleistung..." oninput="autoHeight(this);calculate()"></textarea></td>
+                <td class="p-6"><input type="number" value="1" class="text-center font-black qty" oninput="calculate()"></td>
+                <td class="p-6 text-right"><input type="number" step="0.01" placeholder="0,00" class="text-right font-black price" oninput="calculate()"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="p-10 flex justify-between items-center bg-slate-50/40">
+        <div id="qrcode-box" class="bg-white p-2 rounded-2xl border border-slate-100"></div>
+        <div class="text-right">
+            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Gesamtbetrag inkl. 19% MwSt</p>
+            <p id="total-display" class="text-6xl font-black text-slate-900 tracking-tighter">0,00 €</p>
+        </div>
+    </div>
+
+    <div class="p-10 border-t border-slate-100 flex justify-between items-end gap-16">
+        <div class="flex-1 text-center">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-8">Techniker</p>
+            <p class="text-2xl font-serif italic text-slate-800 border-b-2 border-slate-100 pb-2">Osman Tuncer</p>
+        </div>
+        <div class="flex-1 text-right">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-4">Kundenabnahme</p>
+            <button id="unlock-btn" onclick="toggleSignature()" class="no-print bg-red-600 text-white text-[11px] px-6 py-2.5 rounded-full mb-4 font-black shadow-xl active:scale-95 transition">
+                <span id="lock-icon">🔒</span> <span id="lock-text">FELD GESPERRT (Klick)</span>
+            </button>
+            <canvas id="sig-canvas" width="380" height="140" class="no-print w-full"></canvas>
+            <img id="sig-final" class="hidden h-28 border-b-2 border-slate-200 ml-auto object-contain">
+        </div>
+    </div>
+
+    <div class="header-gradient p-10 text-white text-[11px] font-bold flex justify-between uppercase tracking-widest">
+        <div class="text-left space-y-1">
+            <p>IBAN: <span class="accent">LT83 2500 9251 8928 659</span></p>
+            <p>BIC: <span class="accent">REVOLUT21</span></p>
+        </div>
+        <div class="text-right">H2 TechService - Professional ERP</div>
     </div>
 </div>
 
-<div class="share-container no-print" id="tools">
-    <div class="main-btn" onclick="toggleT()">+</div>
-    <div class="sub-btn" onclick="processPaidAndPrint()" title="Drucken"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" width="22"></div>
-    <div class="sub-btn" onclick="window.print()" title="PDF"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" width="22"></div>
-    <div class="sub-btn" onclick="addRow()" title="Zeile +"><img src="https://cdn-icons-png.flaticon.com/512/992/992651.png" width="22"></div>
-    <div class="sub-btn" onclick="exportDB()" title="Backup Sichern"><img src="https://cdn-icons-png.flaticon.com/512/2875/2875394.png" width="22"></div>
-    <div class="sub-btn" onclick="importDB()" title="Backup Laden"><img src="https://cdn-icons-png.flaticon.com/512/2926/2926214.png" width="22"></div>
+<div class="share-container no-print" id="tools-menu">
+    <div class="main-btn" onclick="this.parentElement.classList.toggle('active')">✚</div>
+    <div class="sub-btn" onclick="finalizeAndPrint()" title="Fertig & Speichern">✅</div>
+    <div class="sub-btn" onclick="window.print()" title="Drucken / PDF">📄</div>
+    <div class="sub-btn" onclick="addNewRow()" title="Neue Zeile">➕</div>
+    <div class="sub-btn" onclick="exportBackup()" title="Backup">💾</div>
 </div>
 
 <script>
-    const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
-    const qrcode = new QRCode(document.getElementById("qrcode"), { width: 60, height: 60 });
+    const currency = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
+    const qrcode = new QRCode(document.getElementById("qrcode-box"), { width: 80, height: 80 });
     const canvas = document.getElementById('sig-canvas');
     const signaturePad = new SignaturePad(canvas);
-    let currentTotal = 0;
-    let isLocked = true;
+    let totalValue = 0, sigLocked = true;
 
-    function uploadLogo(input) {
+    // Logo Handling
+    function handleLogo(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = e => { document.getElementById('firmLogo').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); };
+            reader.onload = e => { 
+                document.getElementById('display-logo').src = e.target.result; 
+                localStorage.setItem('h2_logo_final', e.target.result); 
+            };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function toggleSignatureLock() {
-        isLocked = !isLocked;
-        const btn = document.getElementById('sig-unlock');
-        if(isLocked) {
-            canvas.classList.remove('active');
-            btn.classList.replace('bg-green-600', 'bg-red-600');
-            document.getElementById('lock-icon').innerText = "🔒";
-            document.getElementById('lock-text').innerText = "FELD GESPERRT (Klick zum Zeichnen)";
-        } else {
-            canvas.classList.add('active');
-            btn.classList.replace('bg-red-600', 'bg-green-600');
-            document.getElementById('lock-icon').innerText = "🔓";
-            document.getElementById('lock-text').innerText = "BEREIT ZUM UNTERSCHREIBEN";
+    // Unterschrift Freischalten
+    function toggleSignature() {
+        sigLocked = !sigLocked;
+        const btn = document.getElementById('unlock-btn');
+        if(!sigLocked) { 
+            canvas.classList.add('active'); 
+            btn.classList.replace('bg-red-600', 'bg-emerald-600'); 
+            document.getElementById('lock-icon').innerText = "🔓"; 
+            document.getElementById('lock-text').innerText = "JETZT UNTERSCHREIBEN"; 
+        } else { 
+            canvas.classList.remove('active'); 
+            btn.classList.replace('bg-emerald-600', 'bg-red-600'); 
+            document.getElementById('lock-icon').innerText = "🔒"; 
+            document.getElementById('lock-text').innerText = "FELD GESPERRT (Klick)"; 
         }
     }
 
-    function calc() {
-        let sub = 0;
-        document.querySelectorAll("#rows tr").forEach(r => {
-            sub += (r.querySelector(".qty").value||0) * (r.querySelector(".price").value||0);
+    // Berechnung
+    function calculate() {
+        let sum = 0;
+        document.querySelectorAll("#invoice-rows tr").forEach(row => {
+            sum += (row.querySelector(".qty").value || 0) * (row.querySelector(".price").value || 0);
         });
-        currentTotal = sub * 1.19;
-        document.getElementById("total").innerText = fmt(currentTotal);
-        qrcode.makeCode(`H2-${document.getElementById('inv').value}`);
+        totalValue = sum * 1.19;
+        document.getElementById("total-display").innerText = currency(totalValue);
+        qrcode.makeCode(document.getElementById('inv-num').value);
     }
 
-    function addRow() {
-        const r = document.querySelector("#rows tr").cloneNode(true);
-        r.querySelectorAll("textarea, input").forEach(i => i.value = (i.type==="number"?"1":""));
-        document.getElementById("rows").appendChild(r);
+    // Neue Zeile (Stückzahl automatisch 1)
+    function addNewRow() {
+        const row = document.querySelector("#invoice-rows tr").cloneNode(true);
+        row.querySelectorAll("input, textarea").forEach(i => i.value = (i.classList.contains('qty') ? "1" : ""));
+        document.getElementById("invoice-rows").appendChild(row);
+        calculate();
     }
 
-    function toggleT() { document.getElementById('tools').classList.toggle('active'); }
-    function toggleArchive() { document.getElementById("archive-list").classList.toggle("hidden"); }
+    function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 
-    function saveCustomer() {
-        let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
-        db.push({ n:document.getElementById("c_n").value, s:document.getElementById("c_s").value, o:document.getElementById("c_o").value, t:document.getElementById("c_t").value, m:document.getElementById("c_m").value, st:document.getElementById("c_st").value });
-        localStorage.setItem("h2_db", JSON.stringify(db));
-        alert("Kunde gesichert!");
-        location.reload();
-    }
-
-    function loadCustomer() {
-        let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
-        const c = db[document.getElementById("db_select").value];
-        if(c){ document.getElementById("c_n").value=c.n; document.getElementById("c_s").value=c.s; document.getElementById("c_o").value=c.o; document.getElementById("c_t").value=c.t; document.getElementById("c_m").value=c.m; document.getElementById("c_st").value=c.st; }
-    }
-
-    function processPaidAndPrint() {
-        let arch = JSON.parse(localStorage.getItem("h2_arch") || "[]");
-        arch.push({ date: new Date().toLocaleDateString(), num: document.getElementById("inv").value, client: document.getElementById("c_n").value, amount: currentTotal });
-        localStorage.setItem("h2_arch", JSON.stringify(arch));
+    // RECHNUNGSNUMMER: H20250001
+    function generateInvoiceID() {
+        const year = new Date().getFullYear();
+        const lastYear = localStorage.getItem("h2_year_tracker");
+        let count = parseInt(localStorage.getItem(`h2_cnt_${year}`) || "0");
         
-        if(!signaturePad.isEmpty()){ 
-            document.getElementById('sig-image').src = signaturePad.toDataURL(); 
-            document.getElementById('sig-image').classList.remove('hidden'); 
-            canvas.classList.add('hidden');
-            document.getElementById('sig-unlock').classList.add('hidden');
+        if (lastYear != year) {
+            count = 0;
+            localStorage.setItem("h2_year_tracker", year);
         }
+        
+        // Format: H + JAHR + 4-Stellige Nummer (z.B. H20250001)
+        document.getElementById("inv-num").value = `H${year}${(count + 1).toString().padStart(4, '0')}`;
+    }
+
+    // Kunden-Datenbank
+    function saveToDB() {
+        let db = JSON.parse(localStorage.getItem("h2_db_vfinal") || "[]");
+        db.push({ 
+            n: document.getElementById("c-name").value, 
+            s: document.getElementById("c-street").value, 
+            c: document.getElementById("c-city").value, 
+            p: document.getElementById("c-phone").value, 
+            m: document.getElementById("c-mail").value, 
+            t: document.getElementById("c-tax").value 
+        });
+        localStorage.setItem("h2_db_vfinal", JSON.stringify(db));
+        alert("Kunde in Datenbank gesichert!");
+        updateDBSelect();
+    }
+
+    function updateDBSelect() {
+        const db = JSON.parse(localStorage.getItem("h2_db_vfinal") || "[]");
+        const select = document.getElementById("db-load");
+        select.innerHTML = '<option value="">— Kunde laden —</option>';
+        db.forEach((item, index) => { select.innerHTML += `<option value="${index}">${item.n}</option>`; });
+    }
+
+    function loadCustomerData() {
+        const db = JSON.parse(localStorage.getItem("h2_db_vfinal") || "[]");
+        const c = db[document.getElementById("db-load").value];
+        if(c) { 
+            document.getElementById("c-name").value = c.n; 
+            document.getElementById("c-street").value = c.s; 
+            document.getElementById("c-city").value = c.c; 
+            document.getElementById("c-phone").value = c.p; 
+            document.getElementById("c-mail").value = c.m; 
+            document.getElementById("c-tax").value = c.t; 
+        }
+    }
+
+    // Statistik-Update
+    function updateStats() {
+        const arch = JSON.parse(localStorage.getItem("h2_archive_final") || "[]");
+        const now = new Date(), today = now.toLocaleDateString(), month = now.getMonth() + "-" + now.getFullYear();
+        let dSum = 0, mSum = 0, tSum = 0;
+        arch.forEach(i => {
+            const d = new Date(i.d); tSum += i.a;
+            if(d.toLocaleDateString() === today) dSum += i.a;
+            if((d.getMonth() + "-" + d.getFullYear()) === month) mSum += i.a;
+        });
+        document.getElementById("stat-today").innerText = currency(dSum);
+        document.getElementById("stat-month").innerText = currency(mSum);
+        document.getElementById("stat-total").innerText = currency(tSum);
+    }
+
+    // Speichern & Drucken
+    function finalizeAndPrint() {
+        if(!signaturePad.isEmpty()){ 
+            document.getElementById('sig-final').src = signaturePad.toDataURL(); 
+            document.getElementById('sig-final').classList.remove('hidden'); 
+            canvas.classList.add('hidden');
+        }
+        const year = new Date().getFullYear();
+        let count = parseInt(localStorage.getItem(`h2_cnt_${year}`) || "0") + 1;
+        localStorage.setItem(`h2_cnt_${year}`, count);
+        localStorage.setItem("h2_year_tracker", year);
+
+        let arch = JSON.parse(localStorage.getItem("h2_archive_final") || "[]");
+        arch.push({ d: new Date().toISOString(), n: document.getElementById("inv-num").value, c: document.getElementById("c-name").value || "Kunde", a: totalValue });
+        localStorage.setItem("h2_archive_final", JSON.stringify(arch));
+        
         setTimeout(() => { window.print(); location.reload(); }, 600);
     }
 
-    function exportDB() {
-        const data = JSON.stringify(localStorage);
+    function exportBackup() {
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([data], {type: 'application/json'}));
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(localStorage)], {type: 'application/json'}));
         a.download = `H2_Backup_${new Date().toLocaleDateString()}.json`;
         a.click();
     }
 
-    function importDB() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.onchange = e => {
-            const reader = new FileReader();
-            reader.onload = re => {
-                const content = JSON.parse(re.target.result);
-                Object.keys(content).forEach(k => localStorage.setItem(k, content[k]));
-                location.reload();
-            };
-            reader.readAsText(e.target.files[0]);
-        };
-        input.click();
-    }
-
-    // Start-Logik
-    if(localStorage.getItem('h2_logo')) document.getElementById('firmLogo').src = localStorage.getItem('h2_logo');
-    document.getElementById("inv").value = "H2-" + Date.now().toString().slice(-6);
-    let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
-    db.forEach((c, i) => { document.getElementById("db_select").innerHTML += `<option value="${i}">${c.n}</option>`; });
-    let arch = JSON.parse(localStorage.getItem("h2_arch") || "[]");
-    document.getElementById("archive-body").innerHTML = arch.reverse().slice(0, 5).map(i => `<tr><td>${i.date}</td><td>${i.num}</td><td>${i.client}</td><td class="text-right">${fmt(i.amount)}</td></tr>`).join('');
-    document.getElementById("stat-total").innerText = fmt(arch.reduce((a, b) => a + b.amount, 0));
-    calc();
+    // Init beim Start
+    if(localStorage.getItem('h2_logo_final')) document.getElementById('display-logo').src = localStorage.getItem('h2_logo_final');
+    generateInvoiceID();
+    updateDBSelect();
+    updateStats();
+    calculate();
 </script>
 </body>
 </html>
