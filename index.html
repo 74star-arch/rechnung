@@ -3,132 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService ERP</title>
+    <title>H2 TechService - Master ERP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         @media print {
-            .no-print, .share-container, .tool-bar, .stats-panel, .archive-panel, #sig-unlock, #logo-hint { display:none !important; }
+            .no-print, .share-container, .tool-bar, .stats-panel, .archive-panel, #sig-unlock, #logo-hint, .main-btn { display:none !important; }
             body { background: white !important; padding: 0 !important; }
             .card { box-shadow: none !important; margin: 0 !important; max-width: 100% !important; border: none !important; border-radius: 0 !important; }
         }
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; padding-bottom: 100px; }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
         .card { max-width: 850px; margin: 15px auto; background: white; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
         .header-bg { background: #1e3a8a; }
         .accent-text { color: #2dd4bf; }
-        .stamp { position: absolute; top: 180px; right: 50px; padding: 10px 25px; border: 6px solid; border-radius: 15px; font-size: 30px; font-weight: 900; text-transform: uppercase; transform: rotate(-15deg); opacity: 0.15; pointer-events: none; display: none; z-index: 100; }
-        .stamp-paid { display: block; color: #16a34a; border-color: #16a34a; }
-        
-        .share-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column-reverse; align-items: center; gap: 12px; z-index: 1000; }
-        .main-btn { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #1e40af; color: white; border: 3px solid white; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s; font-size: 30px; }
-        .sub-btn { width: 48px; height: 48px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0); transition: 0.3s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .logo-box { width: 85px; height: 85px; background: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid rgba(255,255,255,0.2); cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .share-container { position: fixed; bottom: 25px; right: 25px; display: flex; flex-direction: column-reverse; align-items: center; gap: 15px; z-index: 1000; }
+        .main-btn { width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #1e40af; color: white; border: 4px solid white; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s; font-size: 32px; font-weight: bold; }
+        .sub-btn { width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0); transition: 0.3s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .share-container.active .sub-btn { opacity: 1; transform: scale(1); }
-        .share-container.active .main-btn { transform: rotate(45deg); }
-
-        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; touch-action: none; pointer-events: none; opacity: 0.5; }
+        .share-container.active .main-btn { transform: rotate(45deg); background: #1e1b4b; }
+        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; touch-action: none; pointer-events: none; opacity: 0.5; transition: 0.3s; }
         #sig-canvas.active { pointer-events: auto; opacity: 1; border-color: #3b82f6; background: white; border-style: solid; }
         textarea { resize: none; overflow: hidden; min-height: 24px; }
-        #logo-upload { cursor: pointer; position: relative; }
-        #logo-hint { font-size: 8px; position: absolute; bottom: -12px; color: white; opacity: 0.5; width: 100px; text-align: center; left: -18px; }
     </style>
 </head>
 <body>
 
 <div class="max-w-[850px] mx-auto mt-4 px-4 no-print space-y-4">
     <div class="stats-panel bg-white p-5 rounded-2xl shadow-sm border flex justify-around text-center">
-        <div><p class="text-[10px] text-slate-400 font-bold uppercase">Heute</p><p id="stat-today" class="text-lg font-black">0,00 €</p></div>
-        <div><p class="text-[10px] text-slate-400 font-bold uppercase">Gesamt</p><p id="stat-total" class="text-lg font-black text-green-600">0,00 €</p></div>
+        <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Heute</p><p id="stat-today" class="text-xl font-black text-slate-800">0,00 €</p></div>
+        <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Gesamt-Umsatz</p><p id="stat-total" class="text-xl font-black text-green-600">0,00 €</p></div>
     </div>
-
     <div class="archive-panel bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
-        <div onclick="toggleArchive()" class="p-3 text-white text-[10px] font-black uppercase flex justify-between cursor-pointer">
-            <span>📂 Archiv</span><span id="arch-ind">Anzeigen ▼</span>
+        <div onclick="toggleArchive()" class="p-4 text-white text-[10px] font-black uppercase flex justify-between items-center cursor-pointer">
+            <span>📂 RECHNUNGS-ARCHIV</span>
+            <span id="arch-indicator">Anzeigen ▼</span>
         </div>
-        <div id="archive-list" class="hidden p-4 bg-white max-h-40 overflow-y-auto text-[10px]">
-            <table class="w-full text-left"><tbody id="archive-body" class="divide-y"></tbody></table>
+        <div id="archive-list" class="hidden p-4 bg-white max-h-52 overflow-y-auto">
+            <table class="w-full text-[11px] text-left"><tbody id="archive-body" class="divide-y divide-slate-100"></tbody></table>
         </div>
     </div>
-
     <div class="tool-bar bg-white p-4 rounded-2xl shadow-sm border flex justify-between items-center">
         <div class="flex gap-2">
-            <select id="docType" onchange="calc()" class="bg-slate-50 text-[10px] p-2 rounded font-bold border"><option value="RE">RECHNUNG</option><option value="M1">1. MAHNUNG</option></select>
-            <select id="taxRate" onchange="calc()" class="bg-slate-50 text-[10px] p-2 rounded font-bold border"><option value="0.19">19% MWST</option><option value="0">0% §19</option></select>
+            <select id="taxRate" onchange="calc()" class="bg-slate-50 text-[10px] p-2 rounded-lg font-bold border"><option value="0.19">19% MWST</option><option value="0">0% §19</option></select>
         </div>
-        <button onclick="exportData()" class="bg-slate-700 text-white text-[9px] px-3 py-2 rounded font-bold uppercase">Backup</button>
+        <button onclick="exportData()" class="bg-slate-700 text-white text-[9px] px-4 py-2 rounded-lg font-bold uppercase tracking-widest">Backup</button>
     </div>
 </div>
 
 <div class="card" id="invoice">
-    <div id="statusStamp" class="stamp">Bezahlt</div>
     <div class="header-bg p-10 text-white flex justify-between items-center">
-        <div class="flex items-center gap-5">
-            <div id="logo-upload" class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center p-2 border border-white/30" onclick="document.getElementById('file-input').click()">
-                <img id="firmLogo" src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png" class="w-full h-full object-contain">
-                <span id="logo-hint" class="no-print italic">Logo klicken</span>
+        <div class="flex items-center gap-6">
+            <div class="logo-box" onclick="document.getElementById('file-input').click()">
+                <img id="firmLogo" src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png">
                 <input type="file" id="file-input" class="hidden" accept="image/*" onchange="uploadLogo(this)">
             </div>
             <div>
-                <h1 class="text-3xl font-black italic uppercase">H2 <span class="accent-text">Tech</span>Service</h1>
-                <p class="opacity-80 text-[9px] font-bold uppercase tracking-widest">Osman Tuncer | Montage & Technik</p>
+                <h1 class="text-4xl font-black italic tracking-tighter uppercase leading-none">H2 <span class="accent-text">Tech</span>Service</h1>
+                <p class="opacity-80 text-[10px] font-bold uppercase mt-2">Osman Tuncer | Montage & Technik</p>
             </div>
         </div>
         <div class="text-right">
-            <input id="inv" class="bg-transparent text-right font-black text-2xl outline-none w-32 accent-text" value="1001">
+            <p class="text-[10px] opacity-60 uppercase font-black">Rechnungs-Nr.</p>
+            <input id="inv" class="bg-transparent text-right font-black text-2xl outline-none w-56 accent-text" value="">
         </div>
     </div>
 
-    <div class="p-8 grid grid-cols-2 gap-8 border-b">
-        <div class="text-xs">
-            <b class="text-blue-700 text-[9px] uppercase font-black block mb-1">Absender</b>
-            <p class="font-black">Osman Tuncer</p>
-            <p class="text-slate-500">Suntal Str. 48, 31552 Rodenberg</p>
-            <p class="text-[9px] text-slate-400 font-bold mt-2">ST.-NR: 41320887966</p>
+    <div class="p-10 grid grid-cols-2 gap-10 border-b">
+        <div class="text-sm">
+            <b class="text-blue-700 text-[10px] uppercase font-black block mb-2 tracking-widest">Absender</b>
+            <p class="font-black text-slate-800 text-base">Osman Tuncer</p>
+            <p class="text-slate-500 font-medium">Suntal Str. 48, 31552 Rodenberg</p>
         </div>
         <div class="text-right flex flex-col items-end">
-            <b class="text-blue-700 text-[9px] uppercase font-black mb-1">Kunde</b>
-            <select id="db_select" class="no-print mb-2 text-[9px] bg-slate-50 border rounded p-1 w-full" onchange="loadCustomer()"><option value="">— Laden —</option></select>
-            <input type="text" id="c_n" placeholder="Name" class="w-full text-right font-bold outline-none text-sm">
-            <input type="text" id="c_s" placeholder="Straße" class="w-full text-right text-xs outline-none">
-            <input type="text" id="c_o" placeholder="PLZ & Ort" class="w-full text-right text-xs outline-none">
-            <input type="text" id="c_m" placeholder="E-Mail" class="text-right text-[9px] outline-none text-blue-500 w-full">
-            <button onclick="saveCustomer()" class="no-print text-[8px] bg-blue-50 text-blue-600 px-2 py-1 rounded mt-2 uppercase font-bold">Kunde Speichern</button>
+            <b class="text-blue-700 text-[10px] uppercase font-black mb-2 tracking-widest">Kunde</b>
+            <select id="db_select" class="no-print mb-3 text-[10px] bg-slate-50 border rounded-lg p-2 w-full" onchange="loadCustomer()"><option value="">— Kunde laden —</option></select>
+            <input type="text" id="c_n" placeholder="Name / Firma" class="w-full text-right font-black outline-none text-base">
+            <input type="text" id="c_s" placeholder="Straße" class="w-full text-right text-sm outline-none text-slate-500">
+            <input type="text" id="c_o" placeholder="PLZ & Ort" class="w-full text-right text-sm outline-none text-slate-500">
+            <button onclick="saveCustomer()" class="no-print text-[9px] bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full mt-3 uppercase font-black">Speichern</button>
         </div>
     </div>
 
     <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-[9px] font-black uppercase text-slate-400"><tr><th class="p-4 text-left">Leistung</th><th class="p-4 w-12 text-center">Stk</th><th class="p-4 w-24 text-right">Summe</th></tr></thead>
+        <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+            <tr><th class="p-5 text-left">Beschreibung</th><th class="p-5 w-16 text-center">Stk</th><th class="p-5 w-32 text-right">Summe (€)</th></tr>
+        </thead>
         <tbody id="rows">
             <tr class="border-b border-slate-50">
-                <td class="p-4"><textarea placeholder="Beschreibung..." class="w-full outline-none font-medium text-xs bg-transparent" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>
-                <td class="p-4 text-center"><input type="number" value="1" class="qty w-10 text-center font-bold outline-none bg-transparent" oninput="calc()"></td>
-                <td class="p-4 text-right"><input type="number" step="0.01" class="price w-20 text-right font-black outline-none bg-transparent" oninput="calc()"></td>
+                <td class="p-5"><textarea placeholder="Dienstleistung..." class="w-full outline-none font-semibold text-slate-700 bg-transparent" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>
+                <td class="p-5 text-center"><input type="number" value="1" class="qty w-full text-center font-bold outline-none bg-transparent" oninput="calc()"></td>
+                <td class="p-5 text-right"><input type="number" step="0.01" placeholder="0,00" class="price w-full text-right font-black outline-none bg-transparent" oninput="calc()"></td>
             </tr>
         </tbody>
     </table>
 
-    <div class="p-8 flex justify-between items-center bg-slate-50/30">
-        <div id="qrcode" class="p-1 border bg-white rounded-lg"></div>
+    <div class="p-10 flex justify-between items-center bg-slate-50/40">
+        <div id="qrcode" class="p-2 border bg-white rounded-xl shadow-sm"></div>
         <div class="text-right">
-            <p class="text-[10px] text-slate-400 font-bold uppercase" id="tax-label">Inkl. 19% MwSt</p>
-            <p class="text-4xl font-black text-slate-900" id="total">0,00 €</p>
+            <p class="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1" id="tax-label">Netto + 19% MwSt</p>
+            <p class="text-5xl font-black text-slate-900" id="total">0,00 €</p>
         </div>
     </div>
 
-    <div class="p-8 border-t flex justify-between items-end">
-        <div><p class="text-[8px] font-black text-slate-400 uppercase mb-4 text-center italic">Techniker</p><p class="italic text-xl font-serif border-b border-black w-48 text-center">Osman Tuncer</p></div>
-        <div class="text-right">
-            <p class="text-[8px] font-black text-slate-400 uppercase mb-2">Unterschrift Kunde</p>
-            <button id="sig-unlock" onclick="unlockSignature()" class="no-print bg-blue-600 text-white text-[10px] px-4 py-2 rounded-full mb-2 font-bold shadow-md">✍️ Öffnen zum Zeichnen</button>
-            <canvas id="sig-canvas" width="250" height="80" class="no-print"></canvas>
-            <img id="sig-image" class="hidden h-16 border-b border-slate-400 ml-auto">
+    <div class="p-10 border-t flex justify-between items-end gap-10">
+        <div class="flex-1 text-center">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Techniker</p>
+            <p class="italic text-2xl font-serif text-slate-800 border-b-2 border-slate-200 pb-2">Osman Tuncer</p>
+        </div>
+        <div class="flex-1 text-right">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Unterschrift Kunde</p>
+            <button id="sig-unlock" onclick="unlockSignature()" class="no-print bg-blue-600 text-white text-[11px] px-6 py-2.5 rounded-full mb-3 font-black shadow-lg">✍️ Öffnen</button>
+            <canvas id="sig-canvas" width="300" height="100" class="no-print w-full"></canvas>
+            <img id="sig-image" class="hidden h-20 border-b-2 border-slate-300 ml-auto object-contain">
         </div>
     </div>
 
-    <div class="header-bg p-6 text-white text-[8px] flex justify-between font-bold uppercase tracking-widest opacity-90">
-        <p>IBAN: LT83 2500 9251 8928 659 | BIC: REVOLUT21</p>
-        <p>VIELEN DANK FÜR IHR VERTRAUEN!</p>
+    <div class="header-bg p-8 text-white text-[9px] flex justify-between font-black uppercase tracking-widest">
+        <div>IBAN: <span class="accent-text">LT83 2500 9251 8928 659</span> | BIC: REVOLUT21</div>
+        <div>Vielen Dank für Ihren Auftrag!</div>
     </div>
 </div>
 
@@ -136,37 +132,35 @@
     <div class="main-btn" onclick="toggleT()">+</div>
     <div class="sub-btn" onclick="processPaidAndPrint()">✅</div>
     <div class="sub-btn" onclick="addRow()">➕</div>
-    <div class="sub-btn" onclick="sendWA()"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="w-7 h-7"></div>
-    <div class="sub-btn" onclick="sendGmail()"><img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" class="w-6 h-6"></div>
-    <div class="sub-btn" onclick="sendTelegram()"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" class="w-7 h-7"></div>
-    <div class="sub-btn" onclick="sendTeams()"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg" class="w-7 h-7"></div>
+    <div class="sub-btn" onclick="sendWA()"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="w-8 h-8"></div>
+    <div class="sub-btn" onclick="sendGmail()"><img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" class="w-7 h-7"></div>
 </div>
 
 <script>
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
-    const qrcode = new QRCode(document.getElementById("qrcode"), { width: 64, height: 64 });
+    const qrcode = new QRCode(document.getElementById("qrcode"), { width: 70, height: 70 });
     const signaturePad = new SignaturePad(document.getElementById('sig-canvas'));
     let currentTotal = 0;
 
-    // Logo Upload & Save
     function uploadLogo(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 document.getElementById('firmLogo').src = e.target.result;
                 localStorage.setItem('h2_logo', e.target.result);
-            }
+            };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
     function unlockSignature() {
-        document.getElementById('sig-canvas').classList.add('active');
-        document.getElementById('sig-unlock').innerText = "🔓 Aktiv (Feld gesperrt nach 1.5s)";
+        const c = document.getElementById('sig-canvas');
+        c.classList.add('active');
+        document.getElementById('sig-unlock').innerText = "🔓 Bitte unterschreiben";
         signaturePad.addEventListener("endStroke", () => {
              setTimeout(() => {
-                document.getElementById('sig-canvas').classList.remove('active');
-                document.getElementById('sig-unlock').innerText = "✅ Unterschrift bereit";
+                c.classList.remove('active');
+                document.getElementById('sig-unlock').innerText = "✅ Erfasst";
              }, 1500);
         });
     }
@@ -180,7 +174,7 @@
         currentTotal = sub * (1 + rate);
         document.getElementById("total").innerText = fmt(currentTotal);
         document.getElementById("tax-label").innerText = rate === 0 ? "Gemäß §19 UStG" : `Inkl. ${rate*100}% MwSt`;
-        qrcode.makeCode(`H2-RE-${document.getElementById('inv').value}-${currentTotal.toFixed(2)}`);
+        qrcode.makeCode(`RE-${document.getElementById('inv').value}-${currentTotal.toFixed(2)}`);
     }
 
     function addRow() {
@@ -190,17 +184,34 @@
     }
 
     function toggleT() { document.getElementById('tools').classList.toggle('active'); }
-    function toggleArchive() { 
-        document.getElementById("archive-list").classList.toggle("hidden");
-        document.getElementById("arch-ind").innerText = document.getElementById("archive-list").classList.contains("hidden") ? "Anzeigen ▼" : "Schließen ▲";
+    function toggleArchive() { document.getElementById("archive-list").classList.toggle("hidden"); }
+
+    // NEUE LOGIK FÜR H220250001
+    function generateInvoiceNumber() {
+        const year = new Date().getFullYear();
+        const lastSavedYear = localStorage.getItem("h2_last_year");
+        let lastCount = parseInt(localStorage.getItem("h2_last_count") || "0");
+
+        if (lastSavedYear != year) {
+            lastCount = 0;
+            localStorage.setItem("h2_last_year", year);
+        }
+        
+        const nextCount = lastCount + 1;
+        return `H2${year}${nextCount.toString().padStart(4, '0')}`;
     }
 
     function processPaidAndPrint() {
-        document.getElementById('statusStamp').classList.add('stamp-paid');
+        const invNum = document.getElementById("inv").value;
+        const year = new Date().getFullYear();
         let arch = JSON.parse(localStorage.getItem("h2_arch") || "[]");
-        arch.push({ date: new Date().toLocaleDateString(), num: document.getElementById("inv").value, client: document.getElementById("c_n").value || "Kunde", amount: currentTotal });
+        
+        arch.push({ date: new Date().toLocaleDateString(), num: invNum, client: document.getElementById("c_n").value || "Kunde", amount: currentTotal });
+        
+        let currentCount = parseInt(localStorage.getItem("h2_last_count") || "0");
+        localStorage.setItem("h2_last_count", currentCount + 1);
+        localStorage.setItem("h2_last_year", year);
         localStorage.setItem("h2_arch", JSON.stringify(arch));
-        localStorage.setItem("h2_num", parseInt(document.getElementById("inv").value) + 1);
         
         if(!signaturePad.isEmpty()){ 
             document.getElementById('sig-image').src = signaturePad.toDataURL(); 
@@ -208,40 +219,41 @@
             document.getElementById('sig-canvas').classList.add('hidden');
             document.getElementById('sig-unlock').classList.add('hidden');
         }
+        
+        alert("Gespeichert!");
         setTimeout(() => { window.print(); location.reload(); }, 600);
     }
 
     function renderArchive() {
         let arch = JSON.parse(localStorage.getItem("h2_arch") || "[]");
-        document.getElementById("archive-body").innerHTML = arch.reverse().slice(0, 5).map(i => `<tr class="border-b"><td class="py-1">${i.date}</td><td class="font-bold">#${i.num}</td><td>${i.client}</td><td class="text-right font-black">${fmt(i.amount)}</td></tr>`).join('');
+        document.getElementById("archive-body").innerHTML = arch.reverse().slice(0, 10).map(i => `<tr class="border-b"><td class="py-2">${i.date}</td><td class="font-bold text-blue-600">${i.num}</td><td>${i.client}</td><td class="text-right font-black">${fmt(i.amount)}</td></tr>`).join('');
         document.getElementById("stat-total").innerText = fmt(arch.reduce((a, b) => a + b.amount, 0));
     }
 
     function saveCustomer() {
         let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
-        db.push({ n:document.getElementById("c_n").value, s:document.getElementById("c_s").value, o:document.getElementById("c_o").value, m:document.getElementById("c_m").value });
-        localStorage.setItem("h2_db", JSON.stringify(db)); location.reload();
+        db.push({ n:document.getElementById("c_n").value, s:document.getElementById("c_s").value, o:document.getElementById("c_o").value });
+        localStorage.setItem("h2_db", JSON.stringify(db));
+        location.reload();
     }
 
     function loadCustomer() {
         let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
         const c = db[document.getElementById("db_select").value];
-        if(c){ document.getElementById("c_n").value = c.n; document.getElementById("c_s").value = c.s; document.getElementById("c_o").value = c.o; document.getElementById("c_m").value = c.m || ""; }
+        if(c){ document.getElementById("c_n").value = c.n; document.getElementById("c_s").value = c.s; document.getElementById("c_o").value = c.o; }
     }
 
     function exportData() {
         const blob = new Blob([JSON.stringify(localStorage)], {type: "application/json"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "H2_ERP_Backup.json"; a.click();
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "H2_Backup.json"; a.click();
     }
 
-    function sendWA() { window.open(`https://wa.me/?text=Rechnung Nr. ${document.getElementById('inv').value}: ${fmt(currentTotal)}`); }
-    function sendGmail() { window.open(`mailto:${document.getElementById('c_m').value}?subject=Rechnung&body=Betrag: ${fmt(currentTotal)}`); }
-    function sendTelegram() { window.open(`https://t.me/share/url?url=${encodeURIComponent('H2 Tech')}&text=Rechnung: ${fmt(currentTotal)}`); }
-    function sendTeams() { window.open(`https://teams.microsoft.com/l/chat/0/0?message=Rechnung: ${fmt(currentTotal)}`); }
+    function sendWA() { window.open(`https://wa.me/?text=Rechnung ${document.getElementById('inv').value}: ${fmt(currentTotal)}`); }
+    function sendGmail() { window.open(`mailto:?subject=Rechnung&body=Betrag: ${fmt(currentTotal)}`); }
 
-    // Init
+    // INIT
     if(localStorage.getItem('h2_logo')) document.getElementById('firmLogo').src = localStorage.getItem('h2_logo');
-    document.getElementById("inv").value = localStorage.getItem("h2_num") || 1001;
+    document.getElementById("inv").value = generateInvoiceNumber();
     let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
     db.forEach((c, i) => { document.getElementById("db_select").innerHTML += `<option value="${i}">${c.n}</option>`; });
     renderArchive(); calc();
