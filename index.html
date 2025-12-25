@@ -13,18 +13,18 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         @media print {
             @page { size: A4; margin: 8mm; }
-            .no-print { display:none !important; }
+            .no-print { display: none !important; }
             body { background: white !important; padding: 0 !important; margin: 0 !important; }
             .card { box-shadow: none !important; margin: 0 !important; max-width: 100% !important; border: none !important; border-radius: 0 !important; overflow: hidden; }
-            .header-bg { padding: 20px !important; }
+            .header-bg { padding: 15px !important; }
             .p-8 { padding: 8px !important; }
             .text-3xl { font-size: 2rem !important; }
             #qrcode { width: 70px !important; height: 70px !important; }
         }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; }
         .card { max-width: 900px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; }
-        .tab-btn { @apply px-6 py-3 font-bold text-sm uppercase tracking-wider border-b-4 transition-colors; }
-        .tab-active { @apply border-blue-600 text-blue-600; }
+        .tab-btn { @apply px-6 py-4 font-bold text-sm uppercase tracking-wider border-b-4 transition-colors; }
+        .tab-active { @apply border-blue-600 text-blue-600 bg-blue-50; }
         .tab-inactive { @apply border-transparent text-slate-500 hover:text-slate-700; }
         .share-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
         .main-btn { @apply w-14 h-14 rounded-full bg-blue-600 text-white shadow-2xl flex items-center justify-center text-3xl; }
@@ -40,8 +40,39 @@
 </head>
 <body class="theme-blue">
 
-<!-- Tab Menü -->
+<!-- Kazanç Özeti -->
 <div class="max-w-[900px] mx-auto mt-6 px-4 no-print">
+    <div class="bg-white p-6 rounded-xl shadow-md border grid grid-cols-3 text-center gap-4">
+        <div><p class="text-xs text-slate-400 uppercase font-bold">Heute</p><p id="stat-today" class="text-2xl font-black text-slate-800">0,00 €</p></div>
+        <div><p class="text-xs text-slate-400 uppercase font-bold">Monat</p><p id="stat-month" class="text-2xl font-black text-blue-600">0,00 €</p></div>
+        <div><p class="text-xs text-slate-400 uppercase font-bold">Gesamt</p><p id="stat-total" class="text-2xl font-black text-green-600">0,00 €</p></div>
+    </div>
+</div>
+
+<!-- Tool Bar -->
+<div class="max-w-[900px] mx-auto mt-4 px-4 no-print">
+    <div class="tool-bar bg-white p-3 rounded-xl shadow-sm border flex flex-wrap gap-3 items-center justify-between text-xs">
+        <div class="flex gap-2">
+            <select id="docType" onchange="calc()" class="bg-slate-100 p-2 rounded font-bold outline-none border text-xs">
+                <option value="RE">RECHNUNG</option>
+                <option value="M1">1. MAHNUNG (+5€)</option>
+                <option value="M2">2. MAHNUNG (+10€)</option>
+            </select>
+            <select id="taxRate" onchange="calc()" class="bg-slate-100 p-2 rounded font-bold outline-none border text-xs">
+                <option value="0.19">19% MWST</option>
+                <option value="0.07">7% MWST</option>
+                <option value="0">0% (KLEINUNTERN.)</option>
+            </select>
+        </div>
+        <div class="flex gap-2 items-center text-xs">
+            <button onclick="resetInvNum()" class="bg-orange-500 text-white px-3 py-2 rounded font-bold uppercase">Reset</button>
+            <button onclick="decreaseInvNum()" class="bg-red-600 text-white px-3 py-2 rounded font-bold uppercase">← Zurück</button>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Menü -->
+<div class="max-w-[900px] mx-auto mt-4 px-4 no-print">
     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
         <div class="flex">
             <button id="tab-invoice" class="tab-btn tab-active">Rechnung</button>
@@ -49,15 +80,6 @@
             <button id="tab-expense" class="tab-btn tab-inactive">Harcama</button>
             <button id="tab-report" class="tab-btn tab-inactive">Rapor</button>
         </div>
-    </div>
-</div>
-
-<!-- Kazanç Özeti -->
-<div class="max-w-[900px] mx-auto mt-4 px-4 no-print">
-    <div class="bg-white p-6 rounded-xl shadow-md border grid grid-cols-3 text-center gap-4">
-        <div><p class="text-xs text-slate-400 uppercase font-bold">Heute</p><p id="stat-today" class="text-2xl font-black text-slate-800">0,00 €</p></div>
-        <div><p class="text-xs text-slate-400 uppercase font-bold">Monat</p><p id="stat-month" class="text-2xl font-black text-blue-600">0,00 €</p></div>
-        <div><p class="text-xs text-slate-400 uppercase font-bold">Gesamt</p><p id="stat-total" class="text-2xl font-black text-green-600">0,00 €</p></div>
     </div>
 </div>
 
@@ -208,7 +230,7 @@
         <div class="grid grid-cols-3 gap-4 mb-6">
             <input id="stock-name" placeholder="Ürün Adı" class="p-3 border rounded">
             <input id="stock-price" type="number" step="0.01" placeholder="Fiyat (€)" class="p-3 border rounded">
-            <input id="stock-qty" type="number" placeholder="Miktar" class="p-3 border rounded">
+            <input id="stock-qty" type="number" placeholder="Stok Miktarı" class="p-3 border rounded">
         </div>
         <button onclick="addStock()" class="bg-blue-600 text-white px-6 py-3 rounded font-bold">+ Ekle</button>
         <div class="mt-8 overflow-x-auto">
@@ -295,7 +317,6 @@
     function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
     function toggleT() { document.getElementById('tools').classList.toggle('active'); }
 
-    // Logo
     function loadLogo(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -308,7 +329,6 @@
         reader.readAsDataURL(file);
     }
 
-    // Rechnungsnummer
     function getCurrentInvoiceNumber() {
         const year = new Date().getFullYear();
         let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 1);
@@ -322,7 +342,6 @@
         localStorage.setItem(`h2_seq_${year}`, seq);
     }
 
-    // Müşteri
     function saveCustomer() {
         const c = {
             name: document.getElementById('c_n').value.trim(),
@@ -361,7 +380,6 @@
         document.getElementById('c_id').value = c.taxId;
     }
 
-    // İmza
     document.getElementById('sig-lock-btn').addEventListener('click', () => {
         sigLocked = !sigLocked;
         signaturePad.penColor = sigLocked ? 'rgba(0,0,0,0)' : 'black';
@@ -371,54 +389,6 @@
     document.getElementById('sig-clear-btn').addEventListener('click', () => {
         signaturePad.clear();
     });
-
-    // Stok
-    function addStock() {
-        const name = document.getElementById('stock-name').value.trim();
-        const price = parseFloat(document.getElementById('stock-price').value);
-        const qty = parseInt(document.getElementById('stock-qty').value);
-        if (!name || isNaN(price) || isNaN(qty)) return alert("Tüm alanlar doldurulmalı!");
-        stock.push({name, price, qty});
-        localStorage.setItem('h2_stock', JSON.stringify(stock));
-        loadStock();
-        document.getElementById('stock-name').value = document.getElementById('stock-price').value = document.getElementById('stock-qty').value = '';
-    }
-
-    function loadStock() {
-        const list = document.getElementById('stock-list');
-        list.innerHTML = '';
-        stock.forEach((s, i) => {
-            list.innerHTML += `<tr><td class="p-3">\( {s.name}</td><td class="p-3 text-right"> \){fmt(s.price)}</td><td class="p-3 text-center">\( {s.qty}</td><td class="p-3 text-center"><button onclick="stock.splice( \){i},1); localStorage.setItem('h2_stock', JSON.stringify(stock)); loadStock();" class="text-red-600">Sil</button></td></tr>`;
-        });
-    }
-
-    // Harcama
-    function addExpense() {
-        const desc = document.getElementById('expense-desc').value.trim();
-        const amount = parseFloat(document.getElementById('expense-amount').value);
-        const date = document.getElementById('expense-date').value || new Date().toISOString().split('T')[0];
-        if (!desc || isNaN(amount)) return alert("Açıklama ve tutar gerekli!");
-        expenses.push({date, desc, amount});
-        localStorage.setItem('h2_expenses', JSON.stringify(expenses));
-        loadExpenses();
-        document.getElementById('expense-desc').value = document.getElementById('expense-amount').value = '';
-    }
-
-    function loadExpenses() {
-        const list = document.getElementById('expense-list');
-        list.innerHTML = '';
-        expenses.sort((a, b) => b.date.localeCompare(a.date)).forEach(e => {
-            list.innerHTML += `<tr><td class="p-3">\( {new Date(e.date).toLocaleDateString('de-DE')}</td><td class="p-3"> \){e.desc}</td><td class="p-3 text-right font-bold text-red-600">- ${fmt(e.amount)}</td></tr>`;
-        });
-    }
-
-    // Rapor
-    function loadReport() {
-        const totalExpense = expenses.reduce((s, e) => s + e.amount, 0);
-        document.getElementById('report-income').textContent = fmt(stats.total);
-        document.getElementById('report-expense').textContent = fmt(totalExpense);
-        document.getElementById('report-profit').textContent = fmt(stats.total - totalExpense);
-    }
 
     function updateStats() {
         const today = new Date().toISOString().split('T')[0];
@@ -464,13 +434,15 @@
     }
 
     function addRow() {
-        const tr = document.querySelector("#rows tr").cloneNode(true);
+        const tbody = document.getElementById('rows');
+        const tr = tbody.querySelector('tr').cloneNode(true);
         tr.querySelectorAll("textarea, input").forEach(i => {
             i.value = i.classList.contains("qty") ? 1 : "";
         });
         tr.querySelector(".row-total").innerText = "0,00 €";
-        document.getElementById("rows").appendChild(tr);
+        tbody.appendChild(tr);
         calc();
+        tr.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     function doPrint() {
@@ -505,7 +477,7 @@
         setTimeout(doPrint, 300);
     }
 
-    // Tab değiştirme
+    // Tab geçişi
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
@@ -517,6 +489,54 @@
             if (btn.id === 'tab-report') loadReport();
         });
     });
+
+    function addStock() {
+        const name = document.getElementById('stock-name').value.trim();
+        const price = parseFloat(document.getElementById('stock-price').value);
+        const qty = parseInt(document.getElementById('stock-qty').value);
+        if (!name || isNaN(price) || isNaN(qty)) return alert("Tüm alanlar doldurulmalı!");
+        stock.push({name, price, qty});
+        localStorage.setItem('h2_stock', JSON.stringify(stock));
+        loadStock();
+        document.getElementById('stock-name').value = '';
+        document.getElementById('stock-price').value = '';
+        document.getElementById('stock-qty').value = '';
+    }
+
+    function loadStock() {
+        const list = document.getElementById('stock-list');
+        list.innerHTML = '';
+        stock.forEach((s, i) => {
+            list.innerHTML += `<tr><td class="p-3">\( {s.name}</td><td class="p-3 text-right"> \){fmt(s.price)}</td><td class="p-3 text-center">\( {s.qty}</td><td class="p-3 text-center"><button onclick="stock.splice( \){i},1); localStorage.setItem('h2_stock', JSON.stringify(stock)); loadStock();" class="text-red-600">Sil</button></td></tr>`;
+        });
+    }
+
+    function addExpense() {
+        const desc = document.getElementById('expense-desc').value.trim();
+        const amount = parseFloat(document.getElementById('expense-amount').value);
+        const date = document.getElementById('expense-date').value || new Date().toISOString().split('T')[0];
+        if (!desc || isNaN(amount)) return alert("Açıklama ve tutar gerekli!");
+        expenses.push({date, desc, amount});
+        localStorage.setItem('h2_expenses', JSON.stringify(expenses));
+        loadExpenses();
+        document.getElementById('expense-desc').value = '';
+        document.getElementById('expense-amount').value = '';
+    }
+
+    function loadExpenses() {
+        const list = document.getElementById('expense-list');
+        list.innerHTML = '';
+        expenses.sort((a, b) => b.date.localeCompare(a.date)).forEach(e => {
+            list.innerHTML += `<tr><td class="p-3">\( {new Date(e.date).toLocaleDateString('de-DE')}</td><td class="p-3"> \){e.desc}</td><td class="p-3 text-right font-bold text-red-600">- ${fmt(e.amount)}</td></tr>`;
+        });
+    }
+
+    function loadReport() {
+        const totalExpense = expenses.reduce((s, e) => s + e.amount, 0);
+        document.getElementById('report-income').textContent = fmt(stats.total);
+        document.getElementById('report-expense').textContent = fmt(totalExpense);
+        document.getElementById('report-profit').textContent = fmt(stats.total - totalExpense);
+    }
 
     window.onload = function() {
         const logo = localStorage.getItem('h2_logo');
