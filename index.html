@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Professional ERP</title>
+    <title>H2 TechService - Professional ERP v2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -13,40 +13,44 @@
         @media print {
             @page { size: A4; margin: 0; }
             body { background: white !important; padding: 0 !important; margin: 0 !important; }
-            .no-print, .share-container, .stats-panel, .archive-panel, #sig-unlock, button { display:none !important; }
-            .card { 
-                box-shadow: none !important; 
-                margin: 0 !important; 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-                border: none !important;
-                border-radius: 0 !important;
-            }
+            .no-print, .share-container, .stats-panel, .archive-panel, #sig-unlock, button, .sub-btn { display:none !important; }
+            .card { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; height: 100vh; display: flex; flex-direction: column; border: none !important; border-radius: 0 !important; }
             .content-wrap { flex-grow: 1; }
         }
 
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; padding-bottom: 120px; }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; padding-bottom: 120px; -webkit-tap-highlight-color: transparent; }
         .card { max-width: 800px; margin: 10px auto; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
         .header-bg { background: #1e3a8a; }
         .accent-text { color: #2dd4bf; }
+        .logo-box { width: 75px; height: 75px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
         
-        /* Korrektur: Nur das Canvas blockiert die Touch-Action, nicht das ganze Dokument */
-        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; pointer-events: none; opacity: 0.6; transition: 0.3s; touch-action: auto; }
+        /* Floating Menu */
+        .share-container { position: fixed; bottom: 25px; right: 25px; display: flex; flex-direction: column-reverse; gap: 10px; z-index: 1000; }
+        .main-btn { width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #1e40af; color: white; border: 3px solid white; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); font-size: 28px; transition: 0.3s; }
+        .sub-btn { width: 52px; height: 52px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0); transition: 0.2s; cursor: pointer; border: 1px solid #ddd; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+        .share-container.active .sub-btn { opacity: 1; transform: scale(1); }
+        .share-container.active .main-btn { transform: rotate(45deg); background: #1e1b4b; }
+
+        /* Signature Touch Fix */
+        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; pointer-events: none; opacity: 0.5; transition: 0.3s; }
         #sig-canvas.active { pointer-events: auto; opacity: 1; border: 2px solid #1e40af; background: white; touch-action: none; }
         
         textarea { resize: none; overflow: hidden; min-height: 20px; width: 100%; background: transparent; outline: none; }
-        input { background: transparent; }
     </style>
 </head>
 <body>
 
 <div class="max-w-[800px] mx-auto mt-4 px-4 no-print space-y-3">
     <div class="stats-panel bg-white p-4 rounded-xl shadow-sm border flex justify-around text-center">
-        <div><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Heute</p><p id="stat-today" class="text-lg font-black text-slate-800">0,00 €</p></div>
         <div><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Umsatz Gesamt</p><p id="stat-total" class="text-lg font-black text-green-600">0,00 €</p></div>
+    </div>
+    <div class="archive-panel bg-slate-800 rounded-xl overflow-hidden shadow-lg text-left">
+        <div onclick="toggleArchive()" class="p-3 text-white text-[9px] font-bold flex justify-between items-center cursor-pointer uppercase tracking-widest">
+            <span>📂 ARCHIV & BACKUP</span><span>Anzeigen ▼</span>
+        </div>
+        <div id="archive-list" class="hidden p-3 bg-white max-h-44 overflow-y-auto">
+            <table class="w-full text-[10px]"><tbody id="archive-body" class="divide-y divide-slate-100"></tbody></table>
+        </div>
     </div>
 </div>
 
@@ -54,8 +58,9 @@
     <div class="content-wrap">
         <div class="header-bg p-8 text-white flex justify-between items-center">
             <div class="flex items-center gap-5">
-                <div class="w-[75px] h-[75px] bg-white rounded-xl flex items-center justify-center overflow-hidden border-2 border-white/20">
+                <div class="logo-box" onclick="document.getElementById('file-input').click()">
                     <img id="firmLogo" src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png">
+                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="uploadLogo(this)">
                 </div>
                 <div>
                     <h1 class="text-3xl font-black italic tracking-tighter uppercase leading-tight">H2 <span class="accent-text">Tech</span>Service</h1>
@@ -63,13 +68,13 @@
                 </div>
             </div>
             <div class="text-right">
-                <p class="text-[8px] opacity-60 uppercase font-black">Rechnungs-Nr.</p>
+                <p class="text-[8px] opacity-60 uppercase font-black text-right">Rechnungs-Nr.</p>
                 <input id="inv" class="bg-transparent text-right font-black text-2xl outline-none w-52 accent-text" value="">
             </div>
         </div>
 
         <div class="p-8 grid grid-cols-2 gap-10 border-b text-left">
-            <div class="text-[12px] text-slate-700">
+            <div>
                 <b class="text-blue-700 text-[9px] uppercase font-black block mb-2 tracking-widest">Absender</b>
                 <p class="font-black text-slate-900 text-base italic">H2 TechService</p>
                 <p class="font-medium mb-3 text-slate-500">Suntal Str. 48, 31552 Rodenberg</p>
@@ -78,25 +83,26 @@
                 <p class="text-[9px] text-slate-400 font-bold border px-2 py-0.5 rounded inline-block">ST-ID: 41320887966</p>
             </div>
 
-            <div class="text-right flex flex-col items-end text-[12px]">
+            <div class="text-right flex flex-col items-end">
                 <b class="text-blue-700 text-[9px] uppercase font-black mb-2 tracking-widest">Empfänger</b>
-                <select id="db_select" class="no-print mb-2 text-[10px] bg-slate-50 border rounded-lg p-1 w-full" onchange="loadCustomer()"><option value="">— Kunde laden —</option></select>
-                <input type="text" id="c_n" placeholder="Name / Firma" class="w-full text-right font-black outline-none text-base mb-1 border-b border-transparent focus:border-blue-200">
-                <input type="text" id="c_s" placeholder="Straße" class="w-full text-right outline-none text-slate-500 mb-1 border-b border-transparent focus:border-blue-200">
-                <input type="text" id="c_o" placeholder="PLZ & Ort" class="w-full text-right outline-none text-slate-500 mb-2 border-b border-transparent focus:border-blue-200">
-                <input type="text" id="c_t" placeholder="Telefon" class="text-right outline-none w-full italic text-slate-500 border-b border-transparent focus:border-blue-200">
-                <input type="text" id="c_m" placeholder="E-Mail" class="text-right outline-none w-full italic text-slate-500 border-b border-transparent focus:border-blue-200">
-                <button onclick="saveCustomer()" class="no-print text-[8px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full mt-2 font-black uppercase">Speichern</button>
+                <select id="db_select" class="no-print mb-2 text-[10px] bg-slate-50 border rounded-lg p-1 w-full" onchange="loadCustomer()"><option value="">— Kunde wählen —</option></select>
+                <input type="text" id="c_n" placeholder="Name / Firma" class="w-full text-right font-black outline-none text-base mb-1">
+                <input type="text" id="c_s" placeholder="Straße" class="w-full text-right outline-none text-slate-500 mb-1">
+                <input type="text" id="c_o" placeholder="PLZ & Ort" class="w-full text-right outline-none text-slate-500 mb-2">
+                <input type="text" id="c_t" placeholder="Telefon" class="text-right outline-none w-full italic text-slate-500 mb-1">
+                <input type="text" id="c_m" placeholder="E-Mail" class="text-right outline-none w-full italic text-slate-500 mb-1">
+                <input type="text" id="c_st" placeholder="Kunden Steuer-ID" class="text-right outline-none w-full text-[9px] font-bold text-slate-400">
+                <button onclick="saveCustomer()" class="no-print text-[8px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full mt-2 font-black uppercase shadow-sm">Kunde Speichern</button>
             </div>
         </div>
 
         <table class="w-full text-[13px]">
-            <thead class="bg-slate-50 text-[9px] font-black uppercase text-slate-400 border-b">
-                <tr><th class="p-4 text-left">Leistung</th><th class="p-4 w-16 text-center">Stk.</th><th class="p-4 w-28 text-right">Summe</th></tr>
+            <thead class="bg-slate-50 text-[9px] font-black uppercase text-slate-400 border-b tracking-widest">
+                <tr><th class="p-4 text-left">Leistungsbeschreibung</th><th class="p-4 w-16 text-center">Stk.</th><th class="p-4 w-28 text-right">Summe (€)</th></tr>
             </thead>
             <tbody id="rows">
                 <tr class="border-b border-slate-50">
-                    <td class="p-4"><textarea placeholder="Dienstleistung..." oninput="calc()"></textarea></td>
+                    <td class="p-4"><textarea placeholder="Dienstleistung..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';calc()"></textarea></td>
                     <td class="p-4 text-center"><input type="number" value="1" class="qty w-full text-center font-bold outline-none" oninput="calc()"></td>
                     <td class="p-4 text-right font-black"><input type="number" step="0.01" placeholder="0,00" class="price w-full text-right outline-none" oninput="calc()"></td>
                 </tr>
@@ -106,7 +112,7 @@
         <div class="p-8 flex justify-between items-center bg-slate-50/20">
             <div id="qrcode"></div>
             <div class="text-right">
-                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Gesamt inkl. 19% MwSt</p>
+                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Gesamt inkl. 19% MwSt</p>
                 <p class="text-5xl font-black text-slate-900" id="total">0,00 €</p>
             </div>
         </div>
@@ -114,13 +120,13 @@
 
     <div class="p-8 border-t flex justify-between items-end gap-10">
         <div class="flex-1 text-center">
-            <p class="text-[9px] font-black text-slate-400 uppercase mb-6">Techniker</p>
-            <p class="italic text-xl font-serif border-b-2 border-slate-200 pb-2">Osman Tuncer</p>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-6">Techniker</p>
+            <p class="italic text-xl font-serif text-slate-800 border-b-2 border-slate-200 pb-2">Osman Tuncer</p>
         </div>
         <div class="flex-1 text-right">
-            <p class="text-[9px] font-black text-slate-400 uppercase mb-4">Abnahme Kunde</p>
-            <button id="sig-unlock" onclick="toggleSignatureLock()" class="no-print bg-red-600 text-white text-[10px] px-4 py-2 rounded-full mb-3 font-black flex items-center gap-2 ml-auto">
-                <span id="lock-icon">🔒</span> <span id="lock-text">KLICK ZUM UNTERSCHREIBEN</span>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Abnahme Kunde</p>
+            <button id="sig-unlock" onclick="toggleSignatureLock()" class="no-print bg-red-600 text-white text-[10px] px-5 py-2 rounded-full mb-3 font-black shadow-lg flex items-center gap-2 ml-auto">
+                <span id="lock-icon">🔒</span> <span id="lock-text">FELD GESPERRT (Klick zum Zeichnen)</span>
             </button>
             <canvas id="sig-canvas" width="300" height="100" class="no-print w-full"></canvas>
             <img id="sig-image" class="hidden h-20 border-b-2 border-slate-300 ml-auto object-contain">
@@ -128,18 +134,23 @@
     </div>
 
     <div class="header-bg p-6 text-white text-[9px] flex justify-between items-center font-black uppercase">
-        <div class="text-left"><p>IBAN: LT83 2500 9251 8928 659</p><p>BIC: REVOLUT21</p></div>
-        <div class="text-right"><p>H2 TechService</p></div>
+        <div class="space-y-1 text-left">
+            <p>IBAN: <span class="accent-text">LT83 2500 9251 8928 659</span></p>
+            <p>BIC: <span class="accent-text">REVOLUT21</span></p>
+        </div>
+        <div class="text-right">
+            <p>H2 TechService - Rodenberg</p>
+        </div>
     </div>
 </div>
 
-<div class="share-container no-print" id="tools" style="position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column-reverse; gap:10px;">
-    <button class="w-14 h-14 bg-blue-700 text-white rounded-full text-2xl shadow-xl" onclick="this.parentElement.classList.toggle('active'); toggleT()">+</button>
-    <div id="sub-btns" class="hidden flex flex-col-reverse gap-3">
-        <button onclick="processPaidAndPrint()" class="w-12 h-12 bg-white border rounded-full shadow-md p-3"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png"></button>
-        <button onclick="window.print()" class="w-12 h-12 bg-white border rounded-full shadow-md p-3"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png"></button>
-        <button onclick="addRow()" class="w-12 h-12 bg-white border rounded-full shadow-md p-3"><img src="https://cdn-icons-png.flaticon.com/512/992/992651.png"></button>
-    </div>
+<div class="share-container no-print" id="tools">
+    <div class="main-btn" onclick="toggleT()">+</div>
+    <div class="sub-btn" onclick="processPaidAndPrint()" title="Drucken"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" width="22"></div>
+    <div class="sub-btn" onclick="window.print()" title="PDF"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" width="22"></div>
+    <div class="sub-btn" onclick="addRow()" title="Zeile +"><img src="https://cdn-icons-png.flaticon.com/512/992/992651.png" width="22"></div>
+    <div class="sub-btn" onclick="exportDB()" title="Backup Sichern"><img src="https://cdn-icons-png.flaticon.com/512/2875/2875394.png" width="22"></div>
+    <div class="sub-btn" onclick="importDB()" title="Backup Laden"><img src="https://cdn-icons-png.flaticon.com/512/2926/2926214.png" width="22"></div>
 </div>
 
 <script>
@@ -147,7 +158,16 @@
     const qrcode = new QRCode(document.getElementById("qrcode"), { width: 60, height: 60 });
     const canvas = document.getElementById('sig-canvas');
     const signaturePad = new SignaturePad(canvas);
+    let currentTotal = 0;
     let isLocked = true;
+
+    function uploadLogo(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { document.getElementById('firmLogo').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 
     function toggleSignatureLock() {
         isLocked = !isLocked;
@@ -156,12 +176,12 @@
             canvas.classList.remove('active');
             btn.classList.replace('bg-green-600', 'bg-red-600');
             document.getElementById('lock-icon').innerText = "🔒";
-            document.getElementById('lock-text').innerText = "KLICK ZUM UNTERSCHREIBEN";
+            document.getElementById('lock-text').innerText = "FELD GESPERRT (Klick zum Zeichnen)";
         } else {
             canvas.classList.add('active');
             btn.classList.replace('bg-red-600', 'bg-green-600');
             document.getElementById('lock-icon').innerText = "🔓";
-            document.getElementById('lock-text').innerText = "JETZT UNTERSCHREIBEN";
+            document.getElementById('lock-text').innerText = "BEREIT ZUM UNTERSCHREIBEN";
         }
     }
 
@@ -170,33 +190,79 @@
         document.querySelectorAll("#rows tr").forEach(r => {
             sub += (r.querySelector(".qty").value||0) * (r.querySelector(".price").value||0);
         });
-        document.getElementById("total").innerText = fmt(sub * 1.19);
-        qrcode.makeCode("Rechnung H2 TechService");
+        currentTotal = sub * 1.19;
+        document.getElementById("total").innerText = fmt(currentTotal);
+        qrcode.makeCode(`H2-${document.getElementById('inv').value}`);
     }
 
     function addRow() {
         const r = document.querySelector("#rows tr").cloneNode(true);
-        r.querySelectorAll("input, textarea").forEach(i => i.value = "");
+        r.querySelectorAll("textarea, input").forEach(i => i.value = (i.type==="number"?"1":""));
         document.getElementById("rows").appendChild(r);
     }
 
-    function toggleT() { document.getElementById('sub-btns').classList.toggle('hidden'); }
+    function toggleT() { document.getElementById('tools').classList.toggle('active'); }
+    function toggleArchive() { document.getElementById("archive-list").classList.toggle("hidden"); }
 
     function saveCustomer() {
-        alert("Kunde in Browser-Daten gespeichert!");
+        let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
+        db.push({ n:document.getElementById("c_n").value, s:document.getElementById("c_s").value, o:document.getElementById("c_o").value, t:document.getElementById("c_t").value, m:document.getElementById("c_m").value, st:document.getElementById("c_st").value });
+        localStorage.setItem("h2_db", JSON.stringify(db));
+        alert("Kunde gesichert!");
+        location.reload();
+    }
+
+    function loadCustomer() {
+        let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
+        const c = db[document.getElementById("db_select").value];
+        if(c){ document.getElementById("c_n").value=c.n; document.getElementById("c_s").value=c.s; document.getElementById("c_o").value=c.o; document.getElementById("c_t").value=c.t; document.getElementById("c_m").value=c.m; document.getElementById("c_st").value=c.st; }
     }
 
     function processPaidAndPrint() {
+        let arch = JSON.parse(localStorage.getItem("h2_arch") || "[]");
+        arch.push({ date: new Date().toLocaleDateString(), num: document.getElementById("inv").value, client: document.getElementById("c_n").value, amount: currentTotal });
+        localStorage.setItem("h2_arch", JSON.stringify(arch));
+        
         if(!signaturePad.isEmpty()){ 
             document.getElementById('sig-image').src = signaturePad.toDataURL(); 
             document.getElementById('sig-image').classList.remove('hidden'); 
             canvas.classList.add('hidden');
             document.getElementById('sig-unlock').classList.add('hidden');
         }
-        setTimeout(() => { window.print(); location.reload(); }, 500);
+        setTimeout(() => { window.print(); location.reload(); }, 600);
     }
 
+    function exportDB() {
+        const data = JSON.stringify(localStorage);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([data], {type: 'application/json'}));
+        a.download = `H2_Backup_${new Date().toLocaleDateString()}.json`;
+        a.click();
+    }
+
+    function importDB() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = e => {
+            const reader = new FileReader();
+            reader.onload = re => {
+                const content = JSON.parse(re.target.result);
+                Object.keys(content).forEach(k => localStorage.setItem(k, content[k]));
+                location.reload();
+            };
+            reader.readAsText(e.target.files[0]);
+        };
+        input.click();
+    }
+
+    // Start-Logik
+    if(localStorage.getItem('h2_logo')) document.getElementById('firmLogo').src = localStorage.getItem('h2_logo');
     document.getElementById("inv").value = "H2-" + Date.now().toString().slice(-6);
+    let db = JSON.parse(localStorage.getItem("h2_db")||"[]");
+    db.forEach((c, i) => { document.getElementById("db_select").innerHTML += `<option value="${i}">${c.n}</option>`; });
+    let arch = JSON.parse(localStorage.getItem("h2_arch") || "[]");
+    document.getElementById("archive-body").innerHTML = arch.reverse().slice(0, 5).map(i => `<tr><td>${i.date}</td><td>${i.num}</td><td>${i.client}</td><td class="text-right">${fmt(i.amount)}</td></tr>`).join('');
+    document.getElementById("stat-total").innerText = fmt(arch.reduce((a, b) => a + b.amount, 0));
     calc();
 </script>
 </body>
