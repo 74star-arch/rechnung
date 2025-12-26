@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>H2 TechService - Rechnung</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -23,20 +23,21 @@
             .stamp { display: block !important; opacity: 0.3 !important; }
         }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; margin: 0; padding: 0; padding-bottom: 120px; }
-        .card { max-width: 900px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1); overflow: hidden; position: relative; }
+        .card { max-width: 900px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
         .stamp { position: absolute; top: 140px; right: 30px; padding: 8px 20px; border: 5px solid #16a34a; border-radius: 12px; font-size: 28px; font-weight: 900; text-transform: uppercase; transform: rotate(-15deg); opacity: 0.15; pointer-events: none; display: none; z-index: 100; color: #16a34a; }
         .header-bg { background: #1e3a8a; }
         .accent-text { color: #60a5fa; }
         .fab-container { position: fixed; bottom: 30px; right: 20px; z-index: 9999; }
-        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #3b82f6; color: white; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); position: absolute; bottom: 0; right: 0; opacity: 1; transform: scale(1); transition: all 0.3s ease; }
+        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #3b82f6; color: white; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(59,130,246,0.4); cursor: pointer; transition: all 0.3s ease; }
         .fab-main.open { transform: rotate(45deg); background: #6366f1; }
-        .fab-item { width: 56px; height: 56px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); position: absolute; bottom: 0; right: 0; opacity: 0; transform: scale(0); transition: all 0.3s ease; }
+        .fab-item { width: 56px; height: 56px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,0.15); position: absolute; bottom: 0; right: 0; opacity: 0; transform: scale(0); transition: all 0.3s ease; }
         .fab-item.visible { opacity: 1; transform: scale(1); }
         .fab-item:nth-child(2) { bottom: 80px; }
         .fab-item:nth-child(3) { bottom: 150px; }
         .fab-item:nth-child(4) { bottom: 220px; }
-        .fab-icon { width: 30px; height: 30px; opacity: 0.6; }
-        #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer mx-auto; }
+        .fab-item:nth-child(5) { bottom: 290px; }
+        .fab-icon { width: 30px; height: 30px; }
+        #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer mx-auto; }
         .icon { width: 14px; height: 14px; opacity: 0.6; margin-right: 6px; flex-shrink: 0; }
         #rows tr td { padding: 6px 8px !important; vertical-align: top; }
         #rows tr { border-bottom: 1px solid #e2e8f0; }
@@ -46,7 +47,7 @@
 </head>
 <body>
 
-<!-- Gewinnübersicht -->
+<!-- Kazanç Özeti -->
 <div class="max-w-[900px] mx-auto mt-6 px-4 no-print">
     <div class="bg-white p-6 rounded-xl shadow-md border grid grid-cols-3 text-center gap-4">
         <div><p class="text-xs text-slate-400 uppercase font-bold">Heute</p><p id="stat-today" class="text-2xl font-black text-slate-800">0,00 €</p></div>
@@ -77,7 +78,7 @@
     </div>
 </div>
 
-<!-- Logo hochladen -->
+<!-- Logo Yükleme -->
 <div class="max-w-[900px] mx-auto mt-8 px-4 no-print text-center">
     <h3 class="text-xl font-black mb-4">Firmenlogo hochladen</h3>
     <label class="cursor-pointer inline-block">
@@ -90,7 +91,6 @@
     <p class="mt-4 text-xs text-slate-500">Das Logo wird automatisch gespeichert.</p>
 </div>
 
-<!-- Rechnung -->
 <div class="card" id="invoice">
     <div id="statusStamp" class="stamp">Bezahlt</div>
     
@@ -110,35 +110,140 @@
         </div>
     </div>
 
-    <!-- ... (der Rest der Rechnung bleibt unverändert, wie in deiner Originalversion) ... -->
+    <div class="p-8 border-b text-xs text-slate-600">
+        <div class="grid grid-cols-2 gap-8">
+            <div>
+                <p>Leistungsdatum: <input type="date" id="serviceDate" class="font-bold outline-none bg-transparent border-b border-slate-400"></p>
+                <p>Rechnungsdatum: <span id="invoiceDate" class="font-bold"></span></p>
+                <p>Zahlbar bis: <input type="date" id="dueDate" class="font-bold outline-none bg-transparent border-b border-slate-400"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-8 grid grid-cols-2 gap-8 border-b text-sm">
+        <div>
+            <b class="text-blue-700 text-xs uppercase font-black block mb-2">Dienstleister</b>
+            <p class="font-black text-lg">Osman Tuncer</p>
+            <p class="text-slate-600 text-sm">Suntalstrasse 48, 31552 Rodenberg</p>
+            <p class="text-xs text-slate-400 font-bold mt-2 uppercase">St.-Nr: 41320887966</p>
+            <div class="mt-4 space-y-2 text-xs text-slate-600">
+                <div class="flex items-center">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+                    <span>+49 176 66658777</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+                    <span>74star@gmail.com</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-right space-y-2">
+            <div class="mb-3">
+                <select id="customerSelect" onchange="loadCustomer()" class="bg-slate-100 text-xs p-2 rounded w-full text-left">
+                    <option value="">— Kunde laden —</option>
+                </select>
+            </div>
+
+            <b class="text-blue-700 text-xs uppercase font-black block mb-2">Kunde</b>
+            <input type="text" id="c_n" placeholder="Name / Firma" class="w-full text-right font-bold outline-none text-sm mb-1">
+            <input type="text" id="c_s" placeholder="Straße" class="w-full text-right text-xs outline-none">
+            <input type="text" id="c_o" placeholder="PLZ Ort" class="w-full text-right text-xs outline-none mb-3">
+
+            <div class="space-y-2 text-xs text-slate-600">
+                <div class="flex items-center justify-end gap-2">
+                    <input type="text" id="c_phone" placeholder="Telefon" class="text-right outline-none w-full">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+                </div>
+                <div class="flex items-center justify-end gap-2">
+                    <input type="text" id="c_m" placeholder="E-Mail" class="text-right outline-none w-full">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+                </div>
+                <div class="flex items-center justify-end gap-2 mt-2">
+                    <input type="text" id="c_id" placeholder="Steuer-ID / USt-IdNr." class="text-right text-xs outline-none w-full uppercase font-bold text-slate-500">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                </div>
+            </div>
+
+            <button onclick="saveCustomer()" class="mt-4 text-xs bg-blue-600 text-white px-4 py-2 rounded font-bold">💾 Kunde speichern</button>
+        </div>
+    </div>
+
+    <table class="w-full text-xs">
+        <thead class="bg-slate-50 text-xs font-black uppercase text-slate-500">
+            <tr>
+                <th class="p-3 text-left" style="width: 55%;">Leistungsbeschreibung</th>
+                <th class="p-3 text-center">Stk</th>
+                <th class="p-3 text-right">Einzel (€)</th>
+                <th class="p-3 text-right">Summe (€)</th>
+            </tr>
+        </thead>
+        <tbody id="rows">
+            <tr class="border-b border-slate-100">
+                <td class="p-3 align-top"><textarea placeholder="Beschreibung..." class="w-full outline-none font-medium" rows="1" oninput="autoHeight(this)"></textarea></td>
+                <td class="p-3 text-center align-top"><input type="number" value="1" min="1" class="qty w-16 text-center font-black outline-none" oninput="calc()"></td>
+                <td class="p-3 align-top"><input type="number" step="0.01" class="price w-full text-right font-bold outline-none" oninput="calc()"></td>
+                <td class="p-3 text-right font-black row-total align-top">0,00 €</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="p-8 border-b">
+        <p class="text-xs font-bold text-slate-600 uppercase mb-2">Notiz / Zusatzinformationen</p>
+        <textarea id="noteArea" class="w-full p-3 border border-slate-300 rounded text-sm" rows="3">Vielen Dank für Ihren Auftrag! Bei Fragen erreichen Sie mich gerne unter +49 176 66658777 oder per E-Mail an 74star@gmail.com.</textarea>
+    </div>
+
+    <div class="p-8 grid grid-cols-2 gap-8 bg-slate-50/30">
+        <div class="flex items-center gap-4">
+            <div id="qrcode" class="p-1 bg-white rounded-lg shadow-sm"></div>
+            <div class="text-xs font-bold text-slate-500 uppercase leading-tight">Scan & Pay<br><span class="accent-text italic text-sm">per App</span></div>
+        </div>
+        <div class="text-right space-y-1">
+            <p class="text-xs text-slate-500">Netto: <span id="sub">0,00 €</span></p>
+            <p class="text-xs text-red-600 font-bold hidden" id="fee-row">Mahngebühr: <span id="fee-val">0,00 €</span></p>
+            <p class="text-xs text-slate-500" id="tax-line">MwSt (<span id="tax-rate-label">19</span>%): <span id="tax">0,00 €</span></p>
+            <p class="text-3xl font-black text-slate-900 pt-3 leading-none" id="total">0,00 €</p>
+            <p id="small-biz-note" class="text-xs text-slate-400 italic hidden">Gemäß § 19 UStG keine Umsatzsteuer.</p>
+        </div>
+    </div>
+
+    <div class="p-8 border-t flex justify-between items-end text-xs relative">
+        <div>
+            <p class="font-black text-slate-500 uppercase mb-3">Techniker</p>
+            <p class="italic text-xl border-b-2 border-slate-900 w-48 pb-1 font-serif">Osman Tuncer</p>
+        </div>
+        <div class="text-right relative">
+            <p class="font-black text-slate-500 uppercase mb-3">Abnahme Kunde</p>
+            <div class="relative inline-block">
+                <canvas id="sig-canvas" width="240" height="70" class="border-b-2 border-slate-900 no-print"></canvas>
+                <div class="sig-controls no-print">
+                    <button id="sig-lock-btn" class="sig-btn">🔒 Gesperrt</button>
+                    <button id="sig-clear-btn" class="sig-btn text-red-600">🗑️ Löschen</button>
+                </div>
+            </div>
+            <img id="sig-image" class="hidden h-16 border-b-2 border-slate-900">
+        </div>
+    </div>
 
     <div class="header-bg p-5 text-white text-xs font-bold text-center opacity-90">
-        IBAN: LT78 3250 0925 1892 8659 | BIC: REVOLT21 | OSMAN TUNCER • VIELEN DANK FÜR IHR VERTRAUEN! 
+        IBAN: LT78 3250 0925 1892 8659 | BIC: REVOLT21 | OSMAN TUNCER • VIELEN DANK FÜR IHR VERTRAUEN!
     </div>
 </div>
 
-<!-- FAB Buttons -->
+<!-- Floating Buttons -->
 <div class="fab-container no-print">
     <div id="fab-main" class="fab-main" onclick="toggleFab()">+</div>
-    <div class="fab-item" onclick="processPaidAndPrint()">
-        <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" class="fab-icon" alt="Bezahlt & Drucken">
-    </div>
-    <div class="fab-item" onclick="doPrint()">
-        <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="fab-icon" alt="Drucken">
-    </div>
-    <div class="fab-item" onclick="exportPDF()">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Adobe_Acrobat_DC_icon.svg/512px-Adobe_Acrobat_DC_icon.svg.png" class="fab-icon" alt="PDF">
-    </div>
-    <div class="fab-item" onclick="addRow()">
-        <span class="text-3xl font-black text-blue-600">+</span>
-    </div>
+    <div class="fab-item" onclick="processPaidAndPrint()" title="Bezahlt & Drucken"><img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" class="fab-icon"></div>
+    <div class="fab-item" onclick="doPrint()" title="Drucken"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="fab-icon"></div>
+    <div class="fab-item" onclick="exportPDF()" title="PDF Herunterladen"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Adobe_Acrobat_DC_icon.svg/512px-Adobe_Acrobat_DC_icon.svg.png" class="fab-icon"></div>
+    <div class="fab-item" onclick="addRow()" title="Neue Zeile"><span class="text-3xl font-black text-blue-600">+</span></div>
 </div>
 
 <script>
     const { jsPDF } = window.jspdf;
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
     const qrcode = new QRCode(document.getElementById("qrcode"), { width: 70, height: 70 });
-    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'rgba(0,0,0,0)' });
+    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'rgba(0,0,0,0)' }); // Başlangıçta kilitli
     let currentTotal = 0;
     let customers = JSON.parse(localStorage.getItem('h2_customers') || '[]');
     let stats = JSON.parse(localStorage.getItem('h2_stats') || '{"total":0,"history":[]}');
@@ -168,44 +273,146 @@
         reader.readAsDataURL(file);
     }
 
-    // TAMAMEN TEMİZ RECHNUNGSNUMMER FONKSİYONLARI
     function getCurrentInvoiceNumber() {
         const year = new Date().getFullYear();
-        let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 0);
-        seq = seq + 1;
-        return `H\( {year} \){String(seq).padStart(4, '0')}`;
+        let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 1);
+        return `H2\( {year} \){String(seq).padStart(4, '0')}`;
     }
 
     function increaseInvoiceNumber() {
         const year = new Date().getFullYear();
-        let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 0);
+        let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 1);
         seq++;
         localStorage.setItem(`h2_seq_${year}`, seq);
     }
 
-    function resetInvNum() {
-        if (confirm(`Rechnungsnummer \( {new Date().getFullYear()} komplett zurücksetzen? (Startet wieder bei H \){new Date().getFullYear()}0001)`)) {
-            const year = new Date().getFullYear();
-            localStorage.removeItem(`h2_seq_${year}`);
-            document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+    function saveCustomer() {
+        const c = {
+            name: document.getElementById('c_n').value.trim(),
+            street: document.getElementById('c_s').value.trim(),
+            city: document.getElementById('c_o').value.trim(),
+            phone: document.getElementById('c_phone').value.trim(),
+            email: document.getElementById('c_m').value.trim(),
+            taxId: document.getElementById('c_id').value.trim()
+        };
+        if (!c.name) return alert("Name/Firma erforderlich!");
+        const idx = customers.findIndex(x => x.name === c.name);
+        if (idx > -1) customers[idx] = c; else customers.push(c);
+        localStorage.setItem('h2_customers', JSON.stringify(customers));
+        updateCustomerList();
+        alert("Kunde gespeichert!");
+    }
+
+    function updateCustomerList() {
+        const sel = document.getElementById('customerSelect');
+        sel.innerHTML = '<option value="">— Kunde laden —</option>';
+        customers.forEach((c, i) => {
+            const opt = document.createElement('option');
+            opt.value = i; opt.textContent = c.name;
+            sel.appendChild(opt);
+        });
+    }
+
+    function loadCustomer() {
+        const idx = document.getElementById('customerSelect').value;
+        if (idx === "") return;
+        const c = customers[idx];
+        document.getElementById('c_n').value = c.name;
+        document.getElementById('c_s').value = c.street;
+        document.getElementById('c_o').value = c.city;
+        document.getElementById('c_phone').value = c.phone;
+        document.getElementById('c_m').value = c.email;
+        document.getElementById('c_id').value = c.taxId;
+    }
+
+    document.getElementById('sig-lock-btn').addEventListener('click', () => {
+        sigLocked = !sigLocked;
+        signaturePad.penColor = sigLocked ? 'rgba(0,0,0,0)' : 'black';
+        document.getElementById('sig-lock-btn').textContent = sigLocked ? '🔒 Gesperrt' : '✏️ Freigegeben';
+    });
+
+    document.getElementById('sig-clear-btn').addEventListener('click', () => {
+        signaturePad.clear();
+    });
+
+    function updateStats() {
+        const today = new Date().toISOString().split('T')[0];
+        const month = today.substring(0, 7);
+        let todayEarn = 0, monthEarn = 0;
+        stats.history.forEach(h => {
+            if (h.date === today) todayEarn += h.amount;
+            if (h.date.startsWith(month)) monthEarn += h.amount;
+        });
+        document.getElementById('stat-today').textContent = fmt(todayEarn);
+        document.getElementById('stat-month').textContent = fmt(monthEarn);
+        document.getElementById('stat-total').textContent = fmt(stats.total);
+    }
+
+    function calc() {
+        let s = 0;
+        document.querySelectorAll("#rows tr").forEach(r => {
+            let q = parseFloat(r.querySelector(".qty").value) || 0;
+            let p = parseFloat(r.querySelector(".price").value) || 0;
+            let t = q * p;
+            r.querySelector(".row-total").innerText = fmt(t);
+            s += t;
+        });
+
+        const rate = parseFloat(document.getElementById("taxRate").value);
+        const fee = document.getElementById("docType").value !== "RE" ? (document.getElementById("docType").value === "M1" ? 5 : 10) : 0;
+
+        let net = s + fee;
+        let tax = net * rate;
+        let total = net + tax;
+        currentTotal = total;
+
+        document.getElementById("sub").innerText = fmt(s);
+        document.getElementById("fee-val").innerText = fmt(fee);
+        document.getElementById("fee-row").classList.toggle("hidden", fee === 0);
+        document.getElementById("tax").innerText = fmt(tax);
+        document.getElementById("total").innerText = fmt(total);
+        document.getElementById("tax-rate-label").innerText = (rate * 100);
+
+        rate === 0 ? document.getElementById("small-biz-note").classList.remove("hidden") : document.getElementById("small-biz-note").classList.add("hidden");
+
+        qrcode.clear();
+        if (total > 0) {
+            qrcode.makeCode(`BCD\n001\n1\nSCT\nREVOLT21\nOsman Tuncer\nLT783250092518928659\nEUR\( {total.toFixed(2)}\n\n\nRE- \){document.getElementById('inv').textContent}`);
         }
     }
 
-    function decreaseInvNum() {
-        if (confirm("Letzte Rechnungsnummer um 1 zurücksetzen?")) {
-            const year = new Date().getFullYear();
-            let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 1);
-            if (seq > 1) {
-                seq--;
-                localStorage.setItem(`h2_seq_${year}`, seq);
-                document.getElementById('inv').textContent = getCurrentInvoiceNumber();
-            } else {
-                alert("Erste Rechnung des Jahres – kann nicht weiter zurückgesetzt werden.");
-            }
-        }
+    function addRow() {
+        const tbody = document.getElementById('rows');
+        const tr = tbody.querySelector('tr').cloneNode(true);
+        tr.querySelectorAll("textarea, input").forEach(i => {
+            i.value = i.classList.contains("qty") ? 1 : "";
+        });
+        tr.querySelector(".row-total").innerText = "0,00 €";
+        tbody.appendChild(tr);
+        calc();
+        tr.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
-    // Diğer fonksiyonlar (saveCustomer, calc, processPaidAndPrint vs.) aynı kalıyor...
+    function doPrint() {
+        if (!signaturePad.isEmpty()) {
+            document.getElementById('sig-image').src = signaturePad.toDataURL();
+            document.getElementById('sig-image').classList.remove("hidden");
+            document.querySelector('.sig-controls').classList.add("hidden");
+            document.getElementById('sig-canvas').classList.add("hidden");
+        }
+        window.print();
+    }
+
+    async function exportPDF() {
+        const element = document.getElementById('invoice');
+        const canvas = await html2canvas(element, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const width = pdf.internal.pageSize.getWidth();
+        const height = pdf.internal.pageSize.getHeight();
+        pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+        pdf.save(`Rechnung_${document.getElementById('inv').textContent}.pdf`);
+    }
 
     function processPaidAndPrint() {
         document.getElementById('statusStamp').style.display = 'block';
@@ -218,14 +425,36 @@
         setTimeout(doPrint, 300);
     }
 
+    function resetInvNum() {
+        if (confirm("Rechnungsnummer dieses Jahres komplett zurücksetzen?")) {
+            const year = new Date().getFullYear();
+            localStorage.removeItem(`h2_seq_${year}`);
+            document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+        }
+    }
+
+    function decreaseInvNum() {
+        if (confirm("Letzte Nummer um 1 zurücksetzen?")) {
+            const year = new Date().getFullYear();
+            let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 2);
+            if (seq > 1) {
+                localStorage.setItem(`h2_seq_${year}`, seq - 1);
+                document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+            }
+        }
+    }
+
+    // Sayfa açılır açılmaz numara yaz (ham kod çıkmasın)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+    });
+
     window.onload = function() {
         const savedLogo = localStorage.getItem('h2_logo');
         if (savedLogo) {
             document.getElementById('firmLogo').src = savedLogo;
             document.getElementById('logo-preview').innerHTML = `<img src="${savedLogo}" class="w-full h-full object-contain rounded-xl">`;
         }
-
-        document.getElementById('inv').textContent = getCurrentInvoiceNumber(); // Burada düzgün H20250001 yazacak
 
         const today = new Date();
         document.getElementById('invoiceDate').textContent = today.toLocaleDateString('de-DE');
