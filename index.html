@@ -282,18 +282,21 @@
     }
 
     // === KORRIGIERTE RECHNUNGSNUMMER-LOGIK ===
-    function getCurrentInvoiceNumber() {
-        const year = new Date().getFullYear();
-        let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 0);
-        seq = seq + 1; // Nächste verfügbare Nummer anzeigen
-        return `H\( {year} \){String(seq).padStart(4, '0')}`;
+  function getCurrentInvoiceNumber() {
+    const year = new Date().getFullYear();
+    let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 0);  // Startet bei 0, wird beim Speichern erhöht
+    seq = seq + 1;  // Damit die aktuelle Nummer angezeigt wird
+    return `H\( {year} \){String(seq).padStart(4, '0')}`;
+  
     }
 
     function increaseInvoiceNumber() {
-        const year = new Date().getFullYear();
-        let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 0);
-        seq++;
-        localStorage.setItem(`h2_seq_${year}`, seq);
+       function increaseInvoiceNumber() {
+    const year = new Date().getFullYear();
+    let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 0);
+    seq++;
+    localStorage.setItem(`h2_seq_${year}`, seq);
+
     }
 
     function resetInvNum() {
@@ -304,19 +307,27 @@
         }
     }
 
-    function decreaseInvNum() {
-        if (confirm("Letzte Rechnungsnummer um 1 zurücksetzen?")) {
-            const year = new Date().getFullYear();
-            let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 1);
-            if (seq > 1) {
-                seq--;
-                localStorage.setItem(`h2_seq_${year}`, seq);
-                document.getElementById('inv').textContent = getCurrentInvoiceNumber();
-            } else {
-                alert("Erste Rechnung des Jahres – kann nicht weiter zurückgesetzt werden.");
-            }
+    function resetInvNum() {
+    if (confirm("Rechnungsnummer dieses Jahres komplett zurücksetzen? (Startet wieder bei H" + new Date().getFullYear() + "0001)")) {
+        const year = new Date().getFullYear();
+        localStorage.removeItem(`h2_seq_${year}`);
+        document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+    }
+}
+
+function decreaseInvNum() {
+    if (confirm("Letzte Rechnungsnummer um 1 zurücksetzen?")) {
+        const year = new Date().getFullYear();
+        let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 1);
+        if (seq > 1) {
+            seq--;
+            localStorage.setItem(`h2_seq_${year}`, seq);
+            document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+        } else {
+            alert("Kann nicht weiter zurückgesetzt werden.");
         }
     }
+}
     // =========================================
 
     function saveCustomer() {
