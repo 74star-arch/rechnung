@@ -106,7 +106,7 @@
         </div>
         <div class="text-right">
             <p class="text-xs opacity-50 uppercase font-black">Rechnung Nr.</p>
-            <p id="inv" class="text-right font-black text-2xl accent-text">H20250001</p>
+            <p id="inv" class="text-right font-black text-2xl accent-text"></p>
         </div>
     </div>
 
@@ -230,7 +230,7 @@
     </div>
 </div>
 
-<!-- Final + Butonu -->
+<!-- + Butonu -->
 <div class="fab-container no-print">
     <div id="fab-main" class="fab-main" onclick="toggleFab()">+</div>
     <div class="fab-item" onclick="processPaidAndPrint()">
@@ -383,7 +383,10 @@
 
         rate === 0 ? document.getElementById("small-biz-note").classList.remove("hidden") : document.getElementById("small-biz-note").classList.add("hidden");
 
-        qrcode.makeCode(`BCD\n001\n1\nSCT\nREVOLT21\nOsman Tuncer\nLT783250092518928659\nEUR\( {total.toFixed(2)}\n\n\nRE- \){document.getElementById('inv').textContent}`);
+        qrcode.clear();
+        if (total > 0) {
+            qrcode.makeCode(`BCD\n001\n1\nSCT\nREVOLT21\nOsman Tuncer\nLT783250092518928659\nEUR\( {total.toFixed(2)}\n\n\nRE- \){document.getElementById('inv').textContent}`);
+        }
     }
 
     function addRow() {
@@ -446,7 +449,7 @@
             let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 2);
             if (seq > 1) {
                 localStorage.setItem(`h2_seq_${year}`, seq - 1);
-                document.getElementById('inv').textContent = `H2\( {year} \){String(seq - 1).padStart(4, '0')}`;
+                document.getElementById('inv').textContent = getCurrentInvoiceNumber();
             }
         }
     }
