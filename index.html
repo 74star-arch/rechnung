@@ -230,7 +230,7 @@
     </div>
 </div>
 
-<!-- Profesyonel FAB Butonları -->
+<!-- FAB Butonları -->
 <div class="fab-container no-print">
     <div id="fab-main" class="fab-main" onclick="toggleFab()">+</div>
     <div class="fab-item" onclick="processPaidAndPrint()">
@@ -251,7 +251,7 @@
     const { jsPDF } = window.jspdf;
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
     const qrcode = new QRCode(document.getElementById("qrcode"), { width: 70, height: 70 });
-    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'rgba(0,0,0,0)' }); // Başlangıçta kilitli
+    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'rgba(0,0,0,0)' });
     let currentTotal = 0;
     let customers = JSON.parse(localStorage.getItem('h2_customers') || '[]');
     let stats = JSON.parse(localStorage.getItem('h2_stats') || '{"total":0,"history":[]}');
@@ -449,6 +449,11 @@
         }
     }
 
+    // Sayfa yüklendiği anda fatura numarasını kesin doğru yaz
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+    });
+
     window.onload = function() {
         const savedLogo = localStorage.getItem('h2_logo');
         if (savedLogo) {
@@ -463,7 +468,6 @@
         due.setDate(due.getDate() + 14);
         document.getElementById('dueDate').value = due.toISOString().split('T')[0];
 
-        document.getElementById('inv').textContent = getCurrentInvoiceNumber();
         updateCustomerList();
         updateStats();
         calc();
