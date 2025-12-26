@@ -20,13 +20,13 @@
             .p-8 { padding: 8px !important; }
             .text-3xl { font-size: 2rem !important; }
             #qrcode { width: 70px !important; height: 70px !important; }
+            .stamp { display: block !important; opacity: 0.3 !important; }
         }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; }
-        .card { max-width: 900px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; }
-        .stamp { position: absolute; top: 140px; right: 30px; padding: 8px 20px; border: 5px solid; border-radius: 12px; font-size: 28px; font-weight: 900; text-transform: uppercase; transform: rotate(-15deg); opacity: 0.15; pointer-events: none; display: none; z-index: 100; }
-        .stamp-paid { display: block; color: #16a34a; border-color: #16a34a; }
-        .theme-blue .header-bg { background: #1e3a8a; }
-        .theme-blue .accent-text { color: #60a5fa; }
+        .card { max-width: 900px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .stamp { position: absolute; top: 140px; right: 30px; padding: 8px 20px; border: 5px solid #16a34a; border-radius: 12px; font-size: 28px; font-weight: 900; text-transform: uppercase; transform: rotate(-15deg); opacity: 0.15; pointer-events: none; display: none; z-index: 100; color: #16a34a; }
+        .header-bg { background: #1e3a8a; }
+        .accent-text { color: #60a5fa; }
         .share-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
         .main-btn { @apply w-16 h-16 rounded-full bg-blue-600 text-white shadow-2xl flex items-center justify-center text-4xl; }
         .sub-btn { @apply w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center opacity-0 scale-0 transition-all duration-300 text-2xl font-bold; }
@@ -37,10 +37,10 @@
         #rows tr { border-bottom: 1px solid #e2e8f0; }
         .sig-controls { @apply absolute top-2 right-2 flex gap-2 z-10 no-print; }
         .sig-btn { @apply bg-white px-3 py-1 rounded text-xs font-bold shadow; }
-        #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer; }
+        #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer mx-auto; }
     </style>
 </head>
-<body class="theme-blue">
+<body>
 
 <!-- Kazanç Özeti -->
 <div class="max-w-[900px] mx-auto mt-6 px-4 no-print">
@@ -73,7 +73,7 @@
     </div>
 </div>
 
-<!-- Logo Yükleme Alanı (daha büyük ve belirgin) -->
+<!-- Logo Yükleme -->
 <div class="max-w-[900px] mx-auto mt-8 px-4 no-print text-center">
     <h3 class="text-xl font-black mb-4">Firmenlogo hochladen</h3>
     <label class="cursor-pointer inline-block">
@@ -83,10 +83,11 @@
         </div>
         <input type="file" id="logoUpload" accept="image/*" class="hidden" onchange="loadLogo(event)">
     </label>
-    <p class="mt-4 text-xs text-slate-500">Das Logo wird automatisch gespeichert und bleibt erhalten.</p>
+    <p class="mt-4 text-xs text-slate-500">Das Logo wird automatisch gespeichert.</p>
 </div>
 
 <div class="card" id="invoice">
+    <!-- Bezahlt damgası başlangıçta GİZLİ -->
     <div id="statusStamp" class="stamp">Bezahlt</div>
     
     <div class="header-bg p-8 text-white flex justify-between items-start">
@@ -240,7 +241,7 @@
     const { jsPDF } = window.jspdf;
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
     const qrcode = new QRCode(document.getElementById("qrcode"), { width: 70, height: 70 });
-    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'black' });
+    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'rgba(0,0,0,0)' }); // Başlangıçta kilitli (şeffaf kalem)
     let currentTotal = 0;
     let customers = JSON.parse(localStorage.getItem('h2_customers') || '[]');
     let stats = JSON.parse(localStorage.getItem('h2_stats') || '{"total":0,"history":[]}');
@@ -249,7 +250,6 @@
     function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
     function toggleT() { document.getElementById('tools').classList.toggle('active'); }
 
-    // Logo yükleme (tam çalışan hali)
     function loadLogo(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -402,7 +402,7 @@
     }
 
     function processPaidAndPrint() {
-        document.getElementById('statusStamp').classList.add('stamp-paid');
+        document.getElementById('statusStamp').style.display = 'block';
         stats.total += currentTotal;
         stats.history.push({ date: new Date().toISOString().split('T')[0], amount: currentTotal });
         localStorage.setItem('h2_stats', JSON.stringify(stats));
