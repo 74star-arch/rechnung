@@ -28,39 +28,31 @@
         .header-bg { background: #1e3a8a; }
         .accent-text { color: #60a5fa; }
         .fab-container { position: fixed; bottom: 30px; right: 20px; z-index: 9999; }
-        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #3b82f6; color: white; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); position: absolute; bottom: 0; right: 0; opacity: 0; transform: scale(0); transition: all 0.3s ease; }
+        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #3b82f6; color: white; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); position: absolute; bottom: 0; right: 0; opacity: 1; transform: scale(1); transition: all 0.3s ease; }
         .fab-main.open { transform: rotate(45deg); background: #6366f1; }
         .fab-item { width: 56px; height: 56px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); position: absolute; bottom: 0; right: 0; opacity: 0; transform: scale(0); transition: all 0.3s ease; }
+        .fab-item.visible { opacity: 1; transform: scale(1); }
         .fab-item:nth-child(2) { bottom: 80px; }
         .fab-item:nth-child(3) { bottom: 150px; }
         .fab-item:nth-child(4) { bottom: 220px; }
-        .fab-icon { width: 30px; height: 30px; opacity: 0.6; margin-right: 6px; flex-shrink: 0; }
+        .fab-icon { width: 30px; height: 30px; opacity: 0.6; }
         #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer mx-auto; }
         .icon { width: 14px; height: 14px; opacity: 0.6; margin-right: 6px; flex-shrink: 0; }
         #rows tr td { padding: 6px 8px !important; vertical-align: top; }
         #rows tr { border-bottom: 1px solid #e2e8f0; }
         .sig-controls { @apply absolute top-2 right-2 flex gap-2 z-10 no-print; }
         .sig-btn { @apply bg-white px-3 py-1 rounded text-xs font-bold shadow; }
-        .fab-item.visible { opacity: 1; transform: scale(1); }
     </style>
 </head>
 <body>
 
 <!-- Gewinnübersicht -->
 <div class="max-w-[900px] mx-auto mt-6 px-4 no-print">
-    <div class="card">
-        <div class="header-bg">
-            <div class="stamp">
-                <div class="icon"></div>
-            </div>
-        </div>
+    <div class="bg-white p-6 rounded-xl shadow-md border grid grid-cols-3 text-center gap-4">
+        <div><p class="text-xs text-slate-400 uppercase font-bold">Heute</p><p id="stat-today" class="text-2xl font-black text-slate-800">0,00 €</p></div>
+        <div><p class="text-xs text-slate-400 uppercase font-bold">Monat</p><p id="stat-month" class="text-2xl font-black text-blue-600">0,00 €</p></div>
+        <div><p class="text-xs text-slate-400 uppercase font-bold">Gesamt</p><p id="stat-total" class="text-2xl font-black text-green-600">0,00 €</p></div>
     </div>
-</div>
-
-<div class="bg-white p-6 rounded-xl shadow-md border grid grid-cols-3 text-center gap-4">
-    <div><p class="text-xs text-slate-400 uppercase font-bold">Heute</p><p id="stat-today" class="text-2xl font-black text-slate-800">0,00 €</p></div>
-    <div><p class="text-xs text-slate-400 uppercase font-bold">Monat</p><p id="stat-month" class="text-2xl font-black text-blue-600">0,00 €</p></div>
-    <div><p class="text-xs text-slate-400 uppercase font-bold">Gesamt</p><p id="stat-total" class="text-2xl font-black text-green-600">0,00 €</p></div>
 </div>
 
 <!-- Tool Bar -->
@@ -85,7 +77,7 @@
     </div>
 </div>
 
-<!-- Logo Yükleme -->
+<!-- Logo hochladen -->
 <div class="max-w-[900px] mx-auto mt-8 px-4 no-print text-center">
     <h3 class="text-xl font-black mb-4">Firmenlogo hochladen</h3>
     <label class="cursor-pointer inline-block">
@@ -98,6 +90,7 @@
     <p class="mt-4 text-xs text-slate-500">Das Logo wird automatisch gespeichert.</p>
 </div>
 
+<!-- Rechnung -->
 <div class="card" id="invoice">
     <div id="statusStamp" class="stamp">Bezahlt</div>
     
@@ -237,7 +230,7 @@
     </div>
 </div>
 
-<!-- + Butonu -->
+<!-- FAB Buttons -->
 <div class="fab-container no-print">
     <div id="fab-main" class="fab-main" onclick="toggleFab()">+</div>
     <div class="fab-item" onclick="processPaidAndPrint()">
@@ -288,11 +281,11 @@
         reader.readAsDataURL(file);
     }
 
-    // ------------------- NEUE RECHNUNGSNUMMER-LOGIK -------------------
+    // === KORRIGIERTE RECHNUNGSNUMMER-LOGIK ===
     function getCurrentInvoiceNumber() {
         const year = new Date().getFullYear();
         let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 0);
-        seq = seq + 1; // Zeige die nächste verfügbare Nummer an
+        seq = seq + 1; // Nächste verfügbare Nummer anzeigen
         return `H\( {year} \){String(seq).padStart(4, '0')}`;
     }
 
@@ -304,7 +297,7 @@
     }
 
     function resetInvNum() {
-        if (confirm("Rechnungsnummer dieses Jahres komplett zurücksetzen? (Startet wieder bei H" + new Date().getFullYear() + "0001)")) {
+        if (confirm(`Rechnungsnummer \( {new Date().getFullYear()} komplett zurücksetzen? (Startet wieder bei H \){new Date().getFullYear()}0001)`)) {
             const year = new Date().getFullYear();
             localStorage.removeItem(`h2_seq_${year}`);
             document.getElementById('inv').textContent = getCurrentInvoiceNumber();
@@ -320,11 +313,11 @@
                 localStorage.setItem(`h2_seq_${year}`, seq);
                 document.getElementById('inv').textContent = getCurrentInvoiceNumber();
             } else {
-                alert("Kann nicht weiter zurückgesetzt werden – erste Nummer des Jahres.");
+                alert("Erste Rechnung des Jahres – kann nicht weiter zurückgesetzt werden.");
             }
         }
     }
-    // -----------------------------------------------------------------
+    // =========================================
 
     function saveCustomer() {
         const c = {
@@ -460,11 +453,12 @@
         stats.history.push({ date: new Date().toISOString().split('T')[0], amount: currentTotal });
         localStorage.setItem('h2_stats', JSON.stringify(stats));
         updateStats();
-        increaseInvoiceNumber();
-        document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+        increaseInvoiceNumber(); // Nummer erhöhen
+        document.getElementById('inv').textContent = getCurrentInvoiceNumber(); // Neue Nummer anzeigen
         setTimeout(doPrint, 300);
     }
 
+    // Initialisierung beim Laden
     window.onload = function() {
         const savedLogo = localStorage.getItem('h2_logo');
         if (savedLogo) {
@@ -472,6 +466,7 @@
             document.getElementById('logo-preview').innerHTML = `<img src="${savedLogo}" class="w-full h-full object-contain rounded-xl">`;
         }
 
+        // Rechnungsnummer setzen
         document.getElementById('inv').textContent = getCurrentInvoiceNumber();
 
         const today = new Date();
