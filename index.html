@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2 TechService - ERP System</title>
+    <title>H2 TechService - Rechnung</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -23,12 +23,13 @@
         }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; }
         .card { max-width: 900px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; }
-        .tab-btn { @apply px-6 py-4 font-bold text-sm uppercase tracking-wider border-b-4 transition-colors; }
-        .tab-active { @apply border-blue-600 text-blue-600 bg-blue-50; }
-        .tab-inactive { @apply border-transparent text-slate-500 hover:text-slate-700; }
+        .stamp { position: absolute; top: 140px; right: 30px; padding: 8px 20px; border: 5px solid; border-radius: 12px; font-size: 28px; font-weight: 900; text-transform: uppercase; transform: rotate(-15deg); opacity: 0.15; pointer-events: none; display: none; z-index: 100; }
+        .stamp-paid { display: block; color: #16a34a; border-color: #16a34a; }
+        .theme-blue .header-bg { background: #1e3a8a; }
+        .theme-blue .accent-text { color: #60a5fa; }
         .share-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
-        .main-btn { @apply w-14 h-14 rounded-full bg-blue-600 text-white shadow-2xl flex items-center justify-center text-3xl; }
-        .sub-btn { @apply w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center opacity-0 scale-0 transition-all duration-300; }
+        .main-btn { @apply w-16 h-16 rounded-full bg-blue-600 text-white shadow-2xl flex items-center justify-center text-4xl; }
+        .sub-btn { @apply w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center opacity-0 scale-0 transition-all duration-300 text-2xl font-bold; }
         .share-container.active .sub-btn { @apply opacity-100 scale-100; }
         .share-container.active .main-btn { @apply rotate-45 bg-indigo-700; }
         .icon { width: 14px; height: 14px; opacity: 0.6; margin-right: 6px; flex-shrink: 0; }
@@ -36,6 +37,7 @@
         #rows tr { border-bottom: 1px solid #e2e8f0; }
         .sig-controls { @apply absolute top-2 right-2 flex gap-2 z-10 no-print; }
         .sig-btn { @apply bg-white px-3 py-1 rounded text-xs font-bold shadow; }
+        #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer; }
     </style>
 </head>
 <body class="theme-blue">
@@ -71,20 +73,20 @@
     </div>
 </div>
 
-<!-- Tab Menü -->
-<div class="max-w-[900px] mx-auto mt-4 px-4 no-print">
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div class="flex">
-            <button id="tab-invoice" class="tab-btn tab-active">Rechnung</button>
-            <button id="tab-stock" class="tab-btn tab-inactive">Stok</button>
-            <button id="tab-expense" class="tab-btn tab-inactive">Harcama</button>
-            <button id="tab-report" class="tab-btn tab-inactive">Rapor</button>
+<!-- Logo Yükleme Alanı (daha büyük ve belirgin) -->
+<div class="max-w-[900px] mx-auto mt-8 px-4 no-print text-center">
+    <h3 class="text-xl font-black mb-4">Firmenlogo hochladen</h3>
+    <label class="cursor-pointer inline-block">
+        <div id="logo-preview" class="mx-auto">
+            <span class="text-6xl text-slate-400">📷</span>
+            <p class="mt-4 text-sm text-slate-600 font-bold">Klicken zum Hochladen</p>
         </div>
-    </div>
+        <input type="file" id="logoUpload" accept="image/*" class="hidden" onchange="loadLogo(event)">
+    </label>
+    <p class="mt-4 text-xs text-slate-500">Das Logo wird automatisch gespeichert und bleibt erhalten.</p>
 </div>
 
-<!-- Rechnung Tab -->
-<div id="invoice-tab" class="card">
+<div class="card" id="invoice">
     <div id="statusStamp" class="stamp">Bezahlt</div>
     
     <div class="header-bg p-8 text-white flex justify-between items-start">
@@ -153,12 +155,12 @@
                     <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
                 </div>
                 <div class="flex items-center justify-end gap-2 mt-2">
-                    <input type="text" id="c_id" placeholder="Steuer-ID" class="text-right text-xs outline-none w-full uppercase font-bold text-slate-500">
+                    <input type="text" id="c_id" placeholder="Steuer-ID / USt-IdNr." class="text-right text-xs outline-none w-full uppercase font-bold text-slate-500">
                     <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                 </div>
             </div>
 
-            <button onclick="saveCustomer()" class="mt-4 text-xs bg-blue-600 text-white px-4 py-2 rounded font-bold">💾 Speichern</button>
+            <button onclick="saveCustomer()" class="mt-4 text-xs bg-blue-600 text-white px-4 py-2 rounded font-bold">💾 Kunde speichern</button>
         </div>
     </div>
 
@@ -182,8 +184,8 @@
     </table>
 
     <div class="p-8 border-b">
-        <p class="text-xs font-bold text-slate-600 uppercase mb-2">Notiz</p>
-        <textarea id="noteArea" class="w-full p-3 border border-slate-300 rounded text-sm" rows="3">Vielen Dank für Ihren Auftrag!</textarea>
+        <p class="text-xs font-bold text-slate-600 uppercase mb-2">Notiz / Zusatzinformationen</p>
+        <textarea id="noteArea" class="w-full p-3 border border-slate-300 rounded text-sm" rows="3">Vielen Dank für Ihren Auftrag! Bei Fragen erreichen Sie mich gerne unter +49 176 66658777 oder per E-Mail an 74star@gmail.com.</textarea>
     </div>
 
     <div class="p-8 grid grid-cols-2 gap-8 bg-slate-50/30">
@@ -223,69 +225,6 @@
     </div>
 </div>
 
-<!-- Stok Tab -->
-<div id="stock-tab" class="card hidden">
-    <div class="p-8">
-        <h2 class="text-2xl font-black mb-6">Stok Takibi</h2>
-        <div class="grid grid-cols-3 gap-4 mb-6">
-            <input id="stock-name" placeholder="Ürün Adı" class="p-3 border rounded">
-            <input id="stock-price" type="number" step="0.01" placeholder="Fiyat (€)" class="p-3 border rounded">
-            <input id="stock-qty" type="number" placeholder="Stok Miktarı" class="p-3 border rounded">
-        </div>
-        <button onclick="addStock()" class="bg-blue-600 text-white px-6 py-3 rounded font-bold">+ Ekle</button>
-        <div class="mt-8 overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-100">
-                    <tr><th class="p-3 text-left">Ürün</th><th class="p-3 text-right">Fiyat</th><th class="p-3 text-center">Stok</th><th class="p-3 text-center">İşlem</th></tr>
-                </thead>
-                <tbody id="stock-list"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Harcama Tab -->
-<div id="expense-tab" class="card hidden">
-    <div class="p-8">
-        <h2 class="text-2xl font-black mb-6">Harcama Girişi</h2>
-        <div class="grid grid-cols-3 gap-4 mb-6">
-            <input id="expense-desc" placeholder="Açıklama" class="p-3 border rounded">
-            <input id="expense-amount" type="number" step="0.01" placeholder="Tutar (€)" class="p-3 border rounded">
-            <input id="expense-date" type="date" class="p-3 border rounded">
-        </div>
-        <button onclick="addExpense()" class="bg-red-600 text-white px-6 py-3 rounded font-bold">+ Ekle</button>
-        <div class="mt-8 overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-100">
-                    <tr><th class="p-3 text-left">Tarih</th><th class="p-3 text-left">Açıklama</th><th class="p-3 text-right">Tutar</th></tr>
-                </thead>
-                <tbody id="expense-list"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Rapor Tab -->
-<div id="report-tab" class="card hidden">
-    <div class="p-8">
-        <h2 class="text-2xl font-black mb-6">Finanz Rapor</h2>
-        <div class="grid grid-cols-3 gap-6 mb-8">
-            <div class="bg-green-50 p-6 rounded-xl text-center">
-                <p class="text-xs uppercase text-green-600 font-bold">Toplam Gelir</p>
-                <p id="report-income" class="text-3xl font-black text-green-700">0,00 €</p>
-            </div>
-            <div class="bg-red-50 p-6 rounded-xl text-center">
-                <p class="text-xs uppercase text-red-600 font-bold">Toplam Harcama</p>
-                <p id="report-expense" class="text-3xl font-black text-red-700">0,00 €</p>
-            </div>
-            <div class="bg-blue-50 p-6 rounded-xl text-center">
-                <p class="text-xs uppercase text-blue-600 font-bold">Net Kâr</p>
-                <p id="report-profit" class="text-4xl font-black text-blue-700">0,00 €</p>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Floating Buttons -->
 <div class="share-container no-print" id="tools">
     <div class="main-btn" onclick="toggleT()">+</div>
@@ -295,11 +234,6 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Adobe_Acrobat_DC_icon.svg/512px-Adobe_Acrobat_DC_icon.svg.png" class="w-8">
     </div>
     <div class="sub-btn" onclick="addRow()" title="Neue Zeile">+</div>
-    <div class="sub-btn" title="Logo ändern">
-        <label class="cursor-pointer w-full h-full flex items-center justify-center">📷
-            <input type="file" id="logoUpload" accept="image/*" class="hidden" onchange="loadLogo(event)">
-        </label>
-    </div>
 </div>
 
 <script>
@@ -309,14 +243,13 @@
     const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'black' });
     let currentTotal = 0;
     let customers = JSON.parse(localStorage.getItem('h2_customers') || '[]');
-    let stock = JSON.parse(localStorage.getItem('h2_stock') || '[]');
-    let expenses = JSON.parse(localStorage.getItem('h2_expenses') || '[]');
     let stats = JSON.parse(localStorage.getItem('h2_stats') || '{"total":0,"history":[]}');
     let sigLocked = true;
 
     function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
     function toggleT() { document.getElementById('tools').classList.toggle('active'); }
 
+    // Logo yükleme (tam çalışan hali)
     function loadLogo(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -324,6 +257,7 @@
         reader.onload = e => {
             const dataURL = e.target.result;
             document.getElementById('firmLogo').src = dataURL;
+            document.getElementById('logo-preview').innerHTML = `<img src="${dataURL}" class="w-full h-full object-contain rounded-xl">`;
             localStorage.setItem('h2_logo', dataURL);
         };
         reader.readAsDataURL(file);
@@ -356,6 +290,7 @@
         if (idx > -1) customers[idx] = c; else customers.push(c);
         localStorage.setItem('h2_customers', JSON.stringify(customers));
         updateCustomerList();
+        alert("Kunde gespeichert!");
     }
 
     function updateCustomerList() {
@@ -448,9 +383,9 @@
     function doPrint() {
         if (!signaturePad.isEmpty()) {
             document.getElementById('sig-image').src = signaturePad.toDataURL();
-            document.getElementById('sig-image').classList.remove('hidden');
-            document.querySelector('.sig-controls').classList.add('hidden');
-            document.getElementById('sig-canvas').classList.add('hidden');
+            document.getElementById('sig-image').classList.remove("hidden");
+            document.querySelector('.sig-controls').classList.add("hidden");
+            document.getElementById('sig-canvas').classList.add("hidden");
         }
         window.print();
     }
@@ -477,70 +412,31 @@
         setTimeout(doPrint, 300);
     }
 
-    // Tab geçişi
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
-            btn.classList.replace('tab-inactive', 'tab-active');
-            document.querySelectorAll('[id$="-tab"]').forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(btn.id.replace('tab-', '') + '-tab').classList.remove('hidden');
-            if (btn.id === 'tab-stock') loadStock();
-            if (btn.id === 'tab-expense') loadExpenses();
-            if (btn.id === 'tab-report') loadReport();
-        });
-    });
-
-    function addStock() {
-        const name = document.getElementById('stock-name').value.trim();
-        const price = parseFloat(document.getElementById('stock-price').value);
-        const qty = parseInt(document.getElementById('stock-qty').value);
-        if (!name || isNaN(price) || isNaN(qty)) return alert("Tüm alanlar doldurulmalı!");
-        stock.push({name, price, qty});
-        localStorage.setItem('h2_stock', JSON.stringify(stock));
-        loadStock();
-        document.getElementById('stock-name').value = '';
-        document.getElementById('stock-price').value = '';
-        document.getElementById('stock-qty').value = '';
+    function resetInvNum() {
+        if (confirm("Rechnungsnummer dieses Jahres komplett zurücksetzen?")) {
+            const year = new Date().getFullYear();
+            localStorage.removeItem(`h2_seq_${year}`);
+            document.getElementById('inv').textContent = getCurrentInvoiceNumber();
+        }
     }
 
-    function loadStock() {
-        const list = document.getElementById('stock-list');
-        list.innerHTML = '';
-        stock.forEach((s, i) => {
-            list.innerHTML += `<tr><td class="p-3">\( {s.name}</td><td class="p-3 text-right"> \){fmt(s.price)}</td><td class="p-3 text-center">\( {s.qty}</td><td class="p-3 text-center"><button onclick="stock.splice( \){i},1); localStorage.setItem('h2_stock', JSON.stringify(stock)); loadStock();" class="text-red-600">Sil</button></td></tr>`;
-        });
-    }
-
-    function addExpense() {
-        const desc = document.getElementById('expense-desc').value.trim();
-        const amount = parseFloat(document.getElementById('expense-amount').value);
-        const date = document.getElementById('expense-date').value || new Date().toISOString().split('T')[0];
-        if (!desc || isNaN(amount)) return alert("Açıklama ve tutar gerekli!");
-        expenses.push({date, desc, amount});
-        localStorage.setItem('h2_expenses', JSON.stringify(expenses));
-        loadExpenses();
-        document.getElementById('expense-desc').value = '';
-        document.getElementById('expense-amount').value = '';
-    }
-
-    function loadExpenses() {
-        const list = document.getElementById('expense-list');
-        list.innerHTML = '';
-        expenses.sort((a, b) => b.date.localeCompare(a.date)).forEach(e => {
-            list.innerHTML += `<tr><td class="p-3">\( {new Date(e.date).toLocaleDateString('de-DE')}</td><td class="p-3"> \){e.desc}</td><td class="p-3 text-right font-bold text-red-600">- ${fmt(e.amount)}</td></tr>`;
-        });
-    }
-
-    function loadReport() {
-        const totalExpense = expenses.reduce((s, e) => s + e.amount, 0);
-        document.getElementById('report-income').textContent = fmt(stats.total);
-        document.getElementById('report-expense').textContent = fmt(totalExpense);
-        document.getElementById('report-profit').textContent = fmt(stats.total - totalExpense);
+    function decreaseInvNum() {
+        if (confirm("Letzte Nummer um 1 zurücksetzen?")) {
+            const year = new Date().getFullYear();
+            let seq = parseInt(localStorage.getItem(`h2_seq_${year}`) || 2);
+            if (seq > 1) {
+                localStorage.setItem(`h2_seq_${year}`, seq - 1);
+                document.getElementById('inv').textContent = `H2\( {year} \){String(seq - 1).padStart(4, '0')}`;
+            }
+        }
     }
 
     window.onload = function() {
-        const logo = localStorage.getItem('h2_logo');
-        if (logo) document.getElementById('firmLogo').src = logo;
+        const savedLogo = localStorage.getItem('h2_logo');
+        if (savedLogo) {
+            document.getElementById('firmLogo').src = savedLogo;
+            document.getElementById('logo-preview').innerHTML = `<img src="${savedLogo}" class="w-full h-full object-contain rounded-xl">`;
+        }
 
         const today = new Date();
         document.getElementById('invoiceDate').textContent = today.toLocaleDateString('de-DE');
@@ -552,9 +448,6 @@
         document.getElementById('inv').textContent = getCurrentInvoiceNumber();
         updateCustomerList();
         updateStats();
-        loadStock();
-        loadExpenses();
-        loadReport();
         calc();
     };
 </script>
