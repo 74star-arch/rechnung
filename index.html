@@ -27,17 +27,22 @@
         .stamp { position: absolute; top: 140px; right: 30px; padding: 8px 20px; border: 5px solid #16a34a; border-radius: 12px; font-size: 28px; font-weight: 900; text-transform: uppercase; transform: rotate(-15deg); opacity: 0.15; pointer-events: none; display: none; z-index: 100; color: #16a34a; }
         .header-bg { background: #1e3a8a; }
         .accent-text { color: #60a5fa; }
-        .share-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
-        .main-btn { @apply w-16 h-16 rounded-full bg-blue-600 text-white shadow-2xl flex items-center justify-center text-4xl; }
-        .sub-btn { @apply w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center opacity-0 scale-0 transition-all duration-300 text-2xl font-bold; }
-        .share-container.active .sub-btn { @apply opacity-100 scale-100; }
-        .share-container.active .main-btn { @apply rotate-45 bg-indigo-700; }
+        .fab-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; }
+        .fab-main { @apply w-16 h-16 rounded-full bg-blue-600 text-white shadow-2xl flex items-center justify-center text-4xl cursor-pointer transition-transform duration-300; }
+        .fab-main.open { @apply rotate-45 bg-indigo-700; }
+        .fab-item { @apply w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center opacity-0 scale-0 transition-all duration-300 absolute bottom-0 right-0; }
+        .fab-item.visible { @apply opacity-100 scale-100; }
+        .fab-item:nth-child(2) { bottom: 80px; }
+        .fab-item:nth-child(3) { bottom: 150px; }
+        .fab-item:nth-child(4) { bottom: 220px; }
+        .fab-item:nth-child(5) { bottom: 290px; }
+        .fab-icon { @apply w-8 h-8; }
+        #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer mx-auto; }
         .icon { width: 14px; height: 14px; opacity: 0.6; margin-right: 6px; flex-shrink: 0; }
         #rows tr td { padding: 6px 8px !important; vertical-align: top; }
         #rows tr { border-bottom: 1px solid #e2e8f0; }
         .sig-controls { @apply absolute top-2 right-2 flex gap-2 z-10 no-print; }
         .sig-btn { @apply bg-white px-3 py-1 rounded text-xs font-bold shadow; }
-        #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer mx-auto; }
     </style>
 </head>
 <body>
@@ -87,7 +92,6 @@
 </div>
 
 <div class="card" id="invoice">
-    <!-- Bezahlt damgası başlangıçta GİZLİ -->
     <div id="statusStamp" class="stamp">Bezahlt</div>
     
     <div class="header-bg p-8 text-white flex justify-between items-start">
@@ -226,29 +230,43 @@
     </div>
 </div>
 
-<!-- Floating Buttons -->
-<div class="share-container no-print" id="tools">
-    <div class="main-btn" onclick="toggleT()">+</div>
-    <div class="sub-btn" onclick="processPaidAndPrint()" title="Bezahlt & Drucken">💰</div>
-    <div class="sub-btn" onclick="doPrint()" title="Drucken">🖨️</div>
-    <div class="sub-btn" onclick="exportPDF()" title="PDF Indir">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Adobe_Acrobat_DC_icon.svg/512px-Adobe_Acrobat_DC_icon.svg.png" class="w-8">
+<!-- Profesyonel FAB Butonları -->
+<div class="fab-container no-print">
+    <div id="fab-main" class="fab-main" onclick="toggleFab()">+</div>
+    <div class="fab-item" onclick="processPaidAndPrint()">
+        <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" class="fab-icon" alt="Bezahlt & Drucken">
     </div>
-    <div class="sub-btn" onclick="addRow()" title="Neue Zeile">+</div>
+    <div class="fab-item" onclick="doPrint()">
+        <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="fab-icon" alt="Drucken">
+    </div>
+    <div class="fab-item" onclick="exportPDF()">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Adobe_Acrobat_DC_icon.svg/512px-Adobe_Acrobat_DC_icon.svg.png" class="fab-icon" alt="PDF">
+    </div>
+    <div class="fab-item" onclick="addRow()">
+        <span class="text-3xl font-black text-blue-600">+</span>
+    </div>
 </div>
 
 <script>
     const { jsPDF } = window.jspdf;
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
     const qrcode = new QRCode(document.getElementById("qrcode"), { width: 70, height: 70 });
-    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'rgba(0,0,0,0)' }); // Başlangıçta kilitli (şeffaf kalem)
+    const signaturePad = new SignaturePad(document.getElementById('sig-canvas'), { penColor: 'rgba(0,0,0,0)' }); // Başlangıçta kilitli
     let currentTotal = 0;
     let customers = JSON.parse(localStorage.getItem('h2_customers') || '[]');
     let stats = JSON.parse(localStorage.getItem('h2_stats') || '{"total":0,"history":[]}');
     let sigLocked = true;
 
     function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-    function toggleT() { document.getElementById('tools').classList.toggle('active'); }
+
+    function toggleFab() {
+        const main = document.getElementById('fab-main');
+        const items = document.querySelectorAll('.fab-item');
+        main.classList.toggle('open');
+        items.forEach((item, i) => {
+            setTimeout(() => item.classList.toggle('visible'), i * 100);
+        });
+    }
 
     function loadLogo(event) {
         const file = event.target.files[0];
