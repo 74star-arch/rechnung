@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Icon Pro ERP</title>
+    <title>H2 TechService - Steuer-Pro Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -11,18 +11,15 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         @media print { .no-print { display:none !important; } .card { box-shadow:none !important; border:none !important; width:100% !important; margin:0 !important; } body { background:white !important; padding:0; } }
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; font-size: 10.5px; padding-bottom: 100px; }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; font-size: 10px; padding-bottom: 90px; }
         .card { max-width: 850px; margin: 5px auto; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
         .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); color: white; }
         .tab-btn { padding: 10px; font-weight: 800; cursor: pointer; flex: 1; text-align: center; border-bottom: 3px solid transparent; }
         .tab-btn.active { border-bottom-color: #1e40af; color: #1e40af; background: #eff6ff; }
-        .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column-reverse; align-items: center; gap: 10px; z-index: 9999; }
-        .fab-main { width: 55px; height: 55px; border-radius: 50%; background: #1e40af; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(30,64,175,0.4); cursor: pointer; border: 3px solid #10b981; transition: 0.3s; }
-        .fab-main.active { transform: rotate(45deg); background: #ef4444; }
-        .fab-sub { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer; opacity: 0; transform: translateY(20px); pointer-events: none; transition: 0.3s; }
-        .fab-container.active .fab-sub { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .input-with-icon { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
-        .input-with-icon input { text-align: right; outline: none; background: transparent; width: 100%; }
+        .input-with-icon { display: flex; align-items: center; gap: 5px; justify-content: flex-end; border-bottom: 1px solid #f1f5f9; }
+        .input-with-icon input { text-align: right; outline: none; background: transparent; width: 100%; padding: 2px 0; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -30,7 +27,7 @@
 <div class="max-w-[850px] mx-auto mt-2 no-print px-2">
     <div class="flex bg-white rounded-xl shadow-sm mb-2 border overflow-hidden">
         <div class="tab-btn active" id="t-inv" onclick="tab('inv')">📄 RECHNUNG</div>
-        <div class="tab-btn" id="t-exp" onclick="tab('exp')">⛽ KOSTEN (SCAN)</div>
+        <div class="tab-btn" id="t-exp" onclick="tab('exp')">⛽ GIDERLER (AI SCAN)</div>
         <div class="tab-btn" id="t-pay" onclick="tab('pay')">💰 STATUS</div>
     </div>
 </div>
@@ -44,81 +41,68 @@
             </div>
             <div>
                 <h1 class="text-xl font-black italic uppercase tracking-tighter">H2 <span class="text-sky-400">Tech</span>Service</h1>
-                <p class="text-[9px] font-bold text-sky-100 uppercase tracking-widest">Osman Tuncer • Montageprofi</p>
+                <p class="text-[9px] font-bold text-sky-100 uppercase tracking-widest">Osman Tuncer • Professional Solutions</p>
             </div>
         </div>
         <div class="text-right">
-            <p class="text-[8px] font-black opacity-60 uppercase">RECHNUNG NR.</p>
             <p id="inv-n" class="text-lg font-black text-sky-300"></p>
+            <p class="text-[8px] font-bold opacity-70 uppercase" id="current-date"></p>
         </div>
     </div>
 
-    <div class="p-5 grid grid-cols-2 gap-10 border-b bg-slate-50/30">
+    <div class="p-4 grid grid-cols-2 gap-8 border-b bg-slate-50/30">
         <div class="space-y-1">
-            <b class="text-blue-600 uppercase font-black text-[9px] block mb-1">Dienstleister</b>
-            <p class="text-sm font-black text-slate-900 mb-1">Osman Tuncer</p>
+            <b class="text-blue-600 uppercase font-black text-[8px] block mb-1">Dienstleister</b>
+            <p class="text-sm font-black text-slate-900">Osman Tuncer</p>
             <p>📍 Suntalstrasse 48, 31552 Rodenberg</p>
             <p class="font-bold">📞 +49 176 66658777</p>
-            <p class="text-blue-700 font-semibold">✉️ 74star@gmail.com</p>
+            <p class="text-blue-700">✉️ 74star@gmail.com</p>
             <p class="text-slate-500 font-mono text-[9px]">📑 Steuer-ID: 41/320/887966</p>
         </div>
 
-        <div class="text-right space-y-1">
-            <b class="text-blue-600 uppercase font-black text-[9px] block mb-1">Kunde</b>
+        <div class="text-right space-y-0.5">
+            <b class="text-blue-600 uppercase font-black text-[8px] block mb-1">Kunde</b>
             <div class="no-print mb-1"><select id="c-db" class="w-full border rounded p-1 text-[9px]" onchange="loadC()"></select></div>
-            
-            <div class="input-with-icon font-black text-sm">
-                <input id="c-n" placeholder="Name / Firma"> 👤
-            </div>
-            <div class="input-with-icon">
-                <input id="c-s" placeholder="Straße / Nr."> 📍
-            </div>
-            <div class="input-with-icon">
-                <input id="c-c" placeholder="PLZ Ort"> 🏢
-            </div>
-            <div class="input-with-icon font-bold text-slate-900">
-                <input id="c-p" placeholder="Telefon"> 📞
-            </div>
-            <div class="input-with-icon text-blue-700">
-                <input id="c-m" placeholder="E-Mail"> ✉️
-            </div>
-            <div class="input-with-icon text-slate-400 font-mono text-[9px]">
-                <input id="c-i" placeholder="Steuer-ID"> 📑
-            </div>
-            <button onclick="saveC()" class="no-print mt-1 text-[7px] bg-slate-800 text-white px-2 py-0.5 rounded-full font-black uppercase">Kunde Speichern</button>
+            <div class="input-with-icon font-black"><input id="c-n" placeholder="Name / Firma"> 👤</div>
+            <div class="input-with-icon"><input id="c-s" placeholder="Straße / Nr."> 📍</div>
+            <div class="input-with-icon"><input id="c-c" placeholder="PLZ Ort"> 🏢</div>
+            <div class="input-with-icon"><input id="c-p" placeholder="Telefon *"> 📞</div>
+            <div class="input-with-icon"><input id="c-m" placeholder="E-Mail *"> ✉️</div>
+            <div class="input-with-icon text-slate-400 font-mono text-[8px]"><input id="c-i" placeholder="Steuer-ID *"> 📑</div>
+            <button onclick="saveC()" class="no-print mt-2 text-[7px] bg-blue-600 text-white px-3 py-1 rounded-full font-black uppercase shadow-sm">Kunde Speichern / Update</button>
         </div>
     </div>
 
     <div class="min-h-[300px]">
-        <table class="w-full">
-            <thead class="bg-slate-50 uppercase text-slate-400 border-b font-black text-[9px]">
-                <tr><th class="p-3 text-left">Beschreibung</th><th class="p-3 w-10 text-center">Stk</th><th class="p-3 w-20 text-right">Einzel (€)</th><th class="p-3 w-6 no-print"></th></tr>
+        <table class="w-full border-collapse">
+            <thead class="bg-slate-50 uppercase text-slate-400 border-b font-black text-[8px]">
+                <tr><th class="p-3 text-left">Leistungsbeschreibung</th><th class="p-3 w-10 text-center">Stk</th><th class="p-3 w-20 text-right">Einzel (€)</th><th class="p-3 w-6 no-print"></th></tr>
             </thead>
             <tbody id="rows">
                 <tr class="border-b">
-                    <td class="p-2"><textarea rows="1" class="w-full font-bold outline-none bg-transparent" placeholder="Arbeitsleistung..." oninput="calc()"></textarea></td>
+                    <td class="p-2"><textarea rows="1" class="w-full font-bold outline-none bg-transparent" placeholder="Beschreibung..." oninput="calc()"></textarea></td>
                     <td class="p-2"><input type="number" value="1" class="qty w-full text-center font-black outline-none bg-transparent" oninput="calc()"></td>
                     <td class="p-2"><input type="number" step="0.01" class="prc w-full text-right font-black outline-none bg-transparent" placeholder="0.00" oninput="calc()"></td>
-                    <td class="p-2 no-print text-red-400 font-bold cursor-pointer text-center" onclick="this.closest('tr').remove();calc()">✕</td>
+                    <td class="p-2 no-print text-red-400 text-center cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>
                 </tr>
             </tbody>
         </table>
         <button onclick="addR()" class="no-print ml-4 mt-2 text-[9px] font-black text-blue-600">+ POSITION</button>
     </div>
 
-    <div class="p-5 bg-slate-50 flex justify-between items-center border-t border-b">
-        <div id="qr" class="bg-white p-1 border rounded shadow-sm"></div>
+    <div class="p-4 bg-slate-50 flex justify-between items-center border-t border-b">
+        <div id="qr" class="bg-white p-1 border rounded"></div>
         <div class="text-right">
-            <p class="text-[9px] font-black text-slate-400 uppercase">Gesamtbetrag (inkl. 19%)</p>
+            <p class="text-[8px] font-black text-slate-400 uppercase">Gesamtbetrag (inkl. 19%)</p>
             <p id="total" class="text-3xl font-black text-slate-900 tracking-tighter">0,00 €</p>
         </div>
     </div>
 
     <div class="p-5 flex justify-between items-end">
-        <div class="text-center border-t border-slate-200 pt-1 w-32 font-bold"><p class="text-[8px] uppercase">Osman Tuncer</p></div>
+        <div class="text-center border-t w-32 pt-1 font-bold"><p class="text-[8px] uppercase">Osman Tuncer</p></div>
         <div class="text-right">
-            <div class="no-print mb-1 flex justify-end gap-2"><button id="s-l" onclick="tglS()" class="bg-red-500 text-white text-[7px] px-2 py-0.5 rounded-full font-black uppercase">🔓 Signatur</button></div>
-            <p class="text-[8px] font-black text-slate-400 mb-1 uppercase tracking-widest">Kunde Abnahme</p>
+            <div class="no-print mb-1 flex justify-end gap-2"><button id="s-l" onclick="tglS()" class="bg-red-500 text-white text-[7px] px-2 py-0.5 rounded-full font-black uppercase">🔓 Unterschrift</button></div>
+            <p class="text-[8px] font-black text-slate-400 mb-1 uppercase">Kunde Abnahme</p>
             <canvas id="sig-canvas" width="200" height="50" class="no-print ml-auto border rounded bg-slate-50"></canvas>
             <img id="sig-img" class="hidden h-12 border-b border-slate-900 ml-auto">
         </div>
@@ -126,55 +110,101 @@
     <div class="h-grad p-2 text-[8px] font-bold text-center">IBAN: LT78 3250 0925 1892 8659 • BIC: REVOLT21</div>
 </div>
 
-<div class="fab-container no-print" id="fab-menu">
-    <div class="fab-main" onclick="toggleFab()">+</div>
-    <div class="fab-sub" onclick="finalize()"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="w-6 h-6"></div>
-    <div class="fab-sub" onclick="window.print()"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6"></div>
-    <div class="fab-sub" onclick="share('tg')"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="w-6 h-6"></div>
-    <div class="fab-sub" onclick="share('wa')"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6"></div>
-</div>
-
 <div id="s-exp" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-lg">
-    <h2 class="text-xl font-black italic uppercase mb-4">⛽ AI Quittung Scanner</h2>
-    <div class="grid grid-cols-3 gap-2 mb-4 bg-slate-50 p-4 rounded-xl border-2 border-dashed">
-        <input id="ex-t" placeholder="Shop / Firma" class="p-2 border rounded w-full">
-        <input id="ex-d" type="date" class="p-2 border rounded w-full">
-        <input id="ex-a" type="number" step="0.01" placeholder="0.00 €" class="p-2 border rounded w-full font-black text-blue-600">
-        <button onclick="addEx()" class="col-span-3 bg-blue-600 text-white py-2 rounded-lg font-black uppercase">Speichern</button>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-black italic uppercase">⛽ AI Quittung Scanner (Gider Kaydı)</h2>
+        <div class="flex items-center gap-2">
+            <div id="scan-loader" class="loader"></div>
+            <label class="bg-emerald-500 text-white px-4 py-2 rounded-full font-black text-xs cursor-pointer shadow-md">
+                📸 FIŞIN FOTOSUNU ÇEK
+                <input type="file" id="receipt-upload" class="hidden" accept="image/*" onchange="scanReceipt(this)">
+            </label>
+        </div>
     </div>
-    <div id="ex-list" class="space-y-2"></div>
+    <div class="grid grid-cols-4 gap-2 mb-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+        <div><p class="text-[8px] font-bold mb-1 uppercase">Mağaza</p><input id="ex-t" placeholder="z.B. Shell" class="p-2 border rounded w-full font-bold"></div>
+        <div><p class="text-[8px] font-bold mb-1 uppercase">Tarih</p><input id="ex-d" type="date" class="p-2 border rounded w-full font-bold"></div>
+        <div><p class="text-[8px] font-bold mb-1 uppercase">Saat</p><input id="ex-h" type="time" class="p-2 border rounded w-full font-bold"></div>
+        <div><p class="text-[8px] font-bold mb-1 uppercase">Tutar (€)</p><input id="ex-a" type="number" step="0.01" class="p-2 border rounded w-full font-black text-blue-700"></div>
+        <button onclick="addEx()" class="col-span-4 bg-slate-800 text-white py-2 rounded-lg font-black uppercase mt-2">Gideri Deftere Kaydet</button>
+    </div>
+    <div id="ex-list" class="space-y-1 mt-4"></div>
 </div>
 
-<div id="s-pay" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-lg text-xs">
-    <h2 class="text-xl font-black italic mb-4 uppercase">💰 Status & Zahlungen</h2>
+<div id="s-pay" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-lg">
+    <h2 class="text-xl font-black italic mb-4 uppercase">💰 Ödeme Takibi</h2>
     <div id="pay-list" class="space-y-1"></div>
 </div>
 
+<div class="no-print fixed bottom-5 right-5 z-50 flex flex-col-reverse items-center gap-3" id="fab-menu">
+    <div class="w-14 h-14 rounded-full bg-blue-700 text-white flex items-center justify-center text-3xl font-bold shadow-xl cursor-pointer border-4 border-emerald-400" onclick="this.parentElement.classList.toggle('active'); this.classList.toggle('rotate-45')">+</div>
+    <button class="w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center hidden active:flex" onclick="finalize()"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="w-5 h-5"></button>
+    <button class="w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center hidden active:flex" onclick="window.print()"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-5 h-5"></button>
+</div>
+
+<style> .active .active\:flex { display: flex !important; } </style>
+
 <script>
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
-    const qr = new QRCode(document.getElementById("qr"), { width: 45, height: 45 });
+    const qr = new QRCode(document.getElementById("qr"), { width: 40, height: 40 });
     const sPad = new SignaturePad(document.getElementById('sig-canvas'));
     let locked = true;
 
-    function toggleFab() { document.getElementById('fab-menu').classList.toggle('active'); document.querySelector('.fab-main').classList.toggle('active'); }
     function tab(t) { ['s-inv','s-exp','s-pay'].forEach(x=>document.getElementById(x).classList.add('hidden')); document.getElementById('s-'+t).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); }
     function addR() { const r = document.querySelector("#rows tr").cloneNode(true); r.querySelectorAll("input,textarea").forEach(i=>i.value=(i.type=='number'?1:"")); document.getElementById("rows").appendChild(r); }
     function calc() { let t = 0; document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); const f = t * 1.19; document.getElementById("total").innerText = fmt(f); qr.makeCode(`H2-${f.toFixed(2)}`); }
     function tglS() { locked = !locked; document.getElementById('sig-canvas').style.pointerEvents = locked?'none':'auto'; document.getElementById('sig-canvas').style.opacity = locked?0.5:1; document.getElementById('s-l').innerText = locked?'🔓 Signatur':'🔒 Sperren'; }
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
-    
+
+    // CRM - Sıkı Kayıt
     function saveC() {
+        const n=document.getElementById('c-n').value, p=document.getElementById('c-p').value, m=document.getElementById('c-m').value, i=document.getElementById('c-i').value;
+        if(!n || !p || !m || !i) return alert("Lütfen tüm alanları (İsim, Tel, Mail, Steuer-ID) doldurun!");
         let db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        db.push({ n: document.getElementById('c-n').value, s: document.getElementById('c-s').value, c: document.getElementById('c-c').value, p: document.getElementById('c-p').value, m: document.getElementById('c-m').value, i: document.getElementById('c-i').value });
-        localStorage.setItem('h2_db', JSON.stringify(db)); updateC(); alert('Gespeichert!');
-    }
-    function loadC() {
-        const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value];
-        if(c) { document.getElementById('c-n').value = c.n; document.getElementById('c-s').value = c.s; document.getElementById('c-c').value = c.c; document.getElementById('c-p').value = c.p; document.getElementById('c-m').value = c.m; document.getElementById('c-i').value = c.i; }
+        const idx = db.findIndex(x => x.n === n);
+        const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p, m, i };
+        if(idx > -1) db[idx] = obj; else db.push(obj);
+        localStorage.setItem('h2_db', JSON.stringify(db)); updateC(); alert('Müşteri Veritabanı Güncellendi!');
     }
     function updateC() {
         const db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        document.getElementById('c-db').innerHTML = '<option>— Kunde wählen —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join('');
+        document.getElementById('c-db').innerHTML = '<option>— Kayıtlı Müşteriler —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join('');
+    }
+    function loadC() {
+        const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value];
+        if(c) { document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; document.getElementById('c-c').value=c.c; document.getElementById('c-p').value=c.p; document.getElementById('c-m').value=c.m; document.getElementById('c-i').value=c.i; }
+    }
+
+    // AI SCANNER - Giderler
+    async function scanReceipt(input) {
+        if (!input.files[0]) return;
+        document.getElementById('scan-loader').style.display = 'block';
+        try {
+            const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
+            const prices = text.match(/\d+[\.,]\d{2}/g);
+            if (prices) document.getElementById('ex-a').value = Math.max(...prices.map(p => parseFloat(p.replace(',', '.'))));
+            const dateMatch = text.match(/(\d{2}\.\d{2}\.\d{4}|\d{2}\.\d{2}\.\d{2})/);
+            if (dateMatch) {
+                let d = dateMatch[0]; if(d.length === 8) d = d.slice(0,6) + "20" + d.slice(6);
+                const p = d.split('.'); document.getElementById('ex-d').value = `${p[2]}-${p[1]}-${p[0]}`;
+            }
+            const timeMatch = text.match(/([01]?[0-9]|2[0-3]):[0-5][0-9]/);
+            if (timeMatch) document.getElementById('ex-h').value = timeMatch[0];
+            const lines = text.split('\n').filter(l => l.trim().length > 3);
+            if (lines.length > 0) document.getElementById('ex-t').value = lines[0].trim();
+            alert("AI Fişi Okudu! Bilgileri Kontrol Et.");
+        } catch (e) { alert("Okuma Hatası."); }
+        document.getElementById('scan-loader').style.display = 'none';
+    }
+
+    function addEx() {
+        let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+        l.push({t:document.getElementById('ex-t').value, a:document.getElementById('ex-a').value, d:document.getElementById('ex-d').value, h:document.getElementById('ex-h').value});
+        localStorage.setItem('h2_ex', JSON.stringify(l)); renderEx(); alert("Gider Kaydedildi!");
+    }
+    function renderEx() {
+        const l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+        document.getElementById('ex-list').innerHTML = l.map(x => `<div class="flex justify-between bg-white border p-2 rounded text-[9px]"><span>📅 ${x.d} | ⏰ ${x.h} | <b>${x.t}</b></span><b class="text-red-500">-${fmt(x.a)}</b></div>`).reverse().join('');
     }
 
     function finalize() {
@@ -183,20 +213,21 @@
         let l = JSON.parse(localStorage.getItem('h2_re')||'[]');
         l.push({ re: document.getElementById('inv-n').innerText, n, t, s: 'OFFEN', d: new Date().toLocaleDateString('de-DE') });
         localStorage.setItem('h2_re', JSON.stringify(l)); localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
-        renderPay(); toggleFab(); window.print();
+        renderPay(); window.print();
     }
     function renderPay() {
         const l = JSON.parse(localStorage.getItem('h2_re')||'[]');
-        document.getElementById('pay-list').innerHTML = l.map((x,i) => `<div class="flex justify-between items-center p-3 border rounded-lg mb-1 bg-slate-50"><span><b>${x.n}</b> (${x.t})</span><span class="px-2 py-1 rounded-full text-[8px] font-black cursor-pointer ${x.s=='OFFEN'?'bg-red-100 text-red-600':'bg-emerald-100 text-emerald-600'}" onclick="togglePay(${i})">${x.s}</span></div>`).reverse().join('');
+        document.getElementById('pay-list').innerHTML = l.map((x,i) => `<div class="flex justify-between items-center p-2 border rounded mb-1 text-[9px]"><span><b>${x.n}</b> (${x.t})</span><span class="px-2 py-1 rounded-full font-black cursor-pointer ${x.s=='OFFEN'?'bg-red-100 text-red-600':'bg-emerald-100 text-emerald-600'}" onclick="togglePay(${i})">${x.s}</span></div>`).reverse().join('');
     }
     function togglePay(i) { let l=JSON.parse(localStorage.getItem('h2_re')); l[i].s = l[i].s=='OFFEN'?'BEZAHLT':'OFFEN'; localStorage.setItem('h2_re', JSON.stringify(l)); renderPay(); }
-    function share(p) { const txt = `H2 TechService\nRechnung: ${document.getElementById('inv-n').innerText}\nKunde: ${document.getElementById('c-n').value}\nSumme: ${document.getElementById('total').innerText}`; window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`); toggleFab(); }
 
     window.onload = () => {
-        document.getElementById('inv-n').innerText = `H2-25-${(parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0')}`;
+        const now = new Date();
+        document.getElementById('inv-n').innerText = `RE-${now.getFullYear()}-${(parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0')}`;
+        document.getElementById('current-date').innerText = now.toLocaleDateString('de-DE');
         if(localStorage.getItem('h2_logo')) document.getElementById('l-img').src = localStorage.getItem('h2_logo');
         document.getElementById('sig-canvas').style.pointerEvents='none';
-        updateC(); renderPay(); calc();
+        updateC(); renderPay(); renderEx(); calc();
     };
 </script>
 </body>
