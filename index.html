@@ -3,182 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Professional ERP Suite</title>
+    <title>H2 TechService - Professional Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src='https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js'></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         @media print { .no-print { display:none !important; } .card { box-shadow:none !important; border:none !important; width:100% !important; margin:0 !important; } body { background:white !important; padding:0; } }
-        body { background: #f8fafc; font-family: 'Inter', sans-serif; font-size: 11px; padding-bottom: 80px; }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; font-size: 11px; padding-bottom: 110px; }
         .card { max-width: 850px; margin: 10px auto; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
         .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); color: white; }
-        .tab-btn { padding: 12px; font-weight: 800; cursor: pointer; flex: 1; text-align: center; border-bottom: 3px solid transparent; font-size: 10px; transition: 0.2s; }
+        .tab-btn { padding: 12px; font-weight: 800; cursor: pointer; flex: 1; text-align: center; border-bottom: 3px solid transparent; font-size: 10px; }
         .tab-btn.active { border-bottom-color: #1e40af; color: #1e40af; background: #eff6ff; }
-        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; touch-action: none; }
-        .quick-tag { cursor: pointer; transition: 0.2s; }
-        .quick-tag:hover { transform: translateY(-1px); background: #1e40af; color: white; }
+        .fab-container { position: fixed; bottom: 25px; right: 25px; display: flex; flex-direction: column-reverse; align-items: center; gap: 12px; z-index: 9999; }
+        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #1e40af; color: white; display: flex; align-items: center; justify-content: center; font-size: 35px; box-shadow: 0 4px 15px rgba(30,64,175,0.4); cursor: pointer; transition: 0.3s; z-index: 10; border: 3px solid #10b981; }
+        .fab-main.active { transform: rotate(45deg); background: #ef4444; border-color: #f87171; }
+        .fab-sub { width: 48px; height: 48px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s; opacity: 0; transform: translateY(20px); pointer-events: none; }
+        .fab-container.active .fab-sub { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        #sig-canvas { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; cursor: crosshair; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="max-w-[850px] mx-auto mt-2 no-print px-2">
-    <div class="grid grid-cols-4 gap-2 mb-3">
-        <div class="bg-white p-2 rounded-xl border-l-4 border-emerald-500 shadow-sm">
-            <p class="text-[8px] font-black text-slate-400 uppercase">Einnahmen</p>
-            <p id="st-in" class="text-sm font-black text-emerald-600">0,00 €</p>
-        </div>
-        <div class="bg-white p-2 rounded-xl border-l-4 border-red-500 shadow-sm">
-            <p class="text-[8px] font-black text-slate-400 uppercase">Ausgaben</p>
-            <p id="st-out" class="text-sm font-black text-red-600">0,00 €</p>
-        </div>
-        <div class="bg-white p-2 rounded-xl border-l-4 border-orange-500 shadow-sm">
-            <p class="text-[8px] font-black text-slate-400 uppercase">KM-Wert</p>
-            <p id="st-km" class="text-sm font-black text-orange-600">0,00 €</p>
-        </div>
-        <div class="bg-white p-2 rounded-xl border-l-4 border-blue-600 shadow-sm">
-            <p class="text-[8px] font-black text-slate-400 uppercase">Netto Profit</p>
-            <p id="st-profit" class="text-sm font-black text-blue-600">0,00 €</p>
-        </div>
-    </div>
-
     <div class="flex bg-white rounded-xl shadow-sm mb-3 border overflow-hidden">
         <div class="tab-btn active" id="t-inv" onclick="tab('inv')">📄 RECHNUNG</div>
-        <div class="tab-btn" id="t-exp" onclick="tab('exp')">⛽ KOSTEN</div>
-        <div class="tab-btn" id="t-drive" onclick="tab('drive')">🚗 KM-LOG</div>
+        <div class="tab-btn" id="t-exp" onclick="tab('exp')">⛽ KOSTEN & SCAN</div>
         <div class="tab-btn" id="t-pay" onclick="tab('pay')">💰 STATUS</div>
     </div>
 </div>
 
-<div id="s-inv" class="card shadow-2xl">
-    <div class="h-grad p-6 flex justify-between items-center">
+<div id="s-inv" class="card shadow-xl">
+    <div class="h-grad p-5 flex justify-between items-center">
         <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-white rounded-xl p-1 shadow-inner cursor-pointer" onclick="document.getElementById('logoI').click()">
+            <div class="w-14 h-14 bg-white rounded-xl p-1 shadow-sm cursor-pointer" onclick="document.getElementById('logoI').click()">
                 <img id="l-img" src="https://cdn-icons-png.flaticon.com/512/1063/1063196.png" class="max-h-full mx-auto object-contain">
                 <input type="file" id="logoI" class="hidden" onchange="upLogo(this)">
             </div>
             <div>
                 <h1 class="text-2xl font-black italic uppercase tracking-tighter">H2 <span class="text-sky-400">Tech</span>Service</h1>
-                <p class="text-[9px] font-bold text-sky-100 uppercase tracking-widest">Engineering & Montage • Osman Tuncer</p>
+                <p class="text-[9px] font-bold text-sky-100 uppercase">Osman Tuncer • Professional Solutions</p>
             </div>
         </div>
         <div class="text-right">
-            <p class="text-[9px] font-black opacity-50 uppercase">RECHNUNG NR.</p>
+            <p class="text-[9px] font-black opacity-60 uppercase">RECHNUNG NR.</p>
             <p id="inv-n" class="text-xl font-black text-sky-300"></p>
         </div>
     </div>
 
-    <div class="p-6 grid grid-cols-2 gap-12 border-b text-[11px]">
+    <div class="p-6 grid grid-cols-2 gap-10 border-b text-[11px]">
         <div>
-            <b class="text-blue-600 uppercase font-black block mb-2">Dienstleister</b>
-            <p class="text-base font-black italic text-slate-900">Osman Tuncer</p>
+            <b class="text-blue-600 uppercase font-black block mb-1">Dienstleister</b>
+            <p class="text-sm font-black text-slate-900">Osman Tuncer</p>
             <p>Suntalstrasse 48, 31552 Rodenberg</p>
-            <p class="font-bold mt-1 text-slate-800 italic">📞 +49 176 66658777</p>
-            <p class="text-slate-500 text-[9px] mt-1 uppercase">Steuernummer: 41/320/887966</p>
+            <p class="font-bold">📞 +49 176 66658777</p>
         </div>
         <div class="text-right">
-            <b class="text-blue-600 uppercase font-black block mb-2">Kunde</b>
-            <select id="c-db" class="no-print w-full mb-1 text-[9px] border rounded p-1" onchange="loadC()"></select>
-            <input id="c-n" placeholder="Name / Firma" class="text-right font-black text-sm w-full outline-none">
-            <input id="c-s" placeholder="Straße / Hausnummer" class="text-right w-full outline-none">
+            <b class="text-blue-600 uppercase font-black block mb-1">Kunde</b>
+            <select id="c-db" class="no-print w-full mb-1 border rounded p-1 text-[9px]" onchange="loadC()"></select>
+            <input id="c-n" placeholder="Kundenname" class="text-right font-black w-full outline-none text-sm">
+            <input id="c-s" placeholder="Straße" class="text-right w-full outline-none">
             <input id="c-c" placeholder="PLZ Ort" class="text-right w-full outline-none">
-            <button onclick="saveC()" class="no-print mt-2 text-[8px] bg-slate-800 text-white px-3 py-1 rounded-full font-black uppercase">Müşteriyi Kaydet</button>
         </div>
     </div>
 
     <div class="no-print px-6 py-2 bg-slate-50 border-b flex gap-2 items-center">
-        <span class="text-[9px] font-black text-slate-400">QUICK:</span>
-        <button onclick="quick('Montageleistung (Stundenbasis)', 65)" class="quick-tag bg-white border px-2 py-1 rounded font-bold text-blue-600 text-[9px]">+ Montage</button>
-        <button onclick="quick('Anfahrt & Bereitstellungspauschale', 35)" class="quick-tag bg-white border px-2 py-1 rounded font-bold text-blue-600 text-[9px]">+ Anfahrt</button>
-        <button onclick="quick('Kleinteile & Hilfsmaterial', 15)" class="quick-tag bg-white border px-2 py-1 rounded font-bold text-blue-600 text-[9px]">+ Material</button>
+        <span class="text-[9px] font-black text-slate-400 uppercase">Quick Add:</span>
+        <button onclick="quick('Montageleistung', 65)" class="bg-white border px-2 py-1 rounded font-bold text-blue-600 text-[9px] hover:bg-blue-600 hover:text-white transition">+ Montage</button>
+        <button onclick="quick('Anfahrtspauschale', 35)" class="bg-white border px-2 py-1 rounded font-bold text-blue-600 text-[9px] hover:bg-blue-600 hover:text-white transition">+ Anfahrt</button>
+        <button onclick="quick('Kleinmaterial', 15)" class="bg-white border px-2 py-1 rounded font-bold text-blue-600 text-[9px] hover:bg-blue-600 hover:text-white transition">+ Material</button>
     </div>
 
-    <div class="min-h-[280px]">
+    <div class="min-h-[300px]">
         <table class="w-full text-[11px]">
             <thead class="bg-slate-50 uppercase text-slate-400 border-b font-black">
-                <tr><th class="p-4 text-left">Leistungsbeschreibung</th><th class="p-4 w-12 text-center">Stk</th><th class="p-4 w-24 text-right">Einzel (€)</th><th class="p-4 w-8 no-print"></th></tr>
+                <tr><th class="p-4 text-left">Beschreibung</th><th class="p-4 w-12 text-center">Stk</th><th class="p-4 w-24 text-right">Einzel (€)</th><th class="p-4 w-6 no-print"></th></tr>
             </thead>
             <tbody id="rows">
-                <tr class="border-b border-slate-50">
-                    <td class="p-3"><textarea rows="1" class="w-full font-bold outline-none" placeholder="Beschreibe deine Arbeit..." oninput="calc()"></textarea></td>
+                <tr class="border-b">
+                    <td class="p-3"><textarea rows="1" class="w-full font-bold outline-none" placeholder="Arbeitsleistung..." oninput="calc()"></textarea></td>
                     <td class="p-3"><input type="number" value="1" class="qty w-full text-center font-black outline-none" oninput="calc()"></td>
-                    <td class="p-3"><input type="number" step="0.01" placeholder="0,00" class="prc w-full text-right font-black outline-none" oninput="calc()"></td>
+                    <td class="p-3"><input type="number" step="0.01" class="prc w-full text-right font-black outline-none" placeholder="0.00" oninput="calc()"></td>
                     <td class="p-3 no-print text-red-300 font-bold cursor-pointer text-center" onclick="this.closest('tr').remove();calc()">✕</td>
                 </tr>
             </tbody>
         </table>
-        <button onclick="addR()" class="no-print ml-4 mt-2 text-[9px] font-black text-blue-600 hover:underline">+ NEUE POSITION</button>
+        <button onclick="addR()" class="no-print ml-4 mt-2 text-[9px] font-black text-blue-600 hover:underline">+ POSITION HINZUFÜGEN</button>
     </div>
 
-    <div class="p-6 bg-slate-50/50 flex justify-between items-center border-t border-b">
+    <div class="p-6 bg-slate-50 flex justify-between items-center border-t border-b">
         <div id="qr" class="bg-white p-1 border rounded shadow-sm"></div>
         <div class="text-right">
-            <p class="text-[9px] font-black text-slate-400 uppercase">Gesamtbetrag (inkl. 19% MwSt)</p>
+            <p class="text-[9px] font-black text-slate-400 uppercase">Gesamtbetrag (inkl. 19%)</p>
             <p id="total" class="text-4xl font-black text-slate-900 tracking-tighter">0,00 €</p>
         </div>
     </div>
 
     <div class="p-6 flex justify-between items-end">
-        <div class="text-center"><p class="text-[8px] font-black text-slate-400 mb-2 uppercase tracking-widest">Ausführender Techniker</p><p class="text-xl italic font-serif text-slate-900">Osman Tuncer</p></div>
+        <div class="text-center"><p class="text-[8px] font-black text-slate-400 mb-1 uppercase tracking-widest">Dienstleister</p><p class="text-lg italic font-serif">Osman Tuncer</p></div>
         <div class="text-right">
-            <div class="no-print flex gap-2 justify-end mb-2">
-                <button id="s-l" onclick="tglS()" class="bg-red-500 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase">🔓 Unterschrift Aktivieren</button>
-                <button onclick="sPad.clear()" class="bg-slate-200 text-[8px] px-3 py-1 rounded-full font-black uppercase">Reset</button>
-            </div>
-            <p class="text-[8px] font-black text-slate-400 mb-1 uppercase tracking-widest">Kunde / Abnahme</p>
+            <div class="no-print mb-1"><button id="s-l" onclick="tglS()" class="bg-red-500 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase">🔓 Unterschrift</button></div>
+            <p class="text-[8px] font-black text-slate-400 mb-1 uppercase tracking-widest">Kunde (Abnahme)</p>
             <canvas id="sig-canvas" width="220" height="60" class="no-print ml-auto"></canvas>
             <img id="sig-img" class="hidden h-14 border-b-2 border-slate-900 ml-auto">
         </div>
     </div>
-
-    <div class="h-grad p-4 flex justify-between items-center text-[10px] font-bold">
-        <div>
-            <p>IBAN: <span class="text-sky-300">LT78 3250 0925 1892 8659</span></p>
-            <p>BIC: <span class="text-sky-300">REVOLT21</span> • Bank: <span class="text-sky-300">Revolut Business</span></p>
-        </div>
-        <div class="text-right"><p class="text-lg uppercase italic tracking-tighter">H2 TechService</p></div>
-    </div>
+    <div class="h-grad p-3 text-[9px] font-bold text-center tracking-wide">IBAN: <span class="text-sky-300">LT78 3250 0925 1892 8659</span> • BIC: <span class="text-sky-300">REVOLT21</span></div>
 </div>
 
-<div id="s-exp" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print">
-    <h2 class="text-xl font-black mb-4">⛽ Ausgaben-Verwaltung</h2>
-    <div class="grid grid-cols-2 gap-3 mb-6 bg-slate-50 p-4 rounded-xl">
-        <input id="ex-t" placeholder="Was wurde gekauft?" class="p-2 border rounded font-bold">
-        <input id="ex-a" type="number" placeholder="Betrag €" class="p-2 border rounded font-bold">
-        <button onclick="addEx()" class="col-span-2 bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg">Ausgabe Speichern</button>
+<div id="s-exp" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-lg">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-black italic uppercase">⛽ Ausgaben & AI Scanner</h2>
+        <div class="flex items-center gap-3">
+            <div id="scan-loader" class="loader"></div>
+            <label class="bg-emerald-500 text-white px-5 py-2 rounded-full font-black text-xs cursor-pointer flex items-center gap-2 shadow-md hover:bg-emerald-600 transition">
+                📸 BELEG SCANNEN (AI)
+                <input type="file" id="receipt-upload" class="hidden" accept="image/*" onchange="scanReceipt(this)">
+            </label>
+        </div>
+    </div>
+    <div class="grid grid-cols-3 gap-3 mb-6 bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200">
+        <div><p class="text-[8px] font-black uppercase mb-1">Shop / Art</p><input id="ex-t" placeholder="z.B. Shell" class="p-2 border rounded-lg w-full font-bold"></div>
+        <div><p class="text-[8px] font-black uppercase mb-1">Datum</p><input id="ex-d" type="date" class="p-2 border rounded-lg w-full font-bold"></div>
+        <div><p class="text-[8px] font-black uppercase mb-1">Betrag (€)</p><input id="ex-a" type="number" step="0.01" placeholder="0.00" class="p-2 border rounded-lg w-full font-black text-blue-600"></div>
+        <button onclick="addEx()" class="col-span-3 bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg mt-2">Ausgabe Speichern</button>
     </div>
     <div id="ex-list" class="space-y-2"></div>
 </div>
 
-<div id="s-drive" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print">
-    <h2 class="text-xl font-black mb-4 uppercase">🚗 Fahrtenbuch (Steuer-Optimierung)</h2>
-    <div class="grid grid-cols-3 gap-2 mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
-        <input id="dr-v" placeholder="Von" class="p-2 border rounded">
-        <input id="dr-n" placeholder="Nach" class="p-2 border rounded">
-        <input id="dr-k" type="number" placeholder="KM" class="p-2 border rounded font-black">
-        <button onclick="addDr()" class="col-span-3 bg-orange-600 text-white py-2 rounded font-black">FAHRT LOGGEN</button>
-    </div>
-    <div id="dr-list" class="text-xs"></div>
+<div id="s-pay" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-lg text-xs">
+    <h2 class="text-xl font-black italic mb-4 uppercase">💰 Zahlungskontrolle</h2>
+    <div id="pay-list" class="space-y-1"></div>
 </div>
 
-<div id="s-pay" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-sm">
-    <h2 class="text-xl font-black mb-4">💰 Rechnungs-Archiv & Zahlungen</h2>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left">
-            <thead class="bg-slate-100 uppercase text-[10px] text-slate-500 font-black">
-                <tr><th class="p-3">Datum</th><th class="p-3">Kunde</th><th class="p-3">Summe</th><th class="p-3">Status</th><th class="p-3"></th></tr>
-            </thead>
-            <tbody id="pay-list"></tbody>
-        </table>
+<div class="fab-container no-print" id="fab-menu">
+    <div class="fab-main shadow-emerald-500/50" onclick="toggleFab()">+</div>
+    <div class="fab-sub" onclick="finalize()" title="Rechnung Finalisieren / PDF">
+        <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="w-6 h-6">
     </div>
-</div>
-
-<div class="fixed bottom-6 right-6 flex flex-col-reverse gap-3 no-print items-center">
-    <div class="w-16 h-16 bg-blue-700 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl cursor-pointer hover:scale-110 transition active:scale-95" onclick="finalize()">✅</div>
-    <div onclick="share('wa')" class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg font-black hover:bg-emerald-600" title="WhatsApp">W</div>
-    <div onclick="share('tg')" class="w-12 h-12 bg-sky-500 text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg font-black hover:bg-sky-600" title="Telegram">T</div>
-    <div onclick="window.print()" class="w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center cursor-pointer shadow-lg text-slate-600">📄</div>
-    <div onclick="resetAll()" class="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center cursor-pointer text-[8px] font-black uppercase opacity-50 hover:opacity-100">Reset</div>
+    <div class="fab-sub" onclick="window.print()" title="Drucken">
+        <img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6">
+    </div>
+    <div class="fab-sub" onclick="share('tg')" title="Per Telegram senden">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="w-6 h-6">
+    </div>
+    <div class="fab-sub" onclick="share('wa')" title="Per WhatsApp senden">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6">
+    </div>
 </div>
 
 <script>
@@ -187,105 +161,77 @@
     const sPad = new SignaturePad(document.getElementById('sig-canvas'));
     let locked = true;
 
-    function tab(t) { 
-        ['s-inv','s-exp','s-drive','s-pay'].forEach(x=>document.getElementById(x).classList.add('hidden')); 
-        document.getElementById('s-'+t).classList.remove('hidden'); 
-        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); 
-        document.getElementById('t-'+t).classList.add('active'); 
+    function toggleFab() { document.getElementById('fab-menu').classList.toggle('active'); document.querySelector('.fab-main').classList.toggle('active'); }
+    function tab(t) { ['s-inv','s-exp','s-pay'].forEach(x=>document.getElementById(x).classList.add('hidden')); document.getElementById('s-'+t).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); }
+    function quick(txt, val) { const r = document.querySelector("#rows tr:last-child"); if(r.querySelector("textarea").value) addR(); const nr = document.querySelector("#rows tr:last-child"); nr.querySelector("textarea").value = txt; nr.querySelector(".prc").value = val; calc(); }
+    function addR() { const r = document.querySelector("#rows tr").cloneNode(true); r.querySelectorAll("input,textarea").forEach(i=>i.value=(i.type=='number'?1:"")); document.getElementById("rows").appendChild(r); }
+    function calc() { let t = 0; document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); const f = t * 1.19; document.getElementById("total").innerText = fmt(f); qr.makeCode(`H2-${f.toFixed(2)}`); }
+    function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
+
+    async function scanReceipt(input) {
+        if (!input.files[0]) return;
+        const loader = document.getElementById('scan-loader');
+        loader.style.display = 'block';
+        try {
+            const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
+            const prices = text.match(/\d+[\.,]\d{2}/g);
+            if (prices) document.getElementById('ex-a').value = Math.max(...prices.map(p => parseFloat(p.replace(',', '.'))));
+            const dateMatch = text.match(/(\d{2}\.\d{2}\.\d{4}|\d{2}\.\d{2}\.\d{2})/);
+            if (dateMatch) {
+                let d = dateMatch[0]; if(d.length === 8) d = d.slice(0,6) + "20" + d.slice(6);
+                const p = d.split('.'); document.getElementById('ex-d').value = `${p[2]}-${p[1]}-${p[0]}`;
+            }
+            const lines = text.split('\n').filter(l => l.trim().length > 3);
+            if (lines.length > 0) document.getElementById('ex-t').value = lines[0].trim();
+            alert("Scan fertig! Bitte Werte prüfen.");
+        } catch (e) { alert("Scan fehlgeschlagen."); }
+        loader.style.display = 'none';
     }
 
-    function upLogo(i) { 
-        if(i.files[0]) { 
-            const r = new FileReader(); 
-            r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; 
-            r.readAsDataURL(i.files[0]); 
-        } 
+    function addEx() {
+        let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+        l.push({t:document.getElementById('ex-t').value, a:document.getElementById('ex-a').value, d:document.getElementById('ex-d').value});
+        localStorage.setItem('h2_ex', JSON.stringify(l)); renderEx();
     }
-
-    function quick(txt, val) { 
-        const r = document.querySelector("#rows tr:last-child"); 
-        if(r.querySelector("textarea").value) addR(); 
-        const nr = document.querySelector("#rows tr:last-child"); 
-        nr.querySelector("textarea").value = txt; 
-        nr.querySelector(".prc").value = val; 
-        calc(); 
-    }
-
-    function addR() { 
-        const r = document.querySelector("#rows tr").cloneNode(true); 
-        r.querySelectorAll("input,textarea").forEach(i=>i.value=(i.type=='number'?1:"")); 
-        document.getElementById("rows").appendChild(r); 
-    }
-
-    function calc() { 
-        let t = 0; 
-        document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); 
-        const f = t * 1.19; 
-        document.getElementById("total").innerText = fmt(f); 
-        qr.makeCode(`RE-H2-${f.toFixed(2)}`); 
+    function renderEx() {
+        const l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+        document.getElementById('ex-list').innerHTML = l.map(x => `<div class="flex justify-between bg-white border p-3 rounded-lg shadow-sm"><span><b>${x.t}</b> (${x.d})</span><b class="text-red-500">-${fmt(x.a)}</b></div>`).reverse().join('');
     }
 
     function finalize() {
-        if(!sPad.isEmpty()) { 
-            document.getElementById('sig-img').src = sPad.toDataURL(); 
-            document.getElementById('sig-img').classList.remove('hidden'); 
-            document.getElementById('sig-canvas').classList.add('hidden'); 
-        }
-        const t = document.getElementById("total").innerText, n = document.getElementById('c-n').value, re = document.getElementById('inv-n').innerText;
+        if(!sPad.isEmpty()) { document.getElementById('sig-img').src = sPad.toDataURL(); document.getElementById('sig-img').classList.remove('hidden'); document.getElementById('sig-canvas').classList.add('hidden'); }
+        const t = document.getElementById("total").innerText, n = document.getElementById('c-n').value;
         let l = JSON.parse(localStorage.getItem('h2_re')||'[]');
-        l.push({ re, n, t, s: 'OFFEN', d: new Date().toLocaleDateString('de-DE'), v: parseFloat(t.replace(/[^\d,-]/g,'').replace(',','.')) });
+        l.push({ re: document.getElementById('inv-n').innerText, n, t, s: 'OFFEN', d: new Date().toLocaleDateString('de-DE') });
         localStorage.setItem('h2_re', JSON.stringify(l));
         localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
-        updateStats(); renderPay(); window.print();
+        renderPay(); toggleFab(); window.print();
     }
 
     function renderPay() {
         const l = JSON.parse(localStorage.getItem('h2_re')||'[]');
         document.getElementById('pay-list').innerHTML = l.map((x,i) => `
-            <tr class="border-b text-[11px]"><td class="p-3">${x.d}</td><td class="p-3 font-black text-slate-700">${x.n}</td><td class="p-3 font-bold">${x.t}</td>
-            <td class="p-3"><span class="cursor-pointer px-3 py-1 rounded-full font-black text-[9px] ${x.s=='OFFEN'?'bg-red-100 text-red-600':'bg-emerald-100 text-emerald-600'}" onclick="togglePay(${i})">${x.s}</span></td>
-            <td class="p-3 text-right"><button onclick="delPay(${i})" class="text-slate-300 hover:text-red-500">✕</button></td></tr>`).reverse().join('');
+            <div class="flex justify-between items-center p-3 border rounded-lg mb-1 bg-slate-50">
+                <span><b>${x.n}</b> (${x.t})</span>
+                <span class="px-3 py-1 rounded-full text-[9px] font-black cursor-pointer ${x.s=='OFFEN'?'bg-red-100 text-red-600':'bg-emerald-100 text-emerald-600'}" onclick="togglePay(${i})">${x.s}</span>
+            </div>`).reverse().join('');
     }
 
-    function togglePay(i) { let l=JSON.parse(localStorage.getItem('h2_re')); l[i].s = l[i].s=='OFFEN'?'BEZAHLT':'OFFEN'; localStorage.setItem('h2_re', JSON.stringify(l)); renderPay(); updateStats(); }
-    function delPay(i) { if(confirm("Löschen?")){ let l=JSON.parse(localStorage.getItem('h2_re')); l.splice(i,1); localStorage.setItem('h2_re', JSON.stringify(l)); renderPay(); updateStats(); } }
-
+    function togglePay(i) { let l=JSON.parse(localStorage.getItem('h2_re')); l[i].s = l[i].s=='OFFEN'?'BEZAHLT':'OFFEN'; localStorage.setItem('h2_re', JSON.stringify(l)); renderPay(); }
     function share(p) {
-        const txt = `H2 TechService - Rechnung\nNr: ${document.getElementById('inv-n').innerText}\nKunde: ${document.getElementById('c-n').value}\nSumme: ${document.getElementById('total').innerText}\nIBAN: LT78 3250 0925 1892 8659\nBIC: REVOLT21\nBitte unter Angabe der Rechnungsnummer überweisen. Vielen Dank!`;
+        const txt = `H2 TechService\nRechnung: ${document.getElementById('inv-n').innerText}\nKunde: ${document.getElementById('c-n').value}\nSumme: ${document.getElementById('total').innerText}\nIBAN: LT78 3250 0925 1892 8659\nDanke!`;
         window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`);
+        toggleFab();
     }
-
-    function tglS() { locked = !locked; document.getElementById('sig-canvas').style.pointerEvents = locked?'none':'auto'; document.getElementById('sig-canvas').style.opacity = locked?0.5:1; document.getElementById('s-l').innerText = locked?'🔓 Unterschrift Aktivieren':'🔒 Signatur Sperren'; document.getElementById('s-l').classList.toggle('bg-emerald-500', !locked); document.getElementById('s-l').classList.toggle('bg-red-500', locked); }
-    
-    function addEx() { let l=JSON.parse(localStorage.getItem('h2_ex')||'[]'); l.push({t:document.getElementById('ex-t').value, a:parseFloat(document.getElementById('ex-a').value)||0, d:new Date().toLocaleDateString('de-DE')}); localStorage.setItem('h2_ex', JSON.stringify(l)); renderEx(); updateStats(); }
-    function renderEx() { const l=JSON.parse(localStorage.getItem('h2_ex')||'[]'); document.getElementById('ex-list').innerHTML = l.map(x=>`<div class="flex justify-between bg-white border p-2 rounded shadow-sm"><span>${x.d} - <b>${x.t}</b></span><b class="text-red-500">${fmt(x.a)}</b></div>`).join(''); }
-
-    function addDr() { let l=JSON.parse(localStorage.getItem('h2_dr')||'[]'); l.push({v:document.getElementById('dr-v').value, n:document.getElementById('dr-n').value, k:parseFloat(document.getElementById('dr-k').value)||0, d:new Date().toLocaleDateString('de-DE')}); localStorage.setItem('h2_dr', JSON.stringify(l)); renderDr(); updateStats(); }
-    function renderDr() { const l=JSON.parse(localStorage.getItem('h2_dr')||'[]'); document.getElementById('dr-list').innerHTML = l.map(x=>`<div class="p-2 border-b"><b>${x.d}:</b> ${x.v} ➔ ${x.n} (${x.k} KM)</div>`).join(''); }
-
-    function updateStats() {
-        const re = JSON.parse(localStorage.getItem('h2_re')||'[]');
-        const ex = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-        const dr = JSON.parse(localStorage.getItem('h2_dr')||'[]');
-        const inc = re.reduce((a,b)=>a+b.v, 0);
-        const cost = ex.reduce((a,b)=>a+b.a, 0);
-        const kmVal = dr.reduce((a,b)=>a+b.k, 0) * 0.30;
-        document.getElementById('st-in').innerText = fmt(inc);
-        document.getElementById('st-out').innerText = fmt(cost);
-        document.getElementById('st-km').innerText = fmt(kmVal);
-        document.getElementById('st-profit').innerText = fmt(inc - cost - kmVal);
-    }
-
-    function saveC() { let db=JSON.parse(localStorage.getItem('h2_db')||'[]'); db.push({n:document.getElementById('c-n').value, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value}); localStorage.setItem('h2_db', JSON.stringify(db)); updateC(); alert('Müşteri Veritabanına Eklendi!'); }
-    function updateC() { const db=JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option>— Kunde wählen —</option>'+db.map((x,i)=>`<option value="${i}">${x.n}</option>`).join(''); }
+    function tglS() { locked = !locked; document.getElementById('sig-canvas').style.pointerEvents = locked?'none':'auto'; document.getElementById('sig-canvas').style.opacity = locked?0.5:1; document.getElementById('s-l').innerText = locked?'🔓 Unterschrift':'🔒 Sperren'; }
     function loadC() { const db=JSON.parse(localStorage.getItem('h2_db')||'[]'); const c=db[document.getElementById('c-db').value]; if(c){document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; document.getElementById('c-c').value=c.c;} }
-    function resetAll() { if(confirm("TÜM VERİLER SİLİNECEK! Emin misin?")){ localStorage.clear(); location.reload(); } }
+    function updateC() { const db=JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option>— Kunde wählen —</option>'+db.map((x,i)=>`<option value="${i}">${x.n}</option>`).join(''); }
 
     window.onload = () => {
         document.getElementById('inv-n').innerText = `H2-25-${(parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0')}`;
         if(localStorage.getItem('h2_logo')) document.getElementById('l-img').src = localStorage.getItem('h2_logo');
         document.getElementById('sig-canvas').style.pointerEvents='none';
-        updateC(); renderPay(); renderEx(); renderDr(); updateStats(); calc();
+        updateC(); renderPay(); renderEx(); calc();
     };
 </script>
 </body>
