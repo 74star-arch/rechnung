@@ -38,13 +38,14 @@
         .fab-item:nth-child(4) { bottom: 220px; }
         .fab-item:nth-child(5) { bottom: 290px; }
         .fab-icon { width: 30px; height: 30px; }
+        .delete-btn { color: #ef4444; cursor: pointer; font-size: 24px; font-weight: bold; }
         #logo-preview { @apply w-40 h-40 object-contain rounded-xl border-4 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center cursor-pointer mx-auto; }
         .icon { width: 14px; height: 14px; opacity: 0.6; margin-right: 6px; flex-shrink: 0; }
         #rows tr td { padding: 6px 8px !important; vertical-align: top; }
         #rows tr { border-bottom: 1px solid #e2e8f0; }
         .sig-controls { @apply absolute top-2 right-2 flex gap-2 z-10 no-print; }
         .sig-btn { @apply bg-white px-3 py-1 rounded text-xs font-bold shadow; }
-        .delete-btn { color: #ef4444; cursor: pointer; font-size: 24px; font-weight: bold; }
+        .archive-panel { background: white; border-radius: 16px; shadow-md; border; overflow: hidden; }
     </style>
 </head>
 <body>
@@ -171,6 +172,7 @@
         </div>
     </div>
 
+    <!-- Tablo (silme butonu ile) -->
     <table class="w-full text-xs">
         <thead class="bg-slate-50 text-xs font-black uppercase text-slate-500">
             <tr>
@@ -244,7 +246,7 @@
 </div>
 
 <!-- Paylaşım Butonu (Sağ Alta) -->
-<div class="share-container no-print">
+<div class="share-container no-print" style="bottom: 110px;">
     <div class="fab-main" onclick="toggleShare()" style="background: #10b981;"><span class="text-3xl">↗️</span></div>
     <div class="fab-item" onclick="sendEmail()" title="Google Mail"><img src="https://cdn-icons-png.flaticon.com/512/281/281769.png" class="fab-icon"></div>
     <div class="fab-item" onclick="doPrint()" title="Printer"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="fab-icon"></div>
