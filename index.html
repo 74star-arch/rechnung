@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Professional Suite 2025</title>
+    <title>H2 TechService - Icon Pro ERP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -17,12 +17,12 @@
         .tab-btn { padding: 10px; font-weight: 800; cursor: pointer; flex: 1; text-align: center; border-bottom: 3px solid transparent; }
         .tab-btn.active { border-bottom-color: #1e40af; color: #1e40af; background: #eff6ff; }
         .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column-reverse; align-items: center; gap: 10px; z-index: 9999; }
-        .fab-main { width: 55px; height: 55px; border-radius: 50%; background: #1e40af; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(30,64,175,0.4); cursor: pointer; border: 3px solid #10b981; transition: 0.3s; z-index: 10; }
-        .fab-main.active { transform: rotate(45deg); background: #ef4444; border-color: #f87171; }
+        .fab-main { width: 55px; height: 55px; border-radius: 50%; background: #1e40af; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(30,64,175,0.4); cursor: pointer; border: 3px solid #10b981; transition: 0.3s; }
+        .fab-main.active { transform: rotate(45deg); background: #ef4444; }
         .fab-sub { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer; opacity: 0; transform: translateY(20px); pointer-events: none; transition: 0.3s; }
         .fab-container.active .fab-sub { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .input-with-icon { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+        .input-with-icon input { text-align: right; outline: none; background: transparent; width: 100%; }
     </style>
 </head>
 <body>
@@ -38,13 +38,13 @@
 <div id="s-inv" class="card shadow-lg">
     <div class="h-grad p-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <div class="w-14 h-14 bg-white rounded-xl p-1 cursor-pointer" onclick="document.getElementById('logoI').click()">
+            <div class="w-14 h-14 bg-white rounded-xl p-1" onclick="document.getElementById('logoI').click()">
                 <img id="l-img" src="https://cdn-icons-png.flaticon.com/512/1063/1063196.png" class="max-h-full mx-auto object-contain">
                 <input type="file" id="logoI" class="hidden" onchange="upLogo(this)">
             </div>
             <div>
-                <h1 class="text-xl font-black italic uppercase">H2 <span class="text-sky-400">Tech</span>Service</h1>
-                <p class="text-[9px] font-bold text-sky-100 uppercase tracking-widest">Osman Tuncer • Professional Solutions</p>
+                <h1 class="text-xl font-black italic uppercase tracking-tighter">H2 <span class="text-sky-400">Tech</span>Service</h1>
+                <p class="text-[9px] font-bold text-sky-100 uppercase tracking-widest">Osman Tuncer • Montageprofi</p>
             </div>
         </div>
         <div class="text-right">
@@ -53,24 +53,38 @@
         </div>
     </div>
 
-    <div class="p-5 grid grid-cols-2 gap-10 border-b bg-slate-50/50">
+    <div class="p-5 grid grid-cols-2 gap-10 border-b bg-slate-50/30">
         <div class="space-y-1">
             <b class="text-blue-600 uppercase font-black text-[9px] block mb-1">Dienstleister</b>
-            <p class="text-sm font-black text-slate-900">Osman Tuncer</p>
+            <p class="text-sm font-black text-slate-900 mb-1">Osman Tuncer</p>
             <p>📍 Suntalstrasse 48, 31552 Rodenberg</p>
             <p class="font-bold">📞 +49 176 66658777</p>
-            <p class="text-blue-700">✉️ 74star@gmail.com</p>
+            <p class="text-blue-700 font-semibold">✉️ 74star@gmail.com</p>
             <p class="text-slate-500 font-mono text-[9px]">📑 Steuer-ID: 41/320/887966</p>
         </div>
+
         <div class="text-right space-y-1">
             <b class="text-blue-600 uppercase font-black text-[9px] block mb-1">Kunde</b>
             <div class="no-print mb-1"><select id="c-db" class="w-full border rounded p-1 text-[9px]" onchange="loadC()"></select></div>
-            <input id="c-n" placeholder="Name / Firma" class="text-right font-black w-full outline-none bg-transparent">
-            <input id="c-s" placeholder="📍 Straße / Nr." class="text-right w-full outline-none bg-transparent">
-            <input id="c-c" placeholder="PLZ Ort" class="text-right w-full outline-none bg-transparent">
-            <input id="c-p" placeholder="📞 Telefon" class="text-right w-full outline-none bg-transparent">
-            <input id="c-m" placeholder="✉️ E-Mail" class="text-right w-full outline-none bg-transparent">
-            <input id="c-i" placeholder="📑 Steuer-ID" class="text-right w-full outline-none bg-transparent text-[9px]">
+            
+            <div class="input-with-icon font-black text-sm">
+                <input id="c-n" placeholder="Name / Firma"> 👤
+            </div>
+            <div class="input-with-icon">
+                <input id="c-s" placeholder="Straße / Nr."> 📍
+            </div>
+            <div class="input-with-icon">
+                <input id="c-c" placeholder="PLZ Ort"> 🏢
+            </div>
+            <div class="input-with-icon font-bold text-slate-900">
+                <input id="c-p" placeholder="Telefon"> 📞
+            </div>
+            <div class="input-with-icon text-blue-700">
+                <input id="c-m" placeholder="E-Mail"> ✉️
+            </div>
+            <div class="input-with-icon text-slate-400 font-mono text-[9px]">
+                <input id="c-i" placeholder="Steuer-ID"> 📑
+            </div>
             <button onclick="saveC()" class="no-print mt-1 text-[7px] bg-slate-800 text-white px-2 py-0.5 rounded-full font-black uppercase">Kunde Speichern</button>
         </div>
     </div>
@@ -101,10 +115,10 @@
     </div>
 
     <div class="p-5 flex justify-between items-end">
-        <div class="text-center border-t border-slate-200 pt-1 w-32"><p class="text-[8px] font-black text-slate-400 uppercase">Osman Tuncer</p></div>
+        <div class="text-center border-t border-slate-200 pt-1 w-32 font-bold"><p class="text-[8px] uppercase">Osman Tuncer</p></div>
         <div class="text-right">
             <div class="no-print mb-1 flex justify-end gap-2"><button id="s-l" onclick="tglS()" class="bg-red-500 text-white text-[7px] px-2 py-0.5 rounded-full font-black uppercase">🔓 Signatur</button></div>
-            <p class="text-[8px] font-black text-slate-400 mb-1 uppercase">Kunde Abnahme</p>
+            <p class="text-[8px] font-black text-slate-400 mb-1 uppercase tracking-widest">Kunde Abnahme</p>
             <canvas id="sig-canvas" width="200" height="50" class="no-print ml-auto border rounded bg-slate-50"></canvas>
             <img id="sig-img" class="hidden h-12 border-b border-slate-900 ml-auto">
         </div>
@@ -112,22 +126,21 @@
     <div class="h-grad p-2 text-[8px] font-bold text-center">IBAN: LT78 3250 0925 1892 8659 • BIC: REVOLT21</div>
 </div>
 
+<div class="fab-container no-print" id="fab-menu">
+    <div class="fab-main" onclick="toggleFab()">+</div>
+    <div class="fab-sub" onclick="finalize()"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="w-6 h-6"></div>
+    <div class="fab-sub" onclick="window.print()"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6"></div>
+    <div class="fab-sub" onclick="share('tg')"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="w-6 h-6"></div>
+    <div class="fab-sub" onclick="share('wa')"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6"></div>
+</div>
+
 <div id="s-exp" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-lg">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-black italic uppercase">⛽ AI Quittung Scanner</h2>
-        <div class="flex items-center gap-2">
-            <div id="scan-loader" class="loader"></div>
-            <label class="bg-emerald-500 text-white px-4 py-2 rounded-full font-black text-xs cursor-pointer flex items-center gap-2">
-                📸 BELEG FOTOGRAFIEREN
-                <input type="file" id="receipt-upload" class="hidden" accept="image/*" onchange="scanReceipt(this)">
-            </label>
-        </div>
-    </div>
+    <h2 class="text-xl font-black italic uppercase mb-4">⛽ AI Quittung Scanner</h2>
     <div class="grid grid-cols-3 gap-2 mb-4 bg-slate-50 p-4 rounded-xl border-2 border-dashed">
         <input id="ex-t" placeholder="Shop / Firma" class="p-2 border rounded w-full">
         <input id="ex-d" type="date" class="p-2 border rounded w-full">
         <input id="ex-a" type="number" step="0.01" placeholder="0.00 €" class="p-2 border rounded w-full font-black text-blue-600">
-        <button onclick="addEx()" class="col-span-3 bg-blue-600 text-white py-2 rounded-lg font-black uppercase">Ausgabe Speichern</button>
+        <button onclick="addEx()" class="col-span-3 bg-blue-600 text-white py-2 rounded-lg font-black uppercase">Speichern</button>
     </div>
     <div id="ex-list" class="space-y-2"></div>
 </div>
@@ -135,14 +148,6 @@
 <div id="s-pay" class="max-w-[850px] mx-auto hidden bg-white rounded-xl p-6 border no-print shadow-lg text-xs">
     <h2 class="text-xl font-black italic mb-4 uppercase">💰 Status & Zahlungen</h2>
     <div id="pay-list" class="space-y-1"></div>
-</div>
-
-<div class="fab-container no-print" id="fab-menu">
-    <div class="fab-main" onclick="toggleFab()">+</div>
-    <div class="fab-sub" onclick="finalize()" title="PDF"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="w-6 h-6"></div>
-    <div class="fab-sub" onclick="window.print()" title="PRINT"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6"></div>
-    <div class="fab-sub" onclick="share('tg')" title="TELEGRAM"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="w-6 h-6"></div>
-    <div class="fab-sub" onclick="share('wa')" title="WHATSAPP"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6"></div>
 </div>
 
 <script>
@@ -157,26 +162,7 @@
     function calc() { let t = 0; document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); const f = t * 1.19; document.getElementById("total").innerText = fmt(f); qr.makeCode(`H2-${f.toFixed(2)}`); }
     function tglS() { locked = !locked; document.getElementById('sig-canvas').style.pointerEvents = locked?'none':'auto'; document.getElementById('sig-canvas').style.opacity = locked?0.5:1; document.getElementById('s-l').innerText = locked?'🔓 Signatur':'🔒 Sperren'; }
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
-
-    async function scanReceipt(input) {
-        if (!input.files[0]) return;
-        document.getElementById('scan-loader').style.display = 'block';
-        try {
-            const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
-            const prices = text.match(/\d+[\.,]\d{2}/g);
-            if (prices) document.getElementById('ex-a').value = Math.max(...prices.map(p => parseFloat(p.replace(',', '.'))));
-            const dateMatch = text.match(/(\d{2}\.\d{2}\.\d{4}|\d{2}\.\d{2}\.\d{2})/);
-            if (dateMatch) {
-                let d = dateMatch[0]; if(d.length === 8) d = d.slice(0,6) + "20" + d.slice(6);
-                const p = d.split('.'); document.getElementById('ex-d').value = `${p[2]}-${p[1]}-${p[0]}`;
-            }
-            const lines = text.split('\n').filter(l => l.trim().length > 3);
-            if (lines.length > 0) document.getElementById('ex-t').value = lines[0].trim();
-            alert("Scan fertig!");
-        } catch (e) { alert("Scan-Fehler."); }
-        document.getElementById('scan-loader').style.display = 'none';
-    }
-
+    
     function saveC() {
         let db = JSON.parse(localStorage.getItem('h2_db')||'[]');
         db.push({ n: document.getElementById('c-n').value, s: document.getElementById('c-s').value, c: document.getElementById('c-c').value, p: document.getElementById('c-p').value, m: document.getElementById('c-m').value, i: document.getElementById('c-i').value });
@@ -204,15 +190,13 @@
         document.getElementById('pay-list').innerHTML = l.map((x,i) => `<div class="flex justify-between items-center p-3 border rounded-lg mb-1 bg-slate-50"><span><b>${x.n}</b> (${x.t})</span><span class="px-2 py-1 rounded-full text-[8px] font-black cursor-pointer ${x.s=='OFFEN'?'bg-red-100 text-red-600':'bg-emerald-100 text-emerald-600'}" onclick="togglePay(${i})">${x.s}</span></div>`).reverse().join('');
     }
     function togglePay(i) { let l=JSON.parse(localStorage.getItem('h2_re')); l[i].s = l[i].s=='OFFEN'?'BEZAHLT':'OFFEN'; localStorage.setItem('h2_re', JSON.stringify(l)); renderPay(); }
-    function addEx() { let l = JSON.parse(localStorage.getItem('h2_ex')||'[]'); l.push({t:document.getElementById('ex-t').value, a:document.getElementById('ex-a').value, d:document.getElementById('ex-d').value}); localStorage.setItem('h2_ex', JSON.stringify(l)); renderEx(); }
-    function renderEx() { const l = JSON.parse(localStorage.getItem('h2_ex')||'[]'); document.getElementById('ex-list').innerHTML = l.map(x => `<div class="flex justify-between bg-white border p-2 rounded-lg"><span><b>${x.t}</b> (${x.d})</span><b class="text-red-500">-${fmt(x.a)}</b></div>`).reverse().join(''); }
-    function share(p) { const txt = `H2 TechService\nRechnung: ${document.getElementById('inv-n').innerText}\nKunde: ${document.getElementById('c-n').value}\nSumme: ${document.getElementById('total').innerText}\nIBAN: LT78 3250 0925 1892 8659`; window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`); toggleFab(); }
+    function share(p) { const txt = `H2 TechService\nRechnung: ${document.getElementById('inv-n').innerText}\nKunde: ${document.getElementById('c-n').value}\nSumme: ${document.getElementById('total').innerText}`; window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`); toggleFab(); }
 
     window.onload = () => {
         document.getElementById('inv-n').innerText = `H2-25-${(parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0')}`;
         if(localStorage.getItem('h2_logo')) document.getElementById('l-img').src = localStorage.getItem('h2_logo');
         document.getElementById('sig-canvas').style.pointerEvents='none';
-        updateC(); renderPay(); renderEx(); calc();
+        updateC(); renderPay(); calc();
     };
 </script>
 </body>
