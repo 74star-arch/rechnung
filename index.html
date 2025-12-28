@@ -3,390 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Enterprise Final</title>
+    <title>H2 TechService - Ultimate ERP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src='https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js'></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        
-        /* A4 SIKIŞTIRMA - TEK SAYFA GARANTİSİ */
         @media print {
             @page { size: A4; margin: 0; }
             body { background: white; padding: 0; margin: 0; zoom: 0.88; }
             .no-print { display: none !important; }
             .card { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; border-radius: 0 !important; }
             .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; }
-            textarea, input { border: none !important; background: transparent !important; }
         }
-
-        body { background: #f8fafc; font-family: 'Inter', sans-serif; font-size: 11px; color: #0f172a; }
+        body { background: #f8fafc; font-family: 'Inter', sans-serif; font-size: 11px; }
         .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); color: white; }
         .footer-balken { background: #0f172a; color: white; padding: 20px; border-top: 4px solid #38bdf8; }
         .sig-box { border: 2px dashed #cbd5e1; background: #f8fafc; transition: 0.3s; }
         .sig-box.unlocked { border-color: #2563eb; background: white; cursor: crosshair; }
         .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column-reverse; gap: 10px; z-index: 100; }
-        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #1d4ed8; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; border: 4px solid #10b981; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #1d4ed8; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; border: 4px solid #10b981; }
         .fab-sub { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transform: scale(0); transition: 0.2s; opacity: 0; }
         .active .fab-sub { transform: scale(1); opacity: 1; }
-        .nav-btn { flex: 1; padding: 12px; font-weight: 900; font-size: 10px; text-transform: uppercase; transition: 0.3s; }
-        .nav-active { background: #1d4ed8; color: white; }
-        .nav-inactive { background: white; color: #64748b; }
+        .row-hover:hover { background-color: #f1f5f9; cursor: pointer; }
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="p-2 md:p-4">
 
 <div class="max-w-[850px] mx-auto no-print mb-4 flex gap-1 shadow-lg rounded-xl overflow-hidden border">
-    <button onclick="tab('inv')" id="t-inv" class="nav-btn nav-active border-r">📄 RECHNUNG</button>
-    <button onclick="tab('exp')" id="t-exp" class="nav-btn nav-inactive border-r">🧠 AI SCANNER</button>
-    <button onclick="tab('pay')" id="t-pay" class="nav-btn nav-inactive">📊 MUHASEBE</button>
+    <button onclick="tab('inv')" id="t-inv" class="flex-1 p-3 font-black text-[10px] uppercase bg-blue-600 text-white">📄 RECHNUNG</button>
+    <button onclick="tab('exp')" id="t-exp" class="flex-1 p-3 font-black text-[10px] uppercase bg-white text-slate-400">🧠 AI SCAN</button>
+    <button onclick="tab('pay')" id="t-pay" class="flex-1 p-3 font-black text-[10px] uppercase bg-white text-slate-400">📊 MUHASEBE</button>
 </div>
 
 <div id="s-inv" class="card bg-white shadow-2xl mx-auto rounded-2xl relative overflow-hidden max-w-[850px]">
     <div class="h-grad p-8 flex justify-between items-center">
-        <div class="flex items-center gap-5">
-            <div class="w-20 h-20 bg-white rounded-2xl p-2 shadow-inner cursor-pointer group relative" onclick="document.getElementById('logoI').click()">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-white rounded-xl p-1 cursor-pointer" onclick="document.getElementById('logoI').click()">
                 <img id="l-img" src="https://cdn-icons-png.flaticon.com/512/1063/1063196.png" class="h-full mx-auto">
                 <input type="file" id="logoI" class="hidden" onchange="upLogo(this)">
-                <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center text-[8px] text-white rounded-2xl font-black uppercase text-center">Logo Ändern</div>
             </div>
             <div>
-                <h1 class="text-3xl font-black italic tracking-tighter">H2 <span class="text-sky-400">TECH</span>SERVICE</h1>
-                <p class="text-[9px] font-bold tracking-[0.4em] text-sky-100 uppercase">Pro-Neural Solutions</p>
+                <h1 class="text-2xl font-black italic">H2 <span class="text-sky-400">TECH</span>SERVICE</h1>
+                <p class="text-[8px] font-bold tracking-[0.3em] opacity-80 uppercase">Osman Tuncer Professional</p>
             </div>
         </div>
-        <div class="text-right bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/20 min-w-[150px]">
-            <p class="text-[10px] font-black text-sky-200 uppercase mb-1">Rechnungsnummer</p>
-            <div class="flex items-center justify-end gap-3 text-white font-black mb-1">
-                <button onclick="changeSeq(-1)" class="no-print bg-white/20 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/40 transition"> - </button>
-                <span id="inv-n" class="text-2xl tracking-tighter"></span>
-                <button onclick="changeSeq(1)" class="no-print bg-white/20 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/40 transition"> + </button>
+        <div class="text-right bg-white/10 p-3 rounded-xl border border-white/20">
+            <div class="flex items-center justify-end gap-2 text-white font-black">
+                <button onclick="changeSeq(-1)" class="no-print bg-white/20 w-5 h-5 flex items-center justify-center rounded-full text-xs">-</button>
+                <span id="inv-n" class="text-xl tracking-tighter"></span>
+                <button onclick="changeSeq(1)" class="no-print bg-white/20 w-5 h-5 flex items-center justify-center rounded-full text-xs">+</button>
             </div>
-            <button onclick="resetCounter()" class="no-print text-[7px] bg-red-500/80 hover:bg-red-500 px-2 py-0.5 rounded uppercase font-black text-white">0001 Reset</button>
-            <p id="cur-date" class="text-[10px] font-bold mt-2 text-sky-50"></p>
+            <button onclick="resetCounter()" class="no-print text-[7px] bg-red-500 text-white px-2 py-0.5 rounded mt-1 font-black">RESET 0001</button>
+            <p id="cur-date" class="text-[9px] font-bold mt-1 text-sky-100"></p>
         </div>
     </div>
 
-    <div class="p-8 grid grid-cols-2 gap-16">
-        <div class="space-y-2">
-            <h3 class="text-blue-600 font-black text-[10px] uppercase border-b pb-1">Absender</h3>
-            <p class="text-lg font-black text-slate-900">Osman Tuncer</p>
-            <div class="text-slate-600 space-y-1.5 font-semibold">
-                <p>📍 Suntalstrasse 48, 31552 Rodenberg</p>
-                <p class="text-slate-900 font-black">☎️ +49 176 66658777</p>
-                <p class="text-blue-700 font-black">✉️ 74star@gmail.com</p>
-                <p class="font-mono text-[9px] pt-1 text-slate-400">📑 Steuer-ID: 41/320/887966</p>
-            </div>
+    <div class="p-8 grid grid-cols-2 gap-10">
+        <div class="space-y-1">
+            <b class="text-blue-600 text-[9px] uppercase font-black">Absender</b>
+            <p class="text-sm font-black text-slate-900">Osman Tuncer</p>
+            <p class="text-slate-600 font-semibold">📍 Suntalstrasse 48, 31552 Rodenberg</p>
+            <p class="font-black">☎️ +49 176 66658777</p>
+            <p class="text-blue-700 font-black italic">✉️ 74star@gmail.com</p>
+            <p class="text-slate-400 font-mono text-[8px] pt-1">📑 Steuer-ID: 41/320/887966</p>
         </div>
-        <div class="space-y-1.5 text-right">
-            <h3 class="text-blue-600 font-black text-[10px] uppercase border-b pb-1 block">Empfänger</h3>
-            <div class="no-print pb-1"><select id="c-db" class="w-full border p-1 rounded text-[10px]" onchange="loadC()"></select></div>
-            <div class="flex items-center justify-end gap-2 text-base font-black"> <input id="c-n" placeholder="Name / Firma *" class="text-right outline-none w-full"> 👤</div>
-            <div class="flex items-center justify-end gap-2 text-slate-600"> <input id="c-s" placeholder="Straße Nr." class="text-right outline-none w-full"> 📍</div>
+        <div class="space-y-1 text-right">
+            <b class="text-blue-600 text-[9px] uppercase font-black">Empfänger</b>
+            <div class="no-print pb-1"><select id="c-db" class="w-full border p-1 rounded text-[9px]" onchange="loadC()"></select></div>
+            <div class="flex items-center justify-end gap-2 font-black"> <input id="c-n" placeholder="Name *" class="text-right outline-none w-full"> 👤</div>
+            <div class="flex items-center justify-end gap-2 text-slate-600"> <input id="c-s" placeholder="Straße" class="text-right outline-none w-full"> 📍</div>
             <div class="flex items-center justify-end gap-2 text-slate-600"> <input id="c-c" placeholder="PLZ Ort" class="text-right outline-none w-full"> 🏢</div>
-            <div class="flex items-center justify-end gap-2 font-black text-slate-800"> <input id="c-p" placeholder="Telefon" class="text-right outline-none w-full"> ☎️</div>
+            <div class="flex items-center justify-end gap-2 font-black"> <input id="c-p" placeholder="Telefon" class="text-right outline-none w-full"> ☎️</div>
             <div class="flex items-center justify-end gap-2 text-blue-700 font-black"> <input id="c-m" placeholder="E-Mail" class="text-right outline-none w-full"> ✉️</div>
-            <div class="flex items-center justify-end gap-2 text-slate-400 font-mono text-[9px]"> <input id="c-i" placeholder="Steuer-ID (falls vorhanden)" class="text-right outline-none w-full"> 📑</div>
-            <button onclick="saveC()" class="no-print bg-slate-900 text-white text-[8px] px-3 py-1 rounded-lg mt-2 font-black hover:bg-blue-600 transition">KUNDE SPEICHERN</button>
+            <div class="flex items-center justify-end gap-2 text-slate-400 font-mono text-[8px]"> <input id="c-i" placeholder="Steuer-ID" class="text-right outline-none w-full"> 📑</div>
+            <button onclick="saveC()" class="no-print bg-slate-800 text-white text-[7px] px-2 py-1 rounded-lg mt-1 font-black">Kayıt</button>
         </div>
     </div>
 
-    <div class="px-8 min-h-[320px]">
+    <div class="px-8 min-h-[300px]">
         <table class="w-full">
-            <thead class="bg-slate-50 border-y-2 border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <tr><th class="py-4 text-left px-2">Leistungsbeschreibung</th><th class="w-16 text-center">Stk</th><th class="w-28 text-right px-2">Einzel (€)</th><th class="no-print w-8"></th></tr>
+            <thead class="bg-slate-50 border-y text-[9px] font-black text-slate-400 uppercase">
+                <tr><th class="py-3 text-left px-2">Beschreibung</th><th class="w-12 text-center">Stk</th><th class="w-24 text-right px-2">Betrag (€)</th><th class="no-print w-6"></th></tr>
             </thead>
             <tbody id="rows">
-                <tr class="border-b group">
-                    <td class="py-3 px-2"><textarea rows="1" class="w-full font-bold outline-none bg-transparent resize-none" placeholder="Dienstleistung..." oninput="calc()"></textarea></td>
+                <tr class="border-b">
+                    <td class="py-2 px-2"><textarea rows="1" class="w-full font-bold outline-none bg-transparent resize-none" placeholder="Leistung..." oninput="calc()"></textarea></td>
                     <td><input type="number" value="1" class="qty w-full text-center font-black outline-none bg-transparent" oninput="calc()"></td>
                     <td><input type="number" step="0.01" class="prc w-full text-right font-black outline-none px-2 bg-transparent" placeholder="0.00" oninput="calc()"></td>
-                    <td class="no-print text-center text-red-300 hover:text-red-600 cursor-pointer font-bold" onclick="this.closest('tr').remove();calc()">✕</td>
+                    <td class="no-print text-center text-red-300 cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>
                 </tr>
             </tbody>
         </table>
-        <button onclick="addR()" class="no-print mt-4 text-[10px] font-black text-blue-600 border-2 border-blue-600 px-4 py-1 rounded-lg hover:bg-blue-600 hover:text-white transition">+ NEUE POSITION</button>
+        <button onclick="addR()" class="no-print mt-2 text-[9px] font-black text-blue-600 border border-blue-600 px-3 py-1 rounded-lg">+ POSITION</button>
     </div>
 
-    <div class="m-8 p-6 bg-slate-50 rounded-3xl flex justify-between items-center border-2 border-slate-100">
-        <div id="qr" class="bg-white p-2 rounded-xl shadow-sm border"></div>
+    <div class="m-8 p-4 bg-slate-50 rounded-2xl flex justify-between items-center border">
+        <div id="qr"></div>
         <div class="text-right">
-            <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Gesamtbetrag (inkl. 19% MwSt)</p>
-            <p id="total" class="text-5xl font-black text-slate-900 tracking-tighter">0,00 €</p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gesamtbetrag (inkl. 19%)</p>
+            <p id="total" class="text-4xl font-black text-slate-900 tracking-tighter">0,00 €</p>
         </div>
     </div>
 
     <div class="px-8 pb-24 flex justify-between items-end">
-        <div class="w-48 text-center border-t-2 border-slate-900 pt-2 font-black uppercase text-[10px]">Osman Tuncer</div>
+        <div class="w-32 text-center border-t border-slate-900 pt-1 text-[9px] font-black uppercase">Osman Tuncer</div>
         <div class="text-right">
             <div class="no-print flex gap-2 justify-end mb-2">
-                <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase shadow-lg">🔓 Unterschrift Freigeben</button>
-                <button onclick="sPad.clear()" class="bg-slate-200 text-slate-600 text-[8px] px-3 py-1 rounded-full font-black uppercase shadow-lg">🗑️ SİL</button>
+                <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[8px] px-2 py-1 rounded font-black">🔓 KİLİDİ AÇ</button>
+                <button onclick="sPad.clear()" class="bg-slate-300 text-slate-600 text-[8px] px-2 py-1 rounded font-black">🗑 SİL</button>
             </div>
-            <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Abnahme / Unterschrift Kunde</p>
-            <div id="sig-wrapper" class="sig-box rounded-2xl overflow-hidden shadow-inner">
-                <canvas id="sig-canvas" width="220" height="70" class="no-print"></canvas>
+            <div id="sig-wrapper" class="sig-box rounded-xl">
+                <canvas id="sig-canvas" width="200" height="60" class="no-print"></canvas>
             </div>
-            <img id="sig-img" class="hidden h-16 border-b-2 border-slate-900 ml-auto">
+            <img id="sig-img" class="hidden h-12 border-b border-slate-900 ml-auto">
         </div>
     </div>
 
     <div class="footer-balken flex justify-between items-center px-8">
-        <div class="flex gap-12">
-            <div>
-                <p class="text-[9px] font-black text-sky-400 uppercase mb-1">Bankverbindung</p>
-                <p class="text-sm font-black text-white">IBAN: <span class="tracking-wider">LT78 3250 0925 1892 8659</span></p>
-            </div>
-            <div>
-                <p class="text-[9px] font-black text-sky-400 uppercase mb-1">BIC / SWIFT</p>
-                <p class="text-sm font-black text-white tracking-widest">REVOLT21</p>
-            </div>
-        </div>
-        <div class="text-right border-l border-white/20 pl-8">
-            <p class="text-[12px] font-black text-white uppercase italic">H2 TechService</p>
-            <p class="text-[10px] font-medium text-sky-200">Vielen Dank für Ihren Auftrag!</p>
-        </div>
+        <div><p class="text-[8px] font-black text-sky-400 uppercase">Bankverbindung</p><p class="text-xs font-black text-white">IBAN: LT78 3250 0925 1892 8659</p></div>
+        <div class="text-right font-black text-white"><p class="text-[8px] text-sky-400 uppercase">BIC</p><p class="text-xs uppercase">REVOLT21</p></div>
     </div>
 </div>
 
 <div id="s-exp" class="max-w-[850px] mx-auto hidden no-print bg-white rounded-2xl p-8 shadow-2xl border">
     <div class="flex justify-between items-center mb-8 border-b pb-6">
-        <div>
-            <h2 class="text-2xl font-black italic uppercase text-slate-800">🧠 AI Neural Scan</h2>
-            <p class="text-slate-400 font-bold text-xs uppercase tracking-widest">Fişlerinizi akıllı klasörlere ayırın</p>
-        </div>
-        <button onclick="document.getElementById('receipt-upload').click()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-5 rounded-2xl font-black shadow-xl transition-all active:scale-95 flex items-center gap-3">
-            📸 FIŞİ ANALİZ ET
-        </button>
+        <h2 class="text-2xl font-black italic uppercase">🧠 AI FİŞ ANALİZİ</h2>
+        <button onclick="document.getElementById('receipt-upload').click()" class="bg-emerald-500 text-white px-8 py-4 rounded-xl font-black shadow-lg">📸 FİŞİ TARA</button>
         <input type="file" id="receipt-upload" class="hidden" accept="image/*" capture="camera" onchange="neuralScan(this)">
     </div>
-    <div id="scan-status" class="hidden p-4 bg-blue-50 text-blue-600 rounded-xl mb-6 font-black text-center animate-pulse">AI METNİ ANALİZ EDİP KLASÖRLERE AYIRIYOR...</div>
-    <div id="ai-folders" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    <div id="ai-folders" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 </div>
 
 <div id="s-pay" class="max-w-[850px] mx-auto hidden no-print bg-white rounded-2xl p-8 shadow-2xl border">
-    <div class="grid grid-cols-2 gap-6 mb-10">
-        <div class="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 text-center">
-            <p class="text-xs font-black text-emerald-600 uppercase mb-2">Eingenommen (Ödenen)</p>
-            <p id="sum-paid" class="text-4xl font-black text-emerald-700">0,00 €</p>
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-green-50 p-6 rounded-3xl border border-green-100 text-center text-green-700">
+            <p class="text-[10px] font-black uppercase">Ödenen (Cepte)</p>
+            <p id="sum-paid" class="text-3xl font-black">0,00 €</p>
         </div>
-        <div class="bg-rose-50 p-6 rounded-3xl border border-rose-100 text-center">
-            <p class="text-xs font-black text-rose-600 uppercase mb-2">Offene Beträge (Alacak)</p>
-            <p id="sum-due" class="text-4xl font-black text-rose-700">0,00 €</p>
+        <div class="bg-red-50 p-6 rounded-3xl border border-red-100 text-center text-red-700">
+            <p class="text-[10px] font-black uppercase">Bekleyen (Alacak)</p>
+            <p id="sum-due" class="text-3xl font-black">0,00 €</p>
         </div>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left">
-            <thead class="text-xs font-black uppercase text-slate-400 border-b">
-                <tr><th class="pb-4">NR</th><th class="pb-4">KUNDE</th><th class="pb-4">DATUM</th><th class="pb-4 text-right">BETRAG</th><th class="pb-4 text-center">STATUS</th><th class="pb-4"></th></tr>
-            </thead>
-            <tbody id="pay-list" class="text-xs"></tbody>
-        </table>
-    </div>
+    <div id="pay-alert" class="hidden mb-4 p-2 bg-yellow-100 text-yellow-800 text-[10px] font-black text-center rounded-lg"></div>
+    <table class="w-full text-left">
+        <thead class="text-[10px] font-black uppercase text-slate-400 border-b">
+            <tr><th class="pb-2">Fatura</th><th class="pb-2">Müşteri</th><th class="pb-2 text-right">Tutar</th><th class="pb-2 text-center">Durum</th><th class="pb-2"></th></tr>
+        </thead>
+        <tbody id="pay-list" class="text-[11px]"></tbody>
+    </table>
 </div>
 
 <div class="fab-container no-print" id="fab">
-    <div class="fab-main" onclick="this.parentElement.classList.toggle('active')">★</div>
-    <div class="fab-sub" onclick="finalize()" title="Finalize & Print"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" class="w-6 h-6"></div>
+    <div class="fab-main shadow-xl" onclick="this.parentElement.classList.toggle('active')">★</div>
+    <div class="fab-sub" onclick="finalize()" title="Yazdır & Kaydet"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6"></div>
     <div class="fab-sub" onclick="share('wa')" style="background:#25D366"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6 invert"></div>
-    <div class="fab-sub" onclick="share('tg')" style="background:#0088cc"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="w-6 h-6 invert"></div>
 </div>
 
 <script>
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
-    const qr = new QRCode(document.getElementById("qr"), { width: 50, height: 50 });
+    const qr = new QRCode(document.getElementById("qr"), { width: 45, height: 45 });
     const sPad = new SignaturePad(document.getElementById('sig-canvas'));
-    let sigLocked = true;
-    sPad.off(); // Başlangıçta kapalı
+    let sigLocked = true; sPad.off();
 
     function tab(t) {
         ['s-inv','s-exp','s-pay'].forEach(x => document.getElementById(x).classList.add('hidden'));
-        ['t-inv','t-exp','t-pay'].forEach(x => { 
-            document.getElementById(x).className = 'nav-btn nav-inactive border-r';
-        });
+        ['t-inv','t-exp','t-pay'].forEach(x => { document.getElementById(x).className = 'flex-1 p-3 font-black text-[10px] uppercase bg-white text-slate-400'; });
         document.getElementById('s-'+t).classList.remove('hidden');
-        document.getElementById('t-'+t).className = 'nav-btn nav-active border-r';
-        if(t === 'pay') renderTracker();
-        if(t === 'exp') renderFolders();
+        document.getElementById('t-'+t).className = 'flex-1 p-3 font-black text-[10px] uppercase bg-blue-600 text-white';
+        if(t==='pay') renderTracker();
+        if(t==='exp') renderFolders();
     }
 
-    // --- FATURA NO SİSTEMİ ---
-    function changeSeq(v) {
-        let current = parseInt(localStorage.getItem('h2_seq') || 0);
-        let next = Math.max(0, current + v);
-        localStorage.setItem('h2_seq', next);
-        updateInvID();
-    }
-    function resetCounter() { if(confirm("Zähler auf 0001 zurücksetzen?")) { localStorage.setItem('h2_seq', 0); updateInvID(); } }
-    function updateInvID() { 
-        const seq = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0');
-        document.getElementById('inv-n').innerText = `H2${new Date().getFullYear()}${seq}`; 
-    }
+    function changeSeq(v) { let s = Math.max(0, (parseInt(localStorage.getItem('h2_seq')||0)) + v); localStorage.setItem('h2_seq', s); updateInvID(); }
+    function resetCounter() { if(confirm("Sıfırlansın mı?")) { localStorage.setItem('h2_seq', 0); updateInvID(); } }
+    function updateInvID() { const s = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0'); document.getElementById('inv-n').innerText = `H2${new Date().getFullYear()}${s}`; }
 
-    // --- İMZA SİSTEMİ ---
     function toggleSig() {
         sigLocked = !sigLocked;
-        const w = document.getElementById('sig-wrapper');
         const b = document.getElementById('btn-lock');
-        if(sigLocked) { 
-            sPad.off(); 
-            w.classList.remove('unlocked'); 
-            b.innerText = '🔓 Unterschrift Freigeben';
-            b.classList.replace('bg-green-600','bg-orange-500');
-        } else { 
-            sPad.on(); 
-            w.classList.add('unlocked'); 
-            b.innerText = '🔒 Sperren (Kilitle)';
-            b.classList.replace('bg-orange-500','bg-green-600');
-        }
+        const w = document.getElementById('sig-wrapper');
+        if(sigLocked) { sPad.off(); b.innerText = '🔓 KİLİDİ AÇ'; b.className = 'bg-orange-500 text-white text-[8px] px-2 py-1 rounded font-black'; w.className='sig-box rounded-xl'; }
+        else { sPad.on(); b.innerText = '🔒 KİLİTLE'; b.className = 'bg-green-600 text-white text-[8px] px-2 py-1 rounded font-black'; w.className='sig-box rounded-xl unlocked'; }
     }
 
-    // --- AI NEURAL SCAN & FOLDER SİSTEMİ ---
-    async function neuralScan(input) {
-        if (!input.files[0]) return;
-        document.getElementById('scan-status').classList.remove('hidden');
-        try {
-            const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
-            const prices = text.match(/\d+[\.,]\d{2}/g);
-            const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0;
-            
-            // Dükkan İsmi Çıkarma (Neural Logic)
-            const lines = text.split('\n').filter(l => l.trim().length > 2);
-            const rawShop = lines[0]?.trim() || "Unbekannt";
-            
-            let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-            l.push({t: rawShop, a: amount, d: new Date().toLocaleString('de-DE')});
-            localStorage.setItem('h2_ex', JSON.stringify(l));
-            renderFolders();
-            alert("Beleg erfolgreich analysiert und im Ordner '" + rawShop + "' abgelegt.");
-        } catch (e) { alert("AI Scanner Fehler!"); }
-        document.getElementById('scan-status').classList.add('hidden');
-    }
-
-    function renderFolders() {
-        const l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-        const groups = l.reduce((acc, curr) => { (acc[curr.t] = acc[curr.t] || []).push(curr); return acc; }, {});
-        document.getElementById('ai-folders').innerHTML = Object.entries(groups).map(([name, items]) => {
-            const sum = items.reduce((s, i) => s + i.a, 0);
-            return `
-            <div class="bg-slate-50 border-2 border-slate-100 rounded-3xl p-5 hover:border-blue-300 transition-all cursor-default shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest block">Ordner</span>
-                        <h4 class="text-lg font-black text-slate-800">${name}</h4>
-                    </div>
-                    <div class="text-right">
-                        <span class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-full font-black uppercase">${items.length} Belege</span>
-                    </div>
-                </div>
-                <div class="space-y-2 border-t pt-3">
-                    ${items.map(i => `<div class="flex justify-between text-[11px] font-bold text-slate-500"><span>${i.d.split(',')[0]}</span><span class="text-red-600">-${fmt(i.a)}</span></div>`).join('')}
-                </div>
-                <div class="mt-4 pt-3 border-t-2 border-dashed flex justify-between items-center">
-                    <span class="text-[10px] font-black uppercase text-slate-400">Gesamt</span>
-                    <span class="text-base font-black text-slate-900">${fmt(sum)}</span>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    // --- MUHASEBE VE TAKİP ---
+    // --- MUHASEBE SİSTEMİ (X İLE SİLME & TIKLA AÇ) ---
     function renderTracker() {
         const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
         let paid = 0, due = 0;
         document.getElementById('pay-list').innerHTML = tr.map((x, i) => {
             if(x.s === 'paid') paid += x.a; else due += x.a;
             return `
-            <tr class="border-b hover:bg-slate-50 transition">
-                <td class="py-4 font-black text-slate-800">${x.id}</td>
-                <td class="font-bold">${x.k || 'Gast'}</td>
-                <td class="text-slate-500 font-medium">${x.d}</td>
-                <td class="text-right font-black text-slate-900">${fmt(x.a)}</td>
+            <tr class="border-b row-hover">
+                <td class="py-3 font-black text-blue-600" onclick="viewOldInv(${i})">${x.id}</td>
+                <td onclick="viewOldInv(${i})"><b>${x.k || 'Gast'}</b><br><span class="text-[8px] text-slate-400">${x.d}</span></td>
+                <td class="text-right font-black" onclick="viewOldInv(${i})">${fmt(x.a)}</td>
                 <td class="text-center">
-                    <button onclick="toggleP(${i})" class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${x.s==='paid'?'bg-emerald-500 text-white shadow-lg shadow-emerald-200':'bg-rose-100 text-rose-600'}">
-                        ${x.s==='paid'?'BEZAHLT':'OFFEN'}
+                    <button onclick="toggleP(${i})" class="px-2 py-1 rounded-full text-[8px] font-black ${x.s==='paid'?'bg-green-500 text-white':'bg-red-100 text-red-600'}">
+                        ${x.s==='paid'?'ÖDENDİ':'AÇIK'}
                     </button>
                 </td>
-                <td class="text-right"><button onclick="delTr(${i})" class="text-slate-300 hover:text-rose-500 transition">✕</button></td>
+                <td class="text-right">
+                    <button onclick="deleteInvoice(${i})" class="text-red-400 hover:text-red-700 px-2 font-black text-lg">✕</button>
+                </td>
             </tr>`;
         }).reverse().join('');
         document.getElementById('sum-paid').innerText = fmt(paid);
         document.getElementById('sum-due').innerText = fmt(due);
     }
+
+    function deleteInvoice(idx) {
+        if(confirm("Bu faturayı silmek istediğine emin misin?")) {
+            let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
+            const id = tr[idx].id;
+            tr.splice(idx, 1);
+            localStorage.setItem('h2_tracker', JSON.stringify(tr));
+            showMsg(`Fatura ${id} silindi!`);
+            renderTracker();
+        }
+    }
+
+    function viewOldInv(idx) {
+        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
+        const inv = tr[idx];
+        document.getElementById('inv-n').innerText = inv.id;
+        document.getElementById('c-n').value = inv.k;
+        document.getElementById('total').innerText = fmt(inv.a);
+        tab('inv');
+        showMsg(`${inv.id} faturası yüklendi. Kontrol edebilirsin.`);
+    }
+
+    function showMsg(m) {
+        const a = document.getElementById('pay-alert');
+        a.innerText = m; a.classList.remove('hidden');
+        setTimeout(() => a.classList.add('hidden'), 3000);
+    }
+
     function toggleP(i) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr[i].s = tr[i].s==='paid'?'unpaid':'paid'; localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); }
-    function delTr(i) { if(confirm("Eintrag löschen?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(i,1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); } }
 
-    // --- GENEL ARAÇLAR ---
-    function addR() { 
-        const r = document.querySelector("#rows tr").cloneNode(true); 
-        r.querySelectorAll("input,textarea").forEach(i=>i.value=""); 
-        r.querySelector(".qty").value="1"; 
-        document.getElementById("rows").appendChild(r); 
+    // --- AI & GIDER SİSTEMİ ---
+    async function neuralScan(input) {
+        if (!input.files[0]) return;
+        const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
+        const prices = text.match(/\d+[\.,]\d{2}/g);
+        const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0;
+        const shop = text.split('\n')[0].trim() || "Unbekannt";
+        let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE')});
+        localStorage.setItem('h2_ex', JSON.stringify(l));
+        renderFolders();
     }
 
-    function calc() { 
-        let t = 0; 
-        document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); 
-        const totalWithTax = t * 1.19; 
-        document.getElementById("total").innerText = fmt(totalWithTax); 
-        qr.makeCode(`H2-OSMAN-TUNCER-${totalWithTax.toFixed(2)}`); 
-        return totalWithTax;
+    function renderFolders() {
+        const l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+        const groups = l.reduce((acc, curr) => { (acc[curr.t] = acc[curr.t] || []).push(curr); return acc; }, {});
+        document.getElementById('ai-folders').innerHTML = Object.entries(groups).map(([name, items]) => `
+            <div class="p-4 bg-slate-50 border rounded-2xl">
+                <div class="flex justify-between border-b pb-1 mb-2 font-black text-blue-600"><span>📁 ${name}</span><span>${items.length} Fiş</span></div>
+                ${items.map(i => `<div class="flex justify-between text-[9px] mb-1"><span>${i.d.split(',')[0]}</span><span class="font-bold">-${fmt(i.a)}</span></div>`).join('')}
+            </div>
+        `).join('');
     }
+
+    // --- GENEL ---
+    function addR() { const r = document.querySelector("#rows tr").cloneNode(true); r.querySelectorAll("input,textarea").forEach(i=>i.value=""); r.querySelector(".qty").value="1"; document.getElementById("rows").appendChild(r); }
+    function calc() { let t = 0; document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); const f = t * 1.19; document.getElementById("total").innerText = fmt(f); qr.makeCode(`H2-${f.toFixed(2)}`); return f; }
 
     function finalize() {
         const total = calc();
-        if(total <= 0) { alert("Bitte Leistungen eintragen!"); return; }
-        
-        // Muhasebeye ekle
+        if(total <= 0) return alert("Hata: Tutar girmediniz!");
         let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
         tr.push({id: document.getElementById('inv-n').innerText, k: document.getElementById('c-n').value, a: total, d: new Date().toLocaleDateString('de-DE'), s: 'unpaid'});
         localStorage.setItem('h2_tracker', JSON.stringify(tr));
-        
-        // İmzayı resme çevir
-        if(!sPad.isEmpty()) { 
-            document.getElementById('sig-img').src = sPad.toDataURL(); 
-            document.getElementById('sig-img').classList.remove('hidden'); 
-            document.getElementById('sig-wrapper').classList.add('hidden'); 
-        }
-        
-        // Fatura numarasını artır
+        if(!sPad.isEmpty()) { document.getElementById('sig-img').src = sPad.toDataURL(); document.getElementById('sig-img').classList.remove('hidden'); document.getElementById('sig-wrapper').classList.add('hidden'); }
         localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
-        
         window.print();
-        setTimeout(() => location.reload(), 2000);
+        setTimeout(() => location.reload(), 1500);
     }
 
     function saveC() {
         const n=document.getElementById('c-n').value; if(!n) return;
         let db = JSON.parse(localStorage.getItem('h2_db')||'[]');
         const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, m:document.getElementById('c-m').value, i:document.getElementById('c-i').value };
-        const idx = db.findIndex(x => x.n === n);
-        if(idx > -1) db[idx] = obj; else db.push(obj);
-        localStorage.setItem('h2_db', JSON.stringify(db)); updateC(); alert("Gespeichert!");
+        db.push(obj); localStorage.setItem('h2_db', JSON.stringify(db)); updateC(); alert("Kaydedildi!");
     }
-
-    function updateC() {
-        const db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        document.getElementById('c-db').innerHTML = '<option value="">— Kunde wählen —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join('');
-    }
-
-    function loadC() {
-        const db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        const c = db[document.getElementById('c-db').value];
-        if(c) { 
-            document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; 
-            document.getElementById('c-c').value=c.c; document.getElementById('c-p').value=c.p; 
-            document.getElementById('c-m').value=c.m; document.getElementById('c-i').value=c.i; 
-        }
-    }
-
+    function updateC() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option value="">— Müşteri Seç —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join(''); }
+    function loadC() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value]; if(c) { document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; document.getElementById('c-c').value=c.c; document.getElementById('c-p').value=c.p; document.getElementById('c-m').value=c.m; document.getElementById('c-i').value=c.i; } }
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
-    
-    function share(p) { 
-        const txt = `H2 TechService - Rechnung: ${document.getElementById('inv-n').innerText} - Betrag: ${document.getElementById('total').innerText}`;
-        window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`); 
-    }
+    function share(p) { const txt = `H2 TechService - Fatura: ${document.getElementById('inv-n').innerText}`; window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`); }
 
     window.onload = () => {
         updateInvID();
