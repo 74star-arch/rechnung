@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Final v23 Professional</title>
+    <title>H2 TechService - Final v25 Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -12,11 +12,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         @media print {
             @page { size: A4; margin: 0; }
-            body { background: white; padding: 0; margin: 0; zoom: 0.82; }
+            body { background: white !important; padding: 0 !important; margin: 0 !important; zoom: 0.82; }
             .no-print { display: none !important; }
             .card { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; border-radius: 0 !important; }
             input, textarea { border: none !important; background: transparent !important; outline: none !important; color: black !important; }
-            .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; }
+            .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; background: #0f172a !important; color: white !important; }
             .print-text { display: block !important; }
             #sig-canvas { display: none !important; }
         }
@@ -24,10 +24,10 @@
         .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); color: white; }
         .footer-balken { background: #0f172a; color: white; padding: 20px; border-top: 4px solid #38bdf8; }
         .print-text { display: none; font-size: 11px; line-height: 1.3; word-break: break-word; white-space: pre-wrap; }
-        textarea.auto-grow { overflow: hidden; min-height: 20px; resize: none; line-height: 1.2; }
-        .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column-reverse; gap: 10px; z-index: 100; }
-        .fab-main { width: 56px; height: 56px; border-radius: 50%; background: #1d4ed8; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; border: 4px solid #10b981; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; }
-        .fab-sub { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transform: scale(0); transition: 0.2s; opacity: 0; }
+        textarea.auto-grow { overflow: hidden; min-height: 18px; resize: none; line-height: 1.2; }
+        .fab-container { position: fixed; bottom: 25px; right: 25px; display: flex; flex-direction: column-reverse; gap: 12px; z-index: 1000; }
+        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: #1d4ed8; color: white; display: flex; align-items: center; justify-content: center; font-size: 35px; cursor: pointer; border: 4px solid #10b981; box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: 0.3s; }
+        .fab-sub { width: 48px; height: 48px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; transform: scale(0); transition: 0.2s; opacity: 0; }
         .active .fab-sub { transform: scale(1); opacity: 1; }
         .active .fab-main { transform: rotate(45deg); background: #ef4444; border-color: white; }
         .tight-td td, .tight-td th { padding: 4px 2px !important; }
@@ -37,7 +37,7 @@
 
 <div class="nav-container max-w-[850px] mx-auto no-print mb-4 flex gap-1 shadow-lg rounded-xl overflow-hidden border bg-white">
     <button onclick="tab('inv')" id="t-inv" class="flex-1 p-3 font-black text-[10px] bg-blue-600 text-white uppercase">📄 RECHNUNG</button>
-    <button onclick="tab('exp')" id="t-exp" class="flex-1 p-3 font-black text-[10px] bg-white text-slate-400 uppercase">🧠 AI GIDER</button>
+    <button onclick="tab('exp')" id="t-exp" class="flex-1 p-3 font-black text-[10px] bg-white text-slate-400 uppercase">🧠 AI GİDER</button>
     <button onclick="tab('pay')" id="t-pay" class="flex-1 p-3 font-black text-[10px] bg-white text-slate-400 uppercase">📊 ARŞİV/VERGİ</button>
 </div>
 
@@ -55,9 +55,9 @@
         </div>
         <div class="text-right bg-white/10 p-3 rounded-xl border border-white/20 min-w-[140px]">
             <div class="flex items-center justify-end gap-2 text-white font-black">
-                <button onclick="changeSeq(-1)" class="no-print bg-white/20 w-5 h-5 flex items-center justify-center rounded-full">-</button>
+                <button onclick="changeSeq(-1)" class="no-print bg-white/20 w-4 h-4 flex items-center justify-center rounded-full text-[10px]">-</button>
                 <span id="inv-n" class="text-xl"></span>
-                <button onclick="changeSeq(1)" class="no-print bg-white/20 w-5 h-5 flex items-center justify-center rounded-full">+</button>
+                <button onclick="changeSeq(1)" class="no-print bg-white/20 w-4 h-4 flex items-center justify-center rounded-full text-[10px]">+</button>
             </div>
             <p id="cur-date" class="text-[9px] font-bold mt-1 text-sky-100"></p>
         </div>
@@ -82,20 +82,20 @@
                 <span class="font-bold">☎️</span><input id="c-p" placeholder="Telefon" class="text-right font-bold outline-none border-b no-print w-32"><div id="c-p-p" class="print-text text-right font-bold"></div>
             </div>
             <div class="flex justify-end items-center gap-1">
-                <span class="text-[8px] font-mono text-slate-400">📑</span><input id="c-i" placeholder="Steuer-ID" class="text-right text-slate-400 font-mono text-[8px] outline-none border-b no-print w-32"><div id="c-i-p" class="print-text text-right text-slate-400 font-mono text-[8px]"></div>
+                <span class="text-[8px] font-mono text-slate-400">📑</span><input id="c-i" placeholder="Kunde Steuer-ID" class="text-right text-slate-400 font-mono text-[8px] outline-none border-b no-print w-32"><div id="c-i-p" class="print-text text-right text-slate-400 font-mono text-[8px]"></div>
             </div>
-            <button onclick="saveC()" class="no-print bg-slate-800 text-white text-[7px] px-3 py-1 rounded mt-2 font-black uppercase">Kaydet</button>
+            <button onclick="saveC()" class="no-print bg-slate-800 text-white text-[7px] px-3 py-1 rounded mt-2 font-black uppercase">Müşteriyi Kaydet</button>
         </div>
     </div>
 
-    <div class="px-8 min-h-[300px]">
+    <div class="px-8 min-h-[350px]">
         <table class="w-full border-collapse tight-td">
             <thead class="bg-slate-50 border-y text-[8px] font-black text-slate-400 uppercase tracking-widest">
                 <tr>
                     <th class="py-3 text-left px-2 w-[40%]">Beschreibung</th>
                     <th class="w-8 text-center">Stk</th>
                     <th class="w-12 text-center">Einh</th>
-                    <th class="w-18 text-right">Netto (€)</th>
+                    <th class="w-16 text-right">Netto (€)</th>
                     <th class="w-16 text-right">19% MwSt</th>
                     <th class="w-20 text-right px-2">Gesamt (€)</th>
                     <th class="no-print w-6"></th>
@@ -119,10 +119,10 @@
         <button onclick="addR()" class="no-print mt-4 text-[9px] font-black text-blue-600 border border-blue-600 px-4 py-1 rounded-lg">+ POSITION</button>
     </div>
 
-    <div class="m-8 p-5 bg-slate-50 rounded-2xl flex justify-between items-center border">
+    <div class="m-8 p-6 bg-slate-50 rounded-2xl flex justify-between items-center border">
         <div id="qr"></div>
         <div class="text-right">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gesamtbetrag</p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gesamtbetrag (inkl. MwSt)</p>
             <p id="total" class="text-4xl font-black text-slate-900 tracking-tighter">0,00 €</p>
         </div>
     </div>
@@ -132,9 +132,9 @@
         <div class="text-right">
             <div class="no-print flex gap-2 justify-end mb-2">
                 <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase">🔓 İmza Aç</button>
-                <button onclick="sPad.clear()" class="bg-slate-300 text-slate-600 text-[8px] px-3 py-1 rounded-full font-black uppercase">Sil</button>
+                <button onclick="sPad.clear()" class="bg-slate-300 text-slate-600 text-[8px] px-3 py-1 rounded-full font-black uppercase">Temizle</button>
             </div>
-            <div id="sig-wrapper" class="sig-box rounded-xl"><canvas id="sig-canvas" width="220" height="70" class="no-print"></canvas></div>
+            <div id="sig-wrapper" class="sig-box rounded-xl"><canvas id="sig-canvas" width="220" height="70" class="no-print border border-dashed border-slate-200"></canvas></div>
             <img id="sig-img" class="hidden h-14 border-b border-slate-900 ml-auto">
         </div>
     </div>
@@ -147,28 +147,28 @@
 
 <div id="s-exp" class="max-w-[850px] mx-auto hidden no-print bg-white rounded-2xl p-8 shadow border mt-4">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-black uppercase italic text-slate-800">📂 Gider Arşivi</h2>
-        <button onclick="document.getElementById('receipt-upload').click()" class="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black uppercase shadow-lg">📸 FİŞ ÇEK</button>
+        <h2 class="text-xl font-black italic uppercase">📂 AI Gider Taraması</h2>
+        <button onclick="document.getElementById('receipt-upload').click()" class="bg-emerald-500 text-white px-6 py-3 rounded-xl font-black shadow-lg">📸 FİŞ OKUT</button>
     </div>
     <input type="file" id="receipt-upload" class="hidden" accept="image/*" capture="camera" onchange="neuralScan(this)">
     <div id="ai-folders" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 </div>
 
 <div id="s-pay" class="max-w-[850px] mx-auto hidden no-print bg-white rounded-2xl p-8 shadow border mt-4">
-    <h2 class="text-xl font-black uppercase italic mb-6">📊 Muhasebe & Vergi Takibi</h2>
+    <h2 class="text-xl font-black uppercase italic mb-6">📊 Muhasebe Özeti</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-slate-900 p-5 rounded-2xl text-center text-white"><p class="text-[8px] font-black uppercase opacity-50">Ciro (Brüt)</p><p id="sum-brut" class="text-2xl font-black">0,00 €</p></div>
-        <div class="bg-blue-600 p-5 rounded-2xl text-center text-white"><p class="text-[8px] font-black uppercase opacity-50">Net Kazanç</p><p id="sum-net" class="text-2xl font-black">0,00 €</p></div>
-        <div class="bg-orange-500 p-5 rounded-2xl text-center text-white"><p class="text-[8px] font-black uppercase opacity-50">Vergi Borcu (19%)</p><p id="sum-tax" class="text-2xl font-black">0,00 €</p></div>
+        <div class="bg-slate-900 p-5 rounded-2xl text-center text-white"><p class="text-[8px] opacity-60">TOPLAM CİRO</p><p id="sum-brut" class="text-2xl font-black">0,00 €</p></div>
+        <div class="bg-blue-600 p-5 rounded-2xl text-center text-white"><p class="text-[8px] opacity-60">NET KAZANÇ</p><p id="sum-net" class="text-2xl font-black">0,00 €</p></div>
+        <div class="bg-orange-500 p-5 rounded-2xl text-center text-white"><p class="text-[8px] opacity-60">VERGİ BORCU (%19)</p><p id="sum-tax" class="text-2xl font-black">0,00 €</p></div>
     </div>
     <table class="w-full text-[11px]"><tbody id="pay-list"></tbody></table>
 </div>
 
 <div class="fab-container no-print">
     <div class="fab-main" onclick="this.parentElement.classList.toggle('active')">+</div>
-    <div class="fab-sub" onclick="finalize()" title="PDF"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-5 h-5 invert"></div>
-    <div class="fab-sub" onclick="shareWA()" title="WhatsApp"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-5 h-5 invert"></div>
-    <div class="fab-sub" onclick="if(confirm('Temizle?')) location.reload()" title="Sıfırla"><img src="https://cdn-icons-png.flaticon.com/512/1214/1214428.png" class="w-5 h-5 invert"></div>
+    <div class="fab-sub" onclick="finalize()" title="PDF Kaydet"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6 invert"></div>
+    <div class="fab-sub" onclick="shareWA()" title="WhatsApp Paylaş"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6 invert"></div>
+    <div class="fab-sub" onclick="if(confirm('Temizlensin mi?')) location.reload()" title="Temizle"><img src="https://cdn-icons-png.flaticon.com/512/1214/1214428.png" class="w-6 h-6 invert"></div>
 </div>
 
 <script>
@@ -192,46 +192,38 @@
     function updateInvID() { const s = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0'); document.getElementById('inv-n').innerText = `H2${new Date().getFullYear()}${s}`; }
 
     function calc() { 
-        let totalBrut = 0; 
+        let grand = 0; 
         document.querySelectorAll("#rows tr").forEach(r => { 
             const q = parseFloat(r.querySelector(".qty").value)||0;
             const p = parseFloat(r.querySelector(".prc").value)||0;
             const netto = q * p;
             const mwst = netto * 0.19;
-            const rowTotal = netto + mwst;
+            const total = netto + mwst;
             r.querySelector(".row-mwst").innerText = mwst.toLocaleString('de-DE', {minimumFractionDigits:2});
-            r.querySelector(".row-total").innerText = rowTotal.toLocaleString('de-DE', {minimumFractionDigits:2});
-            totalBrut += rowTotal;
+            r.querySelector(".row-total").innerText = total.toLocaleString('de-DE', {minimumFractionDigits:2});
+            grand += total;
         }); 
-        document.getElementById("total").innerText = fmt(totalBrut); 
-        qr.makeCode(`H2-PAY-${totalBrut.toFixed(2)}`); return totalBrut; 
+        document.getElementById("total").innerText = fmt(grand); 
+        qr.makeCode(`H2-PAY-${grand.toFixed(2)}`); return grand; 
     }
 
     function finalize() {
-        const amount = calc(); if(amount <= 0) return alert("Tutar girilmedi!");
+        const amount = calc(); if(amount <= 0) return alert("Tutar yok!");
         ['c-n', 'c-s', 'c-c', 'c-p', 'c-i'].forEach(f => {
-            const val = document.getElementById(f).value;
-            const pDiv = document.getElementById(f + '-p');
-            if(pDiv) { pDiv.innerText = val; pDiv.style.display = val ? 'block' : 'none'; }
+            const v = document.getElementById(f).value;
+            const p = document.getElementById(f + '-p');
+            if(p) { p.innerText = v; p.style.display = v ? 'block' : 'none'; }
         });
         document.querySelectorAll("#rows textarea").forEach(tx => { tx.nextElementSibling.innerText = tx.value; });
-        if(!sPad.isEmpty()) { 
-            document.getElementById('sig-img').src = sPad.toDataURL(); 
-            document.getElementById('sig-img').classList.remove('hidden'); 
-            document.getElementById('sig-wrapper').classList.add('hidden'); 
-        }
+        if(!sPad.isEmpty()) { document.getElementById('sig-img').src = sPad.toDataURL(); document.getElementById('sig-img').classList.remove('hidden'); document.getElementById('sig-wrapper').classList.add('hidden'); }
         
-        const items = [];
-        document.querySelectorAll("#rows tr").forEach(r => {
-            items.push({ desc: r.querySelector("textarea").value, qty: r.querySelector(".qty").value, unit: r.querySelector(".unit").value, prc: r.querySelector(".prc").value });
-        });
         let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        tr.push({ id: document.getElementById('inv-n').innerText, k: document.getElementById('c-n').value || "Gast", a: amount, d: new Date().toLocaleString('de-DE'), items, sig: sPad.isEmpty() ? null : sPad.toDataURL() });
+        tr.push({ id: document.getElementById('inv-n').innerText, k: document.getElementById('c-n').value || "Gast", a: amount, d: new Date().toLocaleString('de-DE') });
         localStorage.setItem('h2_tracker', JSON.stringify(tr));
         localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
 
         window.print();
-        setTimeout(() => { if(confirm("Temizlensin mi?")) location.reload(); }, 1200);
+        setTimeout(() => { if(confirm("Sayfa Temizlensin mi?")) location.reload(); }, 1500);
     }
 
     function renderTracker() {
@@ -239,18 +231,18 @@
         let brut = 0, tax = 0;
         document.getElementById('pay-list').innerHTML = tr.map((x, i) => {
             brut += x.a; tax += (x.a / 1.19) * 0.19;
-            return `<tr class="border-b"><td class="py-2"><b>${x.id}</b><br>${x.k}</td><td class="text-right font-black">${fmt(x.a)}</td><td class="text-right"><button onclick="deleteInvoice(${i})" class="text-red-300 px-2 font-black">✕</button></td></tr>`;
+            return `<tr class="border-b"><td class="py-2"><b>${x.id}</b><br>${x.k}</td><td class="text-right font-black">${fmt(x.a)}</td><td class="text-right"><button onclick="deleteInv(${i})" class="text-red-300 px-2 font-black">✕</button></td></tr>`;
         }).reverse().join('');
         document.getElementById('sum-brut').innerText = fmt(brut);
         document.getElementById('sum-tax').innerText = fmt(tax);
         document.getElementById('sum-net').innerText = fmt(brut - tax);
     }
 
-    function deleteInvoice(idx) { if(confirm("Silinsin mi?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(idx, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); } }
+    function deleteInv(idx) { if(confirm("Siliyorum?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(idx,1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); } }
     function saveC() { const n = document.getElementById('c-n').value; if(!n) return; let db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, i:document.getElementById('c-i').value }; db = db.filter(x => x.n !== n); db.push(obj); localStorage.setItem('h2_db', JSON.stringify(db)); updateCList(); alert("Müşteri Kaydedildi!"); }
     function updateCList() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option value="">— Müşteri Seç —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join(''); }
     function loadC() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value]; if(c) { document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; document.getElementById('c-c').value=c.c; document.getElementById('c-p').value=c.p; document.getElementById('c-i').value=c.i||''; calc(); } }
-    function toggleSig() { sigLocked = !sigLocked; const b = document.getElementById('btn-lock'); if(sigLocked) { sPad.off(); b.innerText = '🔓 İMZA AÇ'; } else { sPad.on(); b.innerText = '🔒 KAPAT'; } }
+    function toggleSig() { sigLocked = !sigLocked; const b = document.getElementById('btn-lock'); if(sigLocked) { sPad.off(); b.innerText = '🔓 İmza Aç'; } else { sPad.on(); b.innerText = '🔒 Kapat'; } }
     function addR() { const r = document.querySelector("#rows tr").cloneNode(true); r.querySelectorAll("input,textarea").forEach(i=>i.value=""); r.querySelector(".qty").value="1"; r.querySelector(".unit").value="Stk"; document.getElementById("rows").appendChild(r); }
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
     async function neuralScan(input) { if (!input.files[0]) return; const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng'); const prices = text.match(/\d+[\.,]\d{2}/g); const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0; let l = JSON.parse(localStorage.getItem('h2_ex')||'[]'); l.push({t: text.split('\n')[0].trim() || "Beleg", a: amount, d: new Date().toLocaleString('de-DE')}); localStorage.setItem('h2_ex', JSON.stringify(l)); renderFolders(); }
