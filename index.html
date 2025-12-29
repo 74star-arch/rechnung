@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Ultimate ERP v17</title>
+    <title>H2 TechService - Professional v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -98,7 +98,7 @@
         <table class="w-full border-collapse">
             <thead class="bg-slate-50 border-y text-[8px] font-black text-slate-400 uppercase tracking-widest">
                 <tr>
-                    <th class="py-3 text-left px-2">Beschreibung</th>
+                    <th class="py-3 text-left px-2 w-[40%]">Beschreibung</th>
                     <th class="w-10 text-center">Stk</th>
                     <th class="w-16 text-center">Einheit</th>
                     <th class="w-16 text-center">MwSt</th>
@@ -115,9 +115,7 @@
                     <td class="align-top"><input type="number" value="1" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td>
                     <td class="align-top">
                         <input list="units" class="unit w-full text-center font-black outline-none bg-transparent pt-2" placeholder="Stk">
-                        <datalist id="units">
-                            <option value="Stk"> <option value="Std"> <option value="m"> <option value="Pkg"> <option value="Job">
-                        </datalist>
+                        <datalist id="units"><option value="Stk"><option value="Std"><option value="m"><option value="Pkg"><option value="Job"></datalist>
                     </td>
                     <td class="align-top text-center pt-2 font-black text-slate-400">19%</td>
                     <td class="align-top"><input type="number" step="0.01" class="prc w-full text-right font-black outline-none px-2 bg-transparent pt-2" placeholder="0.00" oninput="calc()"></td>
@@ -180,8 +178,7 @@
 <div class="fab-container no-print">
     <div class="fab-main" onclick="this.parentElement.classList.toggle('active')">★</div>
     <div class="fab-sub" onclick="finalize()" title="PDF Olarak Çıkar" style="background: #1d4ed8;"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6 invert"></div>
-    <div class="fab-sub" onclick="share('wa')" style="background:#25D366" title="WhatsApp Paylaş"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6 invert"></div>
-    <div class="fab-sub" onclick="share('tg')" style="background:#0088cc" title="Telegram Paylaş"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="w-6 h-6 invert"></div>
+    <div class="fab-sub" onclick="share('wa')" style="background:#25D366"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6 invert"></div>
 </div>
 
 <script>
@@ -192,8 +189,7 @@
 
     function autoExpand(field) {
         field.style.height = 'inherit';
-        const height = field.scrollHeight;
-        field.style.height = height + 'px';
+        field.style.height = field.scrollHeight + 'px';
         const printDiv = field.nextElementSibling;
         if(printDiv) printDiv.innerText = field.value;
     }
@@ -210,83 +206,39 @@
     function changeSeq(v) { let s = Math.max(0, (parseInt(localStorage.getItem('h2_seq')||0)) + v); localStorage.setItem('h2_seq', s); updateInvID(); }
     function updateInvID() { const s = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0'); document.getElementById('inv-n').innerText = `H2${new Date().getFullYear()}${s}`; }
 
-    function toggleSig() {
-        sigLocked = !sigLocked;
-        const b = document.getElementById('btn-lock');
-        if(sigLocked) { sPad.off(); b.innerText = '🔓 İMZA AÇ'; b.className = 'bg-orange-500 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase'; }
-        else { sPad.on(); b.innerText = '🔒 KAPAT'; b.className = 'bg-green-600 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase'; }
-    }
-
-    function saveC() {
-        const n = document.getElementById('c-n').value; if(!n) return alert("İsim gerekli!");
-        let db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, m:document.getElementById('c-m').value, i:document.getElementById('c-i').value };
-        db = db.filter(x => x.n !== n); db.push(obj);
-        localStorage.setItem('h2_db', JSON.stringify(db));
-        updateCList(); alert("Kaydedildi!");
-    }
-
-    function updateCList() {
-        const db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        const sel = document.getElementById('c-db');
-        sel.innerHTML = '<option value="">— Kayıtlı Müşteriler —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join('');
-    }
-
-    function loadC() {
-        const db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        const c = db[document.getElementById('c-db').value];
-        if(c) {
-            document.getElementById('c-n').value = c.n; document.getElementById('c-s').value = c.s;
-            document.getElementById('c-c').value = c.c; document.getElementById('c-p').value = c.p;
-            document.getElementById('c-m').value = c.m; document.getElementById('c-i').value = c.i||'';
-            calc();
-        }
-    }
-
     function calc() { 
-        let t = 0; document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); 
-        const f = t * 1.19; document.getElementById("total").innerText = fmt(f); 
-        qr.makeCode(`H2-PAY-${f.toFixed(2)}`); return f; 
+        let totalNetto = 0; 
+        document.querySelectorAll("#rows tr").forEach(r => { 
+            totalNetto += (parseFloat(r.querySelector(".qty").value)||0) * (parseFloat(r.querySelector(".prc").value)||0); 
+        }); 
+        const grandTotal = totalNetto * 1.19; 
+        document.getElementById("total").innerText = fmt(grandTotal); 
+        qr.makeCode(`H2-PAY-${grandTotal.toFixed(2)}`); return grandTotal; 
     }
 
     function finalize(isQuickPrint = false) {
         const amount = calc(); if(amount <= 0 && !isQuickPrint) return alert("Tutar girilmedi!");
-        
         ['c-n', 'c-s', 'c-c', 'c-p', 'c-m', 'c-i'].forEach(f => {
             const val = document.getElementById(f).value;
             const pDiv = document.getElementById(f + '-p');
             if(pDiv) { pDiv.innerText = val; pDiv.style.display = val ? 'block' : 'none'; }
         });
-
         document.querySelectorAll("#rows textarea").forEach(tx => { tx.nextElementSibling.innerText = tx.value; });
-
         if(!sPad.isEmpty()) { 
-            const sigData = sPad.toDataURL();
-            document.getElementById('sig-img').src = sigData; 
+            document.getElementById('sig-img').src = sPad.toDataURL(); 
             document.getElementById('sig-img').classList.remove('hidden'); 
             document.getElementById('sig-wrapper').classList.add('hidden'); 
         }
-
         if(!isQuickPrint) {
             const items = [];
             document.querySelectorAll("#rows tr").forEach(r => {
                 items.push({ desc: r.querySelector("textarea").value, qty: r.querySelector(".qty").value, unit: r.querySelector(".unit").value, prc: r.querySelector(".prc").value });
             });
             let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-            tr.push({
-                id: document.getElementById('inv-n').innerText,
-                k: document.getElementById('c-n').value || "Gast",
-                a: amount,
-                d: new Date().toLocaleString('de-DE'),
-                s: 'unpaid',
-                customer: { n: document.getElementById('c-n').value, s: document.getElementById('c-s').value, c: document.getElementById('c-c').value, p: document.getElementById('c-p').value, m: document.getElementById('c-m').value, i: document.getElementById('c-i').value },
-                items: items,
-                sig: sPad.isEmpty() ? null : sPad.toDataURL()
-            });
+            tr.push({ id: document.getElementById('inv-n').innerText, k: document.getElementById('c-n').value || "Gast", a: amount, d: new Date().toLocaleString('de-DE'), s: 'unpaid', customer: { n: document.getElementById('c-n').value, s: document.getElementById('c-s').value, c: document.getElementById('c-c').value, p: document.getElementById('c-p').value, m: document.getElementById('c-m').value, i: document.getElementById('c-i').value }, items, sig: sPad.isEmpty() ? null : sPad.toDataURL() });
             localStorage.setItem('h2_tracker', JSON.stringify(tr));
             localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
         }
-        
         window.print();
         if(!isQuickPrint) setTimeout(() => { if(confirm("Temizlensin mi?")) location.reload(); }, 1200);
     }
@@ -294,7 +246,6 @@
     function openPDFFromArchive(idx) {
         const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
         const data = tr[idx]; if(!data) return;
-
         document.getElementById('inv-n').innerText = data.id;
         document.getElementById('c-n').value = data.customer.n;
         document.getElementById('c-s').value = data.customer.s;
@@ -302,35 +253,16 @@
         document.getElementById('c-p').value = data.customer.p;
         document.getElementById('c-m').value = data.customer.m;
         document.getElementById('c-i').value = data.customer.i || '';
-
-        const tbody = document.getElementById('rows');
-        tbody.innerHTML = '';
+        const tbody = document.getElementById('rows'); tbody.innerHTML = '';
         data.items.forEach(item => {
             const trNode = document.createElement('tr');
             trNode.className = 'border-b';
-            trNode.innerHTML = `
-                <td class="py-2 px-2">
-                    <textarea rows="1" class="auto-grow w-full font-bold outline-none bg-transparent">${item.desc}</textarea>
-                    <div class="print-text font-bold text-slate-800"></div>
-                </td>
-                <td class="align-top"><input type="number" value="${item.qty}" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td>
-                <td class="align-top"><input class="unit w-full text-center font-black outline-none bg-transparent pt-2" value="${item.unit||'Stk'}"></td>
-                <td class="align-top text-center pt-2 font-black text-slate-400">19%</td>
-                <td class="align-top"><input type="number" step="0.01" value="${item.prc}" class="prc w-full text-right font-black outline-none px-2 bg-transparent pt-2" oninput="calc()"></td>
-                <td class="no-print align-top pt-2 text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>`;
+            trNode.innerHTML = `<td class="py-2 px-2"><textarea rows="1" class="auto-grow w-full font-bold outline-none bg-transparent">${item.desc}</textarea><div class="print-text font-bold text-slate-800"></div></td><td class="align-top"><input type="number" value="${item.qty}" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td><td class="align-top"><input class="unit w-full text-center font-black outline-none bg-transparent pt-2" value="${item.unit||'Stk'}"></td><td class="align-top text-center pt-2 font-black text-slate-400">19%</td><td class="align-top"><input type="number" step="0.01" value="${item.prc}" class="prc w-full text-right font-black outline-none px-2 bg-transparent pt-2" oninput="calc()"></td><td class="no-print align-top pt-2 text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>`;
             tbody.appendChild(trNode);
             autoExpand(trNode.querySelector('textarea'));
         });
-
-        if(data.sig) {
-            document.getElementById('sig-img').src = data.sig;
-            document.getElementById('sig-img').classList.remove('hidden');
-            document.getElementById('sig-wrapper').classList.add('hidden');
-        }
-
-        calc();
-        tab('inv');
-        setTimeout(() => { finalize(true); }, 500);
+        if(data.sig) { document.getElementById('sig-img').src = data.sig; document.getElementById('sig-img').classList.remove('hidden'); document.getElementById('sig-wrapper').classList.add('hidden'); }
+        calc(); tab('inv'); setTimeout(() => { finalize(true); }, 500);
     }
 
     function renderTracker() {
@@ -346,36 +278,15 @@
 
     function toggleP(i) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr[i].s = tr[i].s==='paid'?'unpaid':'paid'; localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); }
     function deleteInvoice(idx) { if(confirm("Silinsin mi?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(idx, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); } }
-    function exportData() { const d = localStorage.getItem('h2_tracker'); const b = new Blob([d], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup.json`; a.click(); }
-
-    async function neuralScan(input) {
-        if (!input.files[0]) return;
-        const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
-        const prices = text.match(/\d+[\.,]\d{2}/g);
-        const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0;
-        const shop = text.split('\n')[0].trim() || "Unbekannt";
-        let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE')});
-        localStorage.setItem('h2_ex', JSON.stringify(l));
-        renderFolders();
-    }
-
-    function renderFolders() {
-        const l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-        const groups = l.reduce((acc, curr) => { (acc[curr.t] = acc[curr.t] || []).push(curr); return acc; }, {});
-        document.getElementById('ai-folders').innerHTML = Object.entries(groups).map(([name, items]) => `<div class="p-4 bg-slate-50 border-2 border-slate-100 rounded-3xl"><div class="flex justify-between border-b pb-1 mb-2 font-black text-blue-600 uppercase"><span>📁 ${name}</span><span>${items.length}</span></div>${items.map(i => `<div class="flex justify-between text-[9px] mb-1"><span>${i.d}</span><span class="text-red-600">-${fmt(i.a)}</span></div>`).join('')}</div>`).join('');
-    }
-
-    function addR() { 
-        const r = document.querySelector("#rows tr").cloneNode(true); 
-        r.querySelectorAll("input,textarea").forEach(i=>i.value=""); 
-        r.querySelector(".qty").value="1"; 
-        r.querySelector(".unit").value="Stk";
-        r.querySelector("textarea").style.height = 'auto';
-        document.getElementById("rows").appendChild(r); 
-    }
-    
+    function saveC() { const n = document.getElementById('c-n').value; if(!n) return alert("İsim gerekli!"); let db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, m:document.getElementById('c-m').value, i:document.getElementById('c-i').value }; db = db.filter(x => x.n !== n); db.push(obj); localStorage.setItem('h2_db', JSON.stringify(db)); updateCList(); alert("Kaydedildi!"); }
+    function updateCList() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option value="">— Kayıtlı Müşteriler —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join(''); }
+    function loadC() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value]; if(c) { document.getElementById('c-n').value = c.n; document.getElementById('c-s').value = c.s; document.getElementById('c-c').value = c.c; document.getElementById('c-p').value = c.p; document.getElementById('c-m').value = c.m; document.getElementById('c-i').value = c.i||''; calc(); } }
+    function toggleSig() { sigLocked = !sigLocked; const b = document.getElementById('btn-lock'); if(sigLocked) { sPad.off(); b.innerText = '🔓 İMZA AÇ'; b.className = 'bg-orange-500 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase'; } else { sPad.on(); b.innerText = '🔒 KAPAT'; b.className = 'bg-green-600 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase'; } }
+    function addR() { const r = document.querySelector("#rows tr").cloneNode(true); r.querySelectorAll("input,textarea").forEach(i=>i.value=""); r.querySelector(".qty").value="1"; r.querySelector(".unit").value="Stk"; r.querySelector("textarea").style.height = 'auto'; document.getElementById("rows").appendChild(r); }
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
+    function exportData() { const d = localStorage.getItem('h2_tracker'); const b = new Blob([d], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup.json`; a.click(); }
+    async function neuralScan(input) { if (!input.files[0]) return; const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng'); const prices = text.match(/\d+[\.,]\d{2}/g); const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0; const shop = text.split('\n')[0].trim() || "Unbekannt"; let l = JSON.parse(localStorage.getItem('h2_ex')||'[]'); l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE')}); localStorage.setItem('h2_ex', JSON.stringify(l)); renderFolders(); }
+    function renderFolders() { const l = JSON.parse(localStorage.getItem('h2_ex')||'[]'); const groups = l.reduce((acc, curr) => { (acc[curr.t] = acc[curr.t] || []).push(curr); return acc; }, {}); document.getElementById('ai-folders').innerHTML = Object.entries(groups).map(([name, items]) => `<div class="p-4 bg-slate-50 border-2 border-slate-100 rounded-3xl"><div class="flex justify-between border-b pb-1 mb-2 font-black text-blue-600 uppercase"><span>📁 ${name}</span><span>${items.length}</span></div>${items.map(i => `<div class="flex justify-between text-[9px] mb-1"><span>${i.d}</span><span class="text-red-600">-${fmt(i.a)}</span></div>`).join('')}</div>`).join(''); }
     function share(p) { const txt = `H2 Fatura: ${document.getElementById('inv-n').innerText}`; window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`); }
 
     window.onload = () => {
@@ -383,7 +294,6 @@
         document.getElementById('cur-date').innerText = new Date().toLocaleDateString('de-DE');
         if(localStorage.getItem('h2_logo')) document.getElementById('l-img').src = localStorage.getItem('h2_logo');
         updateCList(); renderTracker(); renderFolders(); calc();
-        document.querySelectorAll('textarea.auto-grow').forEach(tx => autoExpand(tx));
     };
 </script>
 </body>
