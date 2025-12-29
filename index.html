@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Ultimate ERP v17</title>
+    <title>H2 TechService - Ultimate ERP v18</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src='https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js'></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -19,6 +21,7 @@
             .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; }
             .print-text { display: block !important; }
             #sig-canvas { display: none !important; }
+            #rows tr { page-break-inside: avoid; }
         }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; font-size: 11px; }
         .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); color: white; }
@@ -30,6 +33,9 @@
         .active .fab-sub { transform: scale(1); opacity: 1; }
         .print-text { display: none; font-size: 11px; line-height: 1.4; word-break: break-word; white-space: pre-wrap; }
         textarea.auto-grow { overflow: hidden; min-height: 20px; resize: none; }
+        .receipt-img { max-width: 100%; border-radius: 12px; margin-top: 8px; cursor: pointer; }
+        .receipt-img.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; background: rgba(0,0,0,0.95); z-index: 999; cursor: zoom-out; }
+        .archive-item { cursor: pointer; }
     </style>
 </head>
 <body class="p-2 md:p-4">
@@ -108,11 +114,11 @@
             </thead>
             <tbody id="rows">
                 <tr class="border-b">
-                    <td class="py-2 px-2">
+                    <td class="py-2 px-2 align-top">
                         <textarea rows="1" class="auto-grow w-full font-bold outline-none bg-transparent" placeholder="Leistung..." oninput="autoExpand(this); calc()"></textarea>
-                        <div class="print-text font-bold text-slate-800"></div>
+                        <div class="print-text font-bold text-slate-800 break-words"></div>
                     </td>
-                    <td class="align-top"><input type="number" value="1" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td>
+                    <td class="align-top"><input type="number" value="1" min="1" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td>
                     <td class="align-top">
                         <input list="units" class="unit w-full text-center font-black outline-none bg-transparent pt-2" placeholder="Stk">
                         <datalist id="units">
@@ -120,7 +126,7 @@
                         </datalist>
                     </td>
                     <td class="align-top text-center pt-2 font-black text-slate-400">19%</td>
-                    <td class="align-top"><input type="number" step="0.01" class="prc w-full text-right font-black outline-none px-2 bg-transparent pt-2" placeholder="0.00" oninput="calc()"></td>
+                    <td class="align-top"><input type="number" step="0.01" class="netto w-full text-right font-black outline-none px-2 bg-transparent pt-2" placeholder="Netto" oninput="calcRow(this)"></td>
                     <td class="no-print align-top pt-2 text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>
                 </tr>
             </tbody>
@@ -130,8 +136,12 @@
 
     <div class="m-8 p-5 bg-slate-50 rounded-2xl flex justify-between items-center border">
         <div id="qr"></div>
-        <div class="text-right">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gesamtbetrag (inkl. 19% MwSt)</p>
+        <div class="text-right space-y-1">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Netto</p>
+            <p id="netto-total" class="text-xl font-black text-slate-700">0,00 €</p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">+19% MwSt</p>
+            <p id="mwst-total" class="text-xl font-black text-slate-700">0,00 €</p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gesamtbetrag</p>
             <p id="total" class="text-4xl font-black text-slate-900 tracking-tighter">0,00 €</p>
         </div>
     </div>
@@ -170,21 +180,24 @@
         <h2 class="text-xl font-black uppercase italic text-slate-800">📊 Muhasebe Arşivi</h2>
         <button onclick="exportData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase">📥 YEDEK AL</button>
     </div>
-    <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="bg-green-50 p-6 rounded-2xl border border-green-100 text-center"><p class="text-[9px] font-black uppercase text-green-600">Tahsilat</p><p id="sum-paid" class="text-3xl font-black text-green-700">0,00 €</p></div>
-        <div class="bg-red-50 p-6 rounded-2xl border border-red-100 text-center"><p class="text-[9px] font-black uppercase text-red-600">Açık</p><p id="sum-due" class="text-3xl font-black text-red-700">0,00 €</p></div>
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-green-50 p-6 rounded-2xl border border-green-100 text-center"><p class="text-[9px] font-black uppercase text-green-600">Tahsilat</p><p id="sum-paid" class="text-2xl font-black text-green-700">0,00 €</p></div>
+        <div class="bg-red-50 p-6 rounded-2xl border border-red-100 text-center"><p class="text-[9px] font-black uppercase text-red-600">Açık</p><p id="sum-due" class="text-2xl font-black text-red-700">0,00 €</p></div>
+        <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 text-center"><p class="text-[9px] font-black uppercase text-blue-600">Toplam MwSt</p><p id="sum-mwst" class="text-2xl font-black text-blue-700">0,00 €</p></div>
     </div>
     <table class="w-full text-[11px]"><tbody id="pay-list"></tbody></table>
 </div>
 
 <div class="fab-container no-print">
     <div class="fab-main" onclick="this.parentElement.classList.toggle('active')">★</div>
-    <div class="fab-sub" onclick="finalize()" title="PDF Olarak Çıkar" style="background: #1d4ed8;"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6 invert"></div>
+    <div class="fab-sub" onclick="finalize(false)" title="Drucken & Speichern" style="background: #1d4ed8;"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6 h-6 invert"></div>
+    <div class="fab-sub" onclick="savePDF()" title="PDF als Datei speichern" style="background:#f59e0b;"><span class="text-white font-black text-xl">↓</span></div>
     <div class="fab-sub" onclick="share('wa')" style="background:#25D366" title="WhatsApp Paylaş"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6 h-6 invert"></div>
     <div class="fab-sub" onclick="share('tg')" style="background:#0088cc" title="Telegram Paylaş"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="w-6 h-6 invert"></div>
 </div>
 
 <script>
+    const { jsPDF } = window.jspdf;
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
     const qr = new QRCode(document.getElementById("qr"), { width: 50, height: 50 });
     const sPad = new SignaturePad(document.getElementById('sig-canvas'));
@@ -207,8 +220,16 @@
         if(t==='exp') renderFolders();
     }
 
-    function changeSeq(v) { let s = Math.max(0, (parseInt(localStorage.getItem('h2_seq')||0)) + v); localStorage.setItem('h2_seq', s); updateInvID(); }
-    function updateInvID() { const s = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0'); document.getElementById('inv-n').innerText = `H2${new Date().getFullYear()}${s}`; }
+    function changeSeq(v) { 
+        let s = Math.max(0, (parseInt(localStorage.getItem('h2_seq')||0)) + v); 
+        localStorage.setItem('h2_seq', s); 
+        updateInvID(); 
+    }
+
+    function updateInvID() { 
+        const s = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0'); 
+        document.getElementById('inv-n').innerText = `H2\( {new Date().getFullYear()} \){s}`; 
+    }
 
     function toggleSig() {
         sigLocked = !sigLocked;
@@ -217,48 +238,109 @@
         else { sPad.on(); b.innerText = '🔒 KAPAT'; b.className = 'bg-green-600 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase'; }
     }
 
+    // MÜŞTERİ KAYDET – AYNI İSİM VARSA ÜZERİNE YAZ (GÜNCELLE)
     function saveC() {
-        const n = document.getElementById('c-n').value; if(!n) return alert("İsim gerekli!");
+        const n = document.getElementById('c-n').value.trim(); 
+        if(!n) return alert("İsim/Firma zorunlu!");
         let db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, m:document.getElementById('c-m').value, i:document.getElementById('c-i').value };
-        db = db.filter(x => x.n !== n); db.push(obj);
+        const obj = { 
+            n, 
+            s: document.getElementById('c-s').value.trim(), 
+            c: document.getElementById('c-c').value.trim(), 
+            p: document.getElementById('c-p').value.trim(), 
+            m: document.getElementById('c-m').value.trim(), 
+            i: document.getElementById('c-i').value.trim() 
+        };
+        // Aynı isim varsa eskiyi sil ve yenisini ekle (güncelle)
+        db = db.filter(x => x.n !== n);
+        db.push(obj);
         localStorage.setItem('h2_db', JSON.stringify(db));
-        updateCList(); alert("Kaydedildi!");
+        updateCList(); 
+        alert(`"${n}" müşterisi ${db.length > obj ? 'güncellendi' : 'kaydedildi'}!`);
     }
 
     function updateCList() {
         const db = JSON.parse(localStorage.getItem('h2_db')||'[]');
         const sel = document.getElementById('c-db');
-        sel.innerHTML = '<option value="">— Kayıtlı Müşteriler —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join('');
+        sel.innerHTML = '<option value="">— Kayıtlı Müşteriler —</option>' + db.map((x,i) => `<option value="\( {i}"> \){x.n}</option>`).join('');
     }
 
     function loadC() {
         const db = JSON.parse(localStorage.getItem('h2_db')||'[]');
-        const c = db[document.getElementById('c-db').value];
-        if(c) {
-            document.getElementById('c-n').value = c.n; document.getElementById('c-s').value = c.s;
-            document.getElementById('c-c').value = c.c; document.getElementById('c-p').value = c.p;
-            document.getElementById('c-m').value = c.m; document.getElementById('c-i').value = c.i||'';
-            calc();
-        }
+        const idx = document.getElementById('c-db').value;
+        if(idx === "") return;
+        const c = db[idx];
+        document.getElementById('c-n').value = c.n;
+        document.getElementById('c-s').value = c.s;
+        document.getElementById('c-c').value = c.c;
+        document.getElementById('c-p').value = c.p;
+        document.getElementById('c-m').value = c.m;
+        document.getElementById('c-i').value = c.i || '';
+    }
+
+    // SATIR HESAPLAMA – NETTO GİRİLİNCE BRÜT HESAPLA
+    function calcRow(input) {
+        const tr = input.closest('tr');
+        const netto = parseFloat(input.value) || 0;
+        const brutto = netto * 1.19;
+        tr.querySelector('.print-text')?.previousElementSibling?.dispatchEvent(new Event('input')); // textarea güncelle
+        calc();
     }
 
     function calc() { 
-        let t = 0; document.querySelectorAll("#rows tr").forEach(r => { t += (r.querySelector(".qty").value||0) * (r.querySelector(".prc").value||0); }); 
-        const f = t * 1.19; document.getElementById("total").innerText = fmt(f); 
-        qr.makeCode(`H2-PAY-${f.toFixed(2)}`); return f; 
+        let nettoSum = 0;
+        document.querySelectorAll("#rows tr").forEach(r => {
+            const netto = parseFloat(r.querySelector(".netto").value) || 0;
+            nettoSum += netto;
+        });
+        const mwst = nettoSum * 0.19;
+        const total = nettoSum + mwst;
+        document.getElementById("netto-total").innerText = fmt(nettoSum);
+        document.getElementById("mwst-total").innerText = fmt(mwst);
+        document.getElementById("total").innerText = fmt(total);
+        qr.makeCode(`H2-PAY-${total.toFixed(2)}`);
+        return total;
+    }
+
+    function addR() { 
+        const tbody = document.getElementById("rows");
+        const tr = tbody.querySelector("tr").cloneNode(true);
+        tr.querySelectorAll("input,textarea").forEach(i => {
+            if(i.classList.contains('qty')) i.value = "1";
+            else if(!i.classList.contains('netto')) i.value = "";
+            else i.value = "";
+        });
+        tr.querySelector("textarea").style.height = 'auto';
+        tbody.appendChild(tr);
+    }
+
+    // PDF OLARAK DOSYAYA KAYDET
+    async function savePDF() {
+        finalize(true); // önce hazırlık
+        const element = document.getElementById('s-inv');
+        const canvas = await html2canvas(element, {scale: 2});
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const width = pdf.internal.pageSize.getWidth();
+        const height = pdf.internal.pageSize.getHeight();
+        pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+        pdf.save(`Rechnung_${document.getElementById('inv-n').innerText}.pdf`);
     }
 
     function finalize(isQuickPrint = false) {
-        const amount = calc(); if(amount <= 0 && !isQuickPrint) return alert("Tutar girilmedi!");
-        
-        ['c-n', 'c-s', 'c-c', 'c-p', 'c-m', 'c-i'].forEach(f => {
-            const val = document.getElementById(f).value;
+        const amount = calc(); 
+        if(amount <= 0 && !isQuickPrint) return alert("Tutar girilmedi!");
+
+        ['c-n','c-s','c-c','c-p','c-m','c-i'].forEach(f => {
+            const val = document.getElementById(f).value.trim();
             const pDiv = document.getElementById(f + '-p');
             if(pDiv) { pDiv.innerText = val; pDiv.style.display = val ? 'block' : 'none'; }
         });
 
-        document.querySelectorAll("#rows textarea").forEach(tx => { tx.nextElementSibling.innerText = tx.value; });
+        document.querySelectorAll("#rows textarea").forEach(tx => { 
+            tx.nextElementSibling.innerText = tx.value;
+            tx.nextElementSibling.style.display = tx.value ? 'block' : 'none';
+        });
 
         if(!sPad.isEmpty()) { 
             const sigData = sPad.toDataURL();
@@ -270,92 +352,119 @@
         if(!isQuickPrint) {
             const items = [];
             document.querySelectorAll("#rows tr").forEach(r => {
-                items.push({ desc: r.querySelector("textarea").value, qty: r.querySelector(".qty").value, unit: r.querySelector(".unit").value, prc: r.querySelector(".prc").value });
+                const netto = parseFloat(r.querySelector(".netto").value) || 0;
+                items.push({ 
+                    desc: r.querySelector("textarea").value, 
+                    qty: r.querySelector(".qty").value, 
+                    unit: r.querySelector(".unit").value || 'Stk', 
+                    netto: netto,
+                    mwst: netto * 0.19
+                });
             });
             let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-            tr.push({
+            const newEntry = {
                 id: document.getElementById('inv-n').innerText,
-                k: document.getElementById('c-n').value || "Gast",
+                k: document.getElementById('c-n').value.trim() || "Gast",
                 a: amount,
+                mwst: amount - (amount / 1.19),
                 d: new Date().toLocaleString('de-DE'),
                 s: 'unpaid',
-                customer: { n: document.getElementById('c-n').value, s: document.getElementById('c-s').value, c: document.getElementById('c-c').value, p: document.getElementById('c-p').value, m: document.getElementById('c-m').value, i: document.getElementById('c-i').value },
+                customer: { 
+                    n: document.getElementById('c-n').value.trim(), 
+                    s: document.getElementById('c-s').value.trim(), 
+                    c: document.getElementById('c-c').value.trim(), 
+                    p: document.getElementById('c-p').value.trim(), 
+                    m: document.getElementById('c-m').value.trim(), 
+                    i: document.getElementById('c-i').value.trim() 
+                },
                 items: items,
                 sig: sPad.isEmpty() ? null : sPad.toDataURL()
-            });
+            };
+            tr.push(newEntry);
             localStorage.setItem('h2_tracker', JSON.stringify(tr));
             localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
+            updateInvID();
         }
-        
+
         window.print();
-        if(!isQuickPrint) setTimeout(() => { if(confirm("Temizlensin mi?")) location.reload(); }, 1200);
+        if(!isQuickPrint) setTimeout(() => { if(confirm("Yeni fatura için temizlensin mi?")) location.reload(); }, 1200);
     }
 
-    function openPDFFromArchive(idx) {
+    // ARŞİV İŞLEMLERİ
+    function renderTracker() {
+        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
+        let paid = 0, due = 0, totalMwst = 0;
+        document.getElementById('pay-list').innerHTML = tr.map((x, i) => {
+            if(x.s === 'paid') paid += x.a; else due += x.a;
+            totalMwst += x.mwst || 0;
+            return `<tr class="border-b hover:bg-blue-50 archive-item">
+                <td class="py-3" onclick="openInvoice(\( {i}, false)"><b> \){x.id}</b><br><span class="text-slate-400 uppercase text-[9px]">${x.k}</span></td>
+                <td class="text-right font-black" onclick="openInvoice(\( {i}, false)"> \){fmt(x.a)}</td>
+                <td class="text-center"><button onclick="event.stopPropagation(); toggleP(${i})" class="px-3 py-1 rounded-full text-[8px] font-black \( {x.s==='paid'?'bg-green-500 text-white':'bg-red-100 text-red-600'}"> \){x.s==='paid'?'ÖDENDİ':'AÇIK'}</button></td>
+                <td><button onclick="event.stopPropagation(); deleteInvoice(${i})" class="text-red-300 px-2 font-black">✕</button></td>
+            </tr>`;
+        }).reverse().join('');
+        document.getElementById('sum-paid').innerText = fmt(paid);
+        document.getElementById('sum-due').innerText = fmt(due);
+        document.getElementById('sum-mwst').innerText = fmt(totalMwst);
+    }
+
+    function toggleP(i) { 
+        let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); 
+        tr[i].s = tr[i].s==='paid'?'unpaid':'paid'; 
+        localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
+        renderTracker(); 
+    }
+
+    function deleteInvoice(idx) { 
+        if(confirm("Bu fatura kalıcı olarak silinsin mi?")) { 
+            let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); 
+            tr.splice(idx, 1); 
+            localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
+            renderTracker(); 
+            alert("Fatura silindi!");
+        } 
+    }
+
+    async function openInvoice(idx, onlyPrint = false) {
         const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
         const data = tr[idx]; if(!data) return;
 
+        // Fatura alanlarını doldur
         document.getElementById('inv-n').innerText = data.id;
-        document.getElementById('c-n').value = data.customer.n;
-        document.getElementById('c-s').value = data.customer.s;
-        document.getElementById('c-c').value = data.customer.c;
-        document.getElementById('c-p').value = data.customer.p;
-        document.getElementById('c-m').value = data.customer.m;
-        document.getElementById('c-i').value = data.customer.i || '';
-
+        ['c-n','c-s','c-c','c-p','c-m','c-i'].forEach(f => document.getElementById(f).value = data.customer[f.split('-')[1]] || '');
         const tbody = document.getElementById('rows');
         tbody.innerHTML = '';
-        data.items.forEach(item => {
-            const trNode = document.createElement('tr');
-            trNode.className = 'border-b';
-            trNode.innerHTML = `
-                <td class="py-2 px-2">
-                    <textarea rows="1" class="auto-grow w-full font-bold outline-none bg-transparent">${item.desc}</textarea>
-                    <div class="print-text font-bold text-slate-800"></div>
-                </td>
-                <td class="align-top"><input type="number" value="${item.qty}" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td>
-                <td class="align-top"><input class="unit w-full text-center font-black outline-none bg-transparent pt-2" value="${item.unit||'Stk'}"></td>
-                <td class="align-top text-center pt-2 font-black text-slate-400">19%</td>
-                <td class="align-top"><input type="number" step="0.01" value="${item.prc}" class="prc w-full text-right font-black outline-none px-2 bg-transparent pt-2" oninput="calc()"></td>
-                <td class="no-print align-top pt-2 text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>`;
-            tbody.appendChild(trNode);
-            autoExpand(trNode.querySelector('textarea'));
+        data.items.forEach(item => addR());
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((r, i) => {
+            r.querySelector('textarea').value = data.items[i].desc;
+            r.querySelector('.qty').value = data.items[i].qty;
+            r.querySelector('.unit').value = data.items[i].unit;
+            r.querySelector('.netto').value = data.items[i].netto.toFixed(2);
+            autoExpand(r.querySelector('textarea'));
         });
-
         if(data.sig) {
             document.getElementById('sig-img').src = data.sig;
             document.getElementById('sig-img').classList.remove('hidden');
             document.getElementById('sig-wrapper').classList.add('hidden');
         }
-
         calc();
         tab('inv');
-        setTimeout(() => { finalize(true); }, 500);
+        if(onlyPrint) setTimeout(() => finalize(true), 500);
     }
 
-    function renderTracker() {
-        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        let paid = 0, due = 0;
-        document.getElementById('pay-list').innerHTML = tr.map((x, i) => {
-            if(x.s === 'paid') paid += x.a; else due += x.a;
-            return `<tr class="border-b hover:bg-blue-50 cursor-pointer"><td class="py-3" onclick="openPDFFromArchive(${i})"><b>${x.id}</b><br><span class="text-slate-400 uppercase">${x.k}</span></td><td class="text-right font-black" onclick="openPDFFromArchive(${i})">${fmt(x.a)}</td><td class="text-center"><button onclick="toggleP(${i})" class="px-3 py-1 rounded-full text-[8px] font-black ${x.s==='paid'?'bg-green-500 text-white':'bg-red-100 text-red-600'}">${x.s==='paid'?'ÖDENDİ':'AÇIK'}</button></td><td><button onclick="deleteInvoice(${i})" class="text-red-300 px-2 font-black">✕</button></td></tr>`;
-        }).reverse().join('');
-        document.getElementById('sum-paid').innerText = fmt(paid);
-        document.getElementById('sum-due').innerText = fmt(due);
-    }
-
-    function toggleP(i) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr[i].s = tr[i].s==='paid'?'unpaid':'paid'; localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); }
-    function deleteInvoice(idx) { if(confirm("Silinsin mi?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(idx, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); } }
-    function exportData() { const d = localStorage.getItem('h2_tracker'); const b = new Blob([d], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup.json`; a.click(); }
-
+    // GİDER RESİMLERİ – TIKLAMA İLE ÖNİZLEME VE TAM EKRAN
     async function neuralScan(input) {
         if (!input.files[0]) return;
+        const imgUrl = URL.createObjectURL(input.files[0]);
         const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
         const prices = text.match(/\d+[\.,]\d{2}/g);
         const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0;
         const shop = text.split('\n')[0].trim() || "Unbekannt";
+
         let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE')});
+        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE'), img: imgUrl});
         localStorage.setItem('h2_ex', JSON.stringify(l));
         renderFolders();
     }
@@ -363,20 +472,25 @@
     function renderFolders() {
         const l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
         const groups = l.reduce((acc, curr) => { (acc[curr.t] = acc[curr.t] || []).push(curr); return acc; }, {});
-        document.getElementById('ai-folders').innerHTML = Object.entries(groups).map(([name, items]) => `<div class="p-4 bg-slate-50 border-2 border-slate-100 rounded-3xl"><div class="flex justify-between border-b pb-1 mb-2 font-black text-blue-600 uppercase"><span>📁 ${name}</span><span>${items.length}</span></div>${items.map(i => `<div class="flex justify-between text-[9px] mb-1"><span>${i.d}</span><span class="text-red-600">-${fmt(i.a)}</span></div>`).join('')}</div>`).join('');
+        document.getElementById('ai-folders').innerHTML = Object.entries(groups).map(([name, items]) => 
+            `<div class="p-4 bg-slate-50 border-2 border-slate-100 rounded-3xl">
+                <div class="flex justify-between border-b pb-1 mb-2 font-black text-blue-600 uppercase"><span>📁 \( {name}</span><span> \){items.length}</span></div>
+                ${items.map(i => 
+                    `<div class="mb-4">
+                        <div class="flex justify-between text-[9px] mb-1"><span>\( {i.d}</span><span class="text-red-600">- \){fmt(i.a)}</span></div>
+                        <img src="${i.img}" class="receipt-img" onclick="toggleFullScreen(this)">
+                    </div>`).join('')}
+            </div>`
+        ).join('');
     }
 
-    function addR() { 
-        const r = document.querySelector("#rows tr").cloneNode(true); 
-        r.querySelectorAll("input,textarea").forEach(i=>i.value=""); 
-        r.querySelector(".qty").value="1"; 
-        r.querySelector(".unit").value="Stk";
-        r.querySelector("textarea").style.height = 'auto';
-        document.getElementById("rows").appendChild(r); 
+    function toggleFullScreen(img) {
+        img.classList.toggle('fullscreen');
     }
-    
+
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
-    function share(p) { const txt = `H2 Fatura: ${document.getElementById('inv-n').innerText}`; window.open(p=='wa' ? `https://wa.me/?text=${encodeURIComponent(txt)}` : `https://t.me/share/url?url=${encodeURIComponent(txt)}`); }
+    function share(p) { const txt = `H2 Fatura: ${document.getElementById('inv-n').innerText} - \( {document.getElementById('total').innerText}`; window.open(p=='wa' ? `https://wa.me/?text= \){encodeURIComponent(txt)}` : `https://t.me/share/url?url=&text=${encodeURIComponent(txt)}`); }
+    function exportData() { const d = localStorage.getItem('h2_tracker'); const b = new Blob([d], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
 
     window.onload = () => {
         updateInvID();
