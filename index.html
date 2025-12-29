@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Ultimate ERP v14</title>
+    <title>H2 TechService - Ultimate ERP v15</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -156,7 +156,7 @@
         <div class="bg-green-50 p-6 rounded-2xl border border-green-100 text-center"><p class="text-[9px] font-black uppercase text-green-600">Tahsilat</p><p id="sum-paid" class="text-3xl font-black text-green-700">0,00 €</p></div>
         <div class="bg-red-50 p-6 rounded-2xl border border-red-100 text-center"><p class="text-[9px] font-black uppercase text-red-600">Açık</p><p id="sum-due" class="text-3xl font-black text-red-700">0,00 €</p></div>
     </div>
-    <p class="text-[8px] font-bold text-slate-400 mb-2 uppercase italic">* Faturanın üzerine basarak düzenleyebilir veya PDF olarak paylaşabilirsin.</p>
+    <p class="text-[8px] font-bold text-blue-600 mb-2 uppercase italic">* Hesaba tıkla: Doğrudan PDF açılır ve paylaşabilirsin.</p>
     <table class="w-full text-[11px]"><tbody id="pay-list"></tbody></table>
 </div>
 
@@ -192,7 +192,6 @@
         else { sPad.on(); b.innerText = '🔒 KAPAT'; b.className = 'bg-green-600 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase'; }
     }
 
-    // --- MÜŞTERİ KAYIT ---
     function saveC() {
         const n = document.getElementById('c-n').value; if(!n) return alert("İsim gerekli!");
         let db = JSON.parse(localStorage.getItem('h2_db')||'[]');
@@ -223,21 +222,10 @@
         qr.makeCode(`H2-PAY-${f.toFixed(2)}`); return f; 
     }
 
-    // --- ARŞİVLEME VE PDF ---
-    function finalize() {
-        const amount = calc(); if(amount <= 0) return alert("Tutar girilmedi!");
+    // --- PDF VE KAYIT ---
+    function finalize(isQuickPrint = false) {
+        const amount = calc(); if(amount <= 0 && !isQuickPrint) return alert("Tutar girilmedi!");
         
-        // Tablo satırlarını yakala
-        const items = [];
-        document.querySelectorAll("#rows tr").forEach(r => {
-            items.push({
-                desc: r.querySelector("textarea").value,
-                qty: r.querySelector(".qty").value,
-                prc: r.querySelector(".prc").value
-            });
-        });
-
-        // PDF hazırlığı
         const fields = ['c-n', 'c-s', 'c-c', 'c-p', 'c-m', 'c-i'];
         fields.forEach(f => {
             const val = document.getElementById(f).value;
@@ -245,50 +233,45 @@
             if(pDiv) { pDiv.innerText = val; pDiv.style.display = val ? 'block' : 'none'; }
         });
 
-        let sigData = null;
         if(!sPad.isEmpty()) { 
-            sigData = sPad.toDataURL();
+            const sigData = sPad.toDataURL();
             document.getElementById('sig-img').src = sigData; 
             document.getElementById('sig-img').classList.remove('hidden'); 
             document.getElementById('sig-wrapper').classList.add('hidden'); 
         }
 
-        // ARŞİVE TAM VERİYLE KAYDET (v14 yeni)
-        let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        const fullData = {
-            id: document.getElementById('inv-n').innerText,
-            k: document.getElementById('c-n').value || "Gast",
-            a: amount,
-            d: new Date().toLocaleString('de-DE'),
-            s: 'unpaid',
-            // Detaylar:
-            customer: {
-                n: document.getElementById('c-n').value,
-                s: document.getElementById('c-s').value,
-                c: document.getElementById('c-c').value,
-                p: document.getElementById('c-p').value,
-                m: document.getElementById('c-m').value,
-                i: document.getElementById('c-i').value
-            },
-            items: items,
-            sig: sigData
-        };
-        
-        tr.push(fullData);
-        localStorage.setItem('h2_tracker', JSON.stringify(tr));
-        localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
+        // Sadece yeni fatura ise arşive ekle
+        if(!isQuickPrint) {
+            const items = [];
+            document.querySelectorAll("#rows tr").forEach(r => {
+                items.push({ desc: r.querySelector("textarea").value, qty: r.querySelector(".qty").value, prc: r.querySelector(".prc").value });
+            });
+            let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
+            tr.push({
+                id: document.getElementById('inv-n').innerText,
+                k: document.getElementById('c-n').value || "Gast",
+                a: amount,
+                d: new Date().toLocaleString('de-DE'),
+                s: 'unpaid',
+                customer: { n: document.getElementById('c-n').value, s: document.getElementById('c-s').value, c: document.getElementById('c-c').value, p: document.getElementById('c-p').value, m: document.getElementById('c-m').value, i: document.getElementById('c-i').value },
+                items: items,
+                sig: sPad.isEmpty() ? null : sPad.toDataURL()
+            });
+            localStorage.setItem('h2_tracker', JSON.stringify(tr));
+            localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
+        }
         
         window.print();
-        setTimeout(() => { if(confirm("Kayıt yapıldı. Ekran temizlensin mi?")) location.reload(); }, 1200);
+        if(!isQuickPrint) setTimeout(() => { if(confirm("Ekran temizlensin mi?")) location.reload(); }, 1200);
     }
 
-    // --- ARŞİVDEN GERİ YÜKLEME (v14 ANA ÖZELLİK) ---
-    function loadFromArchive(idx) {
+    // --- ARŞİVDEN PDF AÇMA (DÜZELTİLDİ) ---
+    function openPDFFromArchive(idx) {
         const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
         const data = tr[idx];
         if(!data) return;
 
-        // Sayfayı doldur
+        // 1. Verileri Doldur
         document.getElementById('inv-n').innerText = data.id;
         document.getElementById('c-n').value = data.customer.n;
         document.getElementById('c-s').value = data.customer.s;
@@ -297,7 +280,7 @@
         document.getElementById('c-m').value = data.customer.m;
         document.getElementById('c-i').value = data.customer.i || '';
 
-        // Satırları doldur
+        // 2. Satırları Temizle ve Doldur
         const tbody = document.getElementById('rows');
         tbody.innerHTML = '';
         data.items.forEach(item => {
@@ -307,21 +290,24 @@
                 <td class="py-2 px-2"><textarea rows="1" class="w-full font-bold outline-none bg-transparent resize-none">${item.desc}</textarea></td>
                 <td><input type="number" value="${item.qty}" class="qty w-full text-center font-black outline-none bg-transparent" oninput="calc()"></td>
                 <td><input type="number" step="0.01" value="${item.prc}" class="prc w-full text-right font-black outline-none px-2 bg-transparent" oninput="calc()"></td>
-                <td class="no-print text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>
-            `;
+                <td class="no-print text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>`;
             tbody.appendChild(trNode);
         });
 
-        // İmzayı yükle
+        // 3. İmzayı Koy
         if(data.sig) {
             document.getElementById('sig-img').src = data.sig;
             document.getElementById('sig-img').classList.remove('hidden');
             document.getElementById('sig-wrapper').classList.add('hidden');
+        } else {
+            document.getElementById('sig-img').classList.add('hidden');
+            document.getElementById('sig-wrapper').classList.remove('hidden');
         }
 
+        // 4. Hesapla ve Yazdır Ekranına Gönder
         calc();
-        tab('inv');
-        alert(data.id + " faturası başarıyla yüklendi. Şimdi yazdırabilir veya paylaşabilirsin.");
+        tab('inv'); // Fatura sayfasına geç
+        setTimeout(() => { finalize(true); }, 500); // 0.5 saniye sonra otomatik PDF aç
     }
 
     function renderTracker() {
@@ -331,16 +317,10 @@
             if(x.s === 'paid') paid += x.a; else due += x.a;
             return `
             <tr class="border-b hover:bg-blue-50 cursor-pointer">
-                <td class="py-3" onclick="loadFromArchive(${i})">
-                    <b>${x.id}</b><br>
-                    <span class="text-slate-400 uppercase">${x.k}</span><br>
-                    <span class="text-[7px] text-slate-300">${x.d}</span>
-                </td>
-                <td class="text-right font-black" onclick="loadFromArchive(${i})">${fmt(x.a)}</td>
+                <td class="py-3" onclick="openPDFFromArchive(${i})"><b>${x.id}</b><br><span class="text-slate-400 uppercase">${x.k}</span></td>
+                <td class="text-right font-black" onclick="openPDFFromArchive(${i})">${fmt(x.a)}</td>
                 <td class="text-center">
-                    <button onclick="toggleP(${i})" class="px-3 py-1 rounded-full text-[8px] font-black ${x.s==='paid'?'bg-green-500 text-white shadow-sm':'bg-red-100 text-red-600'}">
-                        ${x.s==='paid'?'ÖDENDİ':'AÇIK'}
-                    </button>
+                    <button onclick="toggleP(${i})" class="px-3 py-1 rounded-full text-[8px] font-black ${x.s==='paid'?'bg-green-500 text-white':'bg-red-100 text-red-600'}">${x.s==='paid'?'ÖDENDİ':'AÇIK'}</button>
                 </td>
                 <td><button onclick="deleteInvoice(${i})" class="text-red-300 px-2 font-black">✕</button></td>
             </tr>`;
@@ -350,27 +330,17 @@
     }
 
     function toggleP(i) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr[i].s = tr[i].s==='paid'?'unpaid':'paid'; localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); }
-    function deleteInvoice(idx) { if(confirm("Bu faturayı arşivden siliyorum?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(idx, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); } }
-    
-    function exportData() {
-        const data = localStorage.getItem('h2_tracker');
-        const blob = new Blob([data], {type: 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `H2_Backup_${new Date().toLocaleDateString()}.json`;
-        a.click();
-    }
+    function deleteInvoice(idx) { if(confirm("Siliyorum?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(idx, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderTracker(); } }
+    function exportData() { const data = localStorage.getItem('h2_tracker'); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `H2_Backup.json`; a.click(); }
 
-    // --- AI SCANNER ---
     async function neuralScan(input) {
         if (!input.files[0]) return;
         const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
         const prices = text.match(/\d+[\.,]\d{2}/g);
         const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0;
         const shop = text.split('\n')[0].trim() || "Unbekannt";
-        const dateStr = new Date().toLocaleString('de-DE').replace(/[\W_]+/g, "_");
         let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE'), fileName: `Fis_${dateStr}` });
+        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE')});
         localStorage.setItem('h2_ex', JSON.stringify(l));
         renderFolders();
     }
@@ -381,7 +351,7 @@
         document.getElementById('ai-folders').innerHTML = Object.entries(groups).map(([name, items]) => `
             <div class="p-4 bg-slate-50 border-2 border-slate-100 rounded-3xl">
                 <div class="flex justify-between border-b pb-1 mb-2 font-black text-blue-600 uppercase"><span>📁 ${name}</span><span>${items.length}</span></div>
-                ${items.map(i => `<div class="flex flex-col mb-1 text-[9px]"><span class="text-slate-500">${i.d}</span><span class="text-red-600 font-black">-${fmt(i.a)}</span></div>`).join('')}
+                ${items.map(i => `<div class="flex justify-between text-[9px] mb-1"><span>${i.d}</span><span class="text-red-600">-${fmt(i.a)}</span></div>`).join('')}
             </div>`).join('');
     }
 
