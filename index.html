@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Ultimate ERP v16</title>
+    <title>H2 TechService - Ultimate ERP v17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -12,14 +12,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         @media print {
             @page { size: A4; margin: 0; }
-            body { background: white; padding: 0; margin: 0; zoom: 0.85; }
+            body { background: white; padding: 0; margin: 0; zoom: 0.82; }
             .no-print, .fab-container, .nav-container, #c-db, #btn-lock { display: none !important; }
             .card { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; border-radius: 0 !important; }
             input, textarea { border: none !important; background: transparent !important; outline: none !important; color: black !important; -webkit-appearance: none; height: auto !important; }
             .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; }
             .print-text { display: block !important; }
             #sig-canvas { display: none !important; }
-            .desc-cell { width: 60% !important; }
         }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; font-size: 11px; }
         .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); color: white; }
@@ -97,8 +96,15 @@
 
     <div class="px-8 min-h-[300px]">
         <table class="w-full border-collapse">
-            <thead class="bg-slate-50 border-y text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                <tr><th class="py-3 text-left px-2 desc-cell">Beschreibung</th><th class="w-12 text-center">Stk</th><th class="w-24 text-right px-2">Betrag (€)</th><th class="no-print w-6"></th></tr>
+            <thead class="bg-slate-50 border-y text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                <tr>
+                    <th class="py-3 text-left px-2">Beschreibung</th>
+                    <th class="w-10 text-center">Stk</th>
+                    <th class="w-16 text-center">Einheit</th>
+                    <th class="w-16 text-center">MwSt</th>
+                    <th class="w-24 text-right px-2">Betrag (€)</th>
+                    <th class="no-print w-6"></th>
+                </tr>
             </thead>
             <tbody id="rows">
                 <tr class="border-b">
@@ -107,6 +113,13 @@
                         <div class="print-text font-bold text-slate-800"></div>
                     </td>
                     <td class="align-top"><input type="number" value="1" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td>
+                    <td class="align-top">
+                        <input list="units" class="unit w-full text-center font-black outline-none bg-transparent pt-2" placeholder="Stk">
+                        <datalist id="units">
+                            <option value="Stk"> <option value="Std"> <option value="m"> <option value="Pkg"> <option value="Job">
+                        </datalist>
+                    </td>
+                    <td class="align-top text-center pt-2 font-black text-slate-400">19%</td>
                     <td class="align-top"><input type="number" step="0.01" class="prc w-full text-right font-black outline-none px-2 bg-transparent pt-2" placeholder="0.00" oninput="calc()"></td>
                     <td class="no-print align-top pt-2 text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>
                 </tr>
@@ -179,12 +192,8 @@
 
     function autoExpand(field) {
         field.style.height = 'inherit';
-        const computed = window.getComputedStyle(field);
-        const height = parseInt(computed.getPropertyValue('border-top-width'), 10)
-                     + field.scrollHeight
-                     + parseInt(computed.getPropertyValue('border-bottom-width'), 10);
+        const height = field.scrollHeight;
         field.style.height = height + 'px';
-        // PDF versiyonu için veriyi print-text'e bas
         const printDiv = field.nextElementSibling;
         if(printDiv) printDiv.innerText = field.value;
     }
@@ -243,17 +252,13 @@
     function finalize(isQuickPrint = false) {
         const amount = calc(); if(amount <= 0 && !isQuickPrint) return alert("Tutar girilmedi!");
         
-        // Inputları metne dönüştür
         ['c-n', 'c-s', 'c-c', 'c-p', 'c-m', 'c-i'].forEach(f => {
             const val = document.getElementById(f).value;
             const pDiv = document.getElementById(f + '-p');
             if(pDiv) { pDiv.innerText = val; pDiv.style.display = val ? 'block' : 'none'; }
         });
 
-        // Tablo metinlerini hazırla
-        document.querySelectorAll("#rows textarea").forEach(tx => {
-            tx.nextElementSibling.innerText = tx.value;
-        });
+        document.querySelectorAll("#rows textarea").forEach(tx => { tx.nextElementSibling.innerText = tx.value; });
 
         if(!sPad.isEmpty()) { 
             const sigData = sPad.toDataURL();
@@ -265,7 +270,7 @@
         if(!isQuickPrint) {
             const items = [];
             document.querySelectorAll("#rows tr").forEach(r => {
-                items.push({ desc: r.querySelector("textarea").value, qty: r.querySelector(".qty").value, prc: r.querySelector(".prc").value });
+                items.push({ desc: r.querySelector("textarea").value, qty: r.querySelector(".qty").value, unit: r.querySelector(".unit").value, prc: r.querySelector(".prc").value });
             });
             let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
             tr.push({
@@ -309,6 +314,8 @@
                     <div class="print-text font-bold text-slate-800"></div>
                 </td>
                 <td class="align-top"><input type="number" value="${item.qty}" class="qty w-full text-center font-black outline-none bg-transparent pt-2" oninput="calc()"></td>
+                <td class="align-top"><input class="unit w-full text-center font-black outline-none bg-transparent pt-2" value="${item.unit||'Stk'}"></td>
+                <td class="align-top text-center pt-2 font-black text-slate-400">19%</td>
                 <td class="align-top"><input type="number" step="0.01" value="${item.prc}" class="prc w-full text-right font-black outline-none px-2 bg-transparent pt-2" oninput="calc()"></td>
                 <td class="no-print align-top pt-2 text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>`;
             tbody.appendChild(trNode);
@@ -363,6 +370,7 @@
         const r = document.querySelector("#rows tr").cloneNode(true); 
         r.querySelectorAll("input,textarea").forEach(i=>i.value=""); 
         r.querySelector(".qty").value="1"; 
+        r.querySelector(".unit").value="Stk";
         r.querySelector("textarea").style.height = 'auto';
         document.getElementById("rows").appendChild(r); 
     }
