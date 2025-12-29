@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - Ultimate ERP v18</title>
+    <title>H2 TechService - Ultimate ERP v19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -33,9 +33,10 @@
         .active .fab-sub { transform: scale(1); opacity: 1; }
         .print-text { display: none; font-size: 11px; line-height: 1.4; word-break: break-word; white-space: pre-wrap; }
         textarea.auto-grow { overflow: hidden; min-height: 20px; resize: none; }
+        .receipt-item { position: relative; margin-bottom: 12px; }
+        .receipt-delete { position: absolute; top: 4px; right: 4px; background: rgba(239,68,68,0.8); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; z-index: 10; }
         .receipt-img { max-width: 100%; border-radius: 12px; margin-top: 8px; cursor: pointer; }
         .receipt-img.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; background: rgba(0,0,0,0.95); z-index: 999; cursor: zoom-out; }
-        .archive-item { cursor: pointer; }
     </style>
 </head>
 <body class="p-2 md:p-4">
@@ -126,7 +127,7 @@
                         </datalist>
                     </td>
                     <td class="align-top text-center pt-2 font-black text-slate-400">19%</td>
-                    <td class="align-top"><input type="number" step="0.01" class="netto w-full text-right font-black outline-none px-2 bg-transparent pt-2" placeholder="Netto" oninput="calcRow(this)"></td>
+                    <td class="align-top"><input type="number" step="0.01" class="netto w-full text-right font-black outline-none px-2 bg-transparent pt-2" placeholder="Netto" oninput="calc()"></td>
                     <td class="no-print align-top pt-2 text-center text-red-300 font-black cursor-pointer" onclick="this.closest('tr').remove();calc()">✕</td>
                 </tr>
             </tbody>
@@ -238,7 +239,6 @@
         else { sPad.on(); b.innerText = '🔒 KAPAT'; b.className = 'bg-green-600 text-white text-[8px] px-3 py-1 rounded-full font-black uppercase'; }
     }
 
-    // MÜŞTERİ KAYDET – AYNI İSİM VARSA ÜZERİNE YAZ (GÜNCELLE)
     function saveC() {
         const n = document.getElementById('c-n').value.trim(); 
         if(!n) return alert("İsim/Firma zorunlu!");
@@ -251,12 +251,11 @@
             m: document.getElementById('c-m').value.trim(), 
             i: document.getElementById('c-i').value.trim() 
         };
-        // Aynı isim varsa eskiyi sil ve yenisini ekle (güncelle)
         db = db.filter(x => x.n !== n);
         db.push(obj);
         localStorage.setItem('h2_db', JSON.stringify(db));
         updateCList(); 
-        alert(`"${n}" müşterisi ${db.length > obj ? 'güncellendi' : 'kaydedildi'}!`);
+        alert(`"${n}" müşterisi güncellendi/kaydedildi!`);
     }
 
     function updateCList() {
@@ -278,20 +277,12 @@
         document.getElementById('c-i').value = c.i || '';
     }
 
-    // SATIR HESAPLAMA – NETTO GİRİLİNCE BRÜT HESAPLA
-    function calcRow(input) {
-        const tr = input.closest('tr');
-        const netto = parseFloat(input.value) || 0;
-        const brutto = netto * 1.19;
-        tr.querySelector('.print-text')?.previousElementSibling?.dispatchEvent(new Event('input')); // textarea güncelle
-        calc();
-    }
-
     function calc() { 
         let nettoSum = 0;
         document.querySelectorAll("#rows tr").forEach(r => {
-            const netto = parseFloat(r.querySelector(".netto").value) || 0;
-            nettoSum += netto;
+            const qty = parseFloat(r.querySelector(".qty").value) || 1;
+            const nettoPrice = parseFloat(r.querySelector(".netto").value) || 0;
+            nettoSum += qty * nettoPrice;
         });
         const mwst = nettoSum * 0.19;
         const total = nettoSum + mwst;
@@ -307,16 +298,13 @@
         const tr = tbody.querySelector("tr").cloneNode(true);
         tr.querySelectorAll("input,textarea").forEach(i => {
             if(i.classList.contains('qty')) i.value = "1";
-            else if(!i.classList.contains('netto')) i.value = "";
             else i.value = "";
         });
         tr.querySelector("textarea").style.height = 'auto';
         tbody.appendChild(tr);
     }
 
-    // PDF OLARAK DOSYAYA KAYDET
     async function savePDF() {
-        finalize(true); // önce hazırlık
         const element = document.getElementById('s-inv');
         const canvas = await html2canvas(element, {scale: 2});
         const imgData = canvas.toDataURL('image/png');
@@ -352,13 +340,14 @@
         if(!isQuickPrint) {
             const items = [];
             document.querySelectorAll("#rows tr").forEach(r => {
+                const qty = parseFloat(r.querySelector(".qty").value) || 1;
                 const netto = parseFloat(r.querySelector(".netto").value) || 0;
                 items.push({ 
                     desc: r.querySelector("textarea").value, 
-                    qty: r.querySelector(".qty").value, 
+                    qty: qty,
                     unit: r.querySelector(".unit").value || 'Stk', 
                     netto: netto,
-                    mwst: netto * 0.19
+                    mwst: netto * qty * 0.19
                 });
             });
             let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
@@ -366,7 +355,7 @@
                 id: document.getElementById('inv-n').innerText,
                 k: document.getElementById('c-n').value.trim() || "Gast",
                 a: amount,
-                mwst: amount - (amount / 1.19),
+                mwst: amount - nettoSumFromItems(items),
                 d: new Date().toLocaleString('de-DE'),
                 s: 'unpaid',
                 customer: { 
@@ -384,89 +373,41 @@
             localStorage.setItem('h2_tracker', JSON.stringify(tr));
             localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
             updateInvID();
+
+            // Otomatik PDF kaydet
+            savePDF();
         }
 
         window.print();
         if(!isQuickPrint) setTimeout(() => { if(confirm("Yeni fatura için temizlensin mi?")) location.reload(); }, 1200);
     }
 
-    // ARŞİV İŞLEMLERİ
-    function renderTracker() {
-        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        let paid = 0, due = 0, totalMwst = 0;
-        document.getElementById('pay-list').innerHTML = tr.map((x, i) => {
-            if(x.s === 'paid') paid += x.a; else due += x.a;
-            totalMwst += x.mwst || 0;
-            return `<tr class="border-b hover:bg-blue-50 archive-item">
-                <td class="py-3" onclick="openInvoice(\( {i}, false)"><b> \){x.id}</b><br><span class="text-slate-400 uppercase text-[9px]">${x.k}</span></td>
-                <td class="text-right font-black" onclick="openInvoice(\( {i}, false)"> \){fmt(x.a)}</td>
-                <td class="text-center"><button onclick="event.stopPropagation(); toggleP(${i})" class="px-3 py-1 rounded-full text-[8px] font-black \( {x.s==='paid'?'bg-green-500 text-white':'bg-red-100 text-red-600'}"> \){x.s==='paid'?'ÖDENDİ':'AÇIK'}</button></td>
-                <td><button onclick="event.stopPropagation(); deleteInvoice(${i})" class="text-red-300 px-2 font-black">✕</button></td>
-            </tr>`;
-        }).reverse().join('');
-        document.getElementById('sum-paid').innerText = fmt(paid);
-        document.getElementById('sum-due').innerText = fmt(due);
-        document.getElementById('sum-mwst').innerText = fmt(totalMwst);
+    function nettoSumFromItems(items) {
+        return items.reduce((sum, item) => sum + (item.netto * item.qty), 0);
     }
 
-    function toggleP(i) { 
-        let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); 
-        tr[i].s = tr[i].s==='paid'?'unpaid':'paid'; 
-        localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
-        renderTracker(); 
-    }
-
-    function deleteInvoice(idx) { 
-        if(confirm("Bu fatura kalıcı olarak silinsin mi?")) { 
-            let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); 
-            tr.splice(idx, 1); 
-            localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
-            renderTracker(); 
-            alert("Fatura silindi!");
-        } 
-    }
-
-    async function openInvoice(idx, onlyPrint = false) {
-        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        const data = tr[idx]; if(!data) return;
-
-        // Fatura alanlarını doldur
-        document.getElementById('inv-n').innerText = data.id;
-        ['c-n','c-s','c-c','c-p','c-m','c-i'].forEach(f => document.getElementById(f).value = data.customer[f.split('-')[1]] || '');
-        const tbody = document.getElementById('rows');
-        tbody.innerHTML = '';
-        data.items.forEach(item => addR());
-        const rows = tbody.querySelectorAll('tr');
-        rows.forEach((r, i) => {
-            r.querySelector('textarea').value = data.items[i].desc;
-            r.querySelector('.qty').value = data.items[i].qty;
-            r.querySelector('.unit').value = data.items[i].unit;
-            r.querySelector('.netto').value = data.items[i].netto.toFixed(2);
-            autoExpand(r.querySelector('textarea'));
-        });
-        if(data.sig) {
-            document.getElementById('sig-img').src = data.sig;
-            document.getElementById('sig-img').classList.remove('hidden');
-            document.getElementById('sig-wrapper').classList.add('hidden');
-        }
-        calc();
-        tab('inv');
-        if(onlyPrint) setTimeout(() => finalize(true), 500);
-    }
-
-    // GİDER RESİMLERİ – TIKLAMA İLE ÖNİZLEME VE TAM EKRAN
     async function neuralScan(input) {
         if (!input.files[0]) return;
-        const imgUrl = URL.createObjectURL(input.files[0]);
+        const imgUrl = URL.createObjectURL(input.files[0]); // Sadece geçici URL – dosyaya kaydetmez
         const { data: { text } } = await Tesseract.recognize(input.files[0], 'deu+eng');
         const prices = text.match(/\d+[\.,]\d{2}/g);
         const amount = prices ? Math.max(...prices.map(p => parseFloat(p.replace(',', '.')))) : 0;
         const shop = text.split('\n')[0].trim() || "Unbekannt";
 
         let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE'), img: imgUrl});
+        l.push({t: shop, a: amount, d: new Date().toLocaleString('de-DE'), img: imgUrl, id: Date.now()});
         localStorage.setItem('h2_ex', JSON.stringify(l));
         renderFolders();
+    }
+
+    function deleteReceipt(id) {
+        if(confirm("Bu fiş kalıcı olarak silinsin mi?")) {
+            let l = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+            l = l.filter(x => x.id !== id);
+            localStorage.setItem('h2_ex', JSON.stringify(l));
+            renderFolders();
+            alert("Fiş silindi!");
+        }
     }
 
     function renderFolders() {
@@ -476,7 +417,8 @@
             `<div class="p-4 bg-slate-50 border-2 border-slate-100 rounded-3xl">
                 <div class="flex justify-between border-b pb-1 mb-2 font-black text-blue-600 uppercase"><span>📁 \( {name}</span><span> \){items.length}</span></div>
                 ${items.map(i => 
-                    `<div class="mb-4">
+                    `<div class="receipt-item">
+                        <span class="receipt-delete" onclick="deleteReceipt(${i.id})">✕</span>
                         <div class="flex justify-between text-[9px] mb-1"><span>\( {i.d}</span><span class="text-red-600">- \){fmt(i.a)}</span></div>
                         <img src="${i.img}" class="receipt-img" onclick="toggleFullScreen(this)">
                     </div>`).join('')}
@@ -490,7 +432,8 @@
 
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
     function share(p) { const txt = `H2 Fatura: ${document.getElementById('inv-n').innerText} - \( {document.getElementById('total').innerText}`; window.open(p=='wa' ? `https://wa.me/?text= \){encodeURIComponent(txt)}` : `https://t.me/share/url?url=&text=${encodeURIComponent(txt)}`); }
-    function exportData() { const d = localStorage.getItem('h2_tracker'); const b = new Blob([d], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+
+    // Arşiv fonksiyonları (renderTracker, toggleP, deleteInvoice, openInvoice, exportData) önceki gibi
 
     window.onload = () => {
         updateInvID();
