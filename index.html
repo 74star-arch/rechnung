@@ -12,11 +12,11 @@
         @media print {
             @page { size: A4; margin: 0; }
             body { background: white !important; margin: 0 !important; zoom: 0.85; }
-            .no-print, #pdf-modal { display: none !important; }
-            /* Arşivden açılan PDF modalını baskı sırasında ana içerik yap */
-            #pdf-preview-wrap { display: block !important; position: absolute; top: 0; left: 0; width: 100%; z-index: 9999; }
+            .no-print, #pdf-modal-btns { display: none !important; }
+            #pdf-modal { background: white !important; position: absolute; top: 0; left: 0; width: 100%; display: block !important; padding: 0 !important; }
+            #pdf-preview-wrap { box-shadow: none !important; margin: 0 !important; width: 100% !important; }
             .card { box-shadow: none !important; border: none !important; width: 100% !important; border-radius: 0 !important; margin: 0 !important; }
-            .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; background: #0f172a !important; }
+            .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; background: #0f172a !important; color: white !important; }
             .print-text { display: block !important; }
             textarea, .no-p-input { display: none !important; }
         }
@@ -30,20 +30,18 @@
         .fab-sub { width: 50px; height: 50px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transform: scale(0); transition: 0.3s; opacity: 0; }
         .active .fab-sub { transform: scale(1); opacity: 1; }
         .active .fab-main { transform: rotate(45deg); background: #ef4444; }
-
-        /* PDF Önizleme Modalı */
-        #pdf-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; display: none; overflow-y: auto; padding: 20px; }
+        #pdf-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; overflow-y: auto; padding: 20px; }
     </style>
 </head>
 <body class="p-2 md:p-6">
 
-<div id="pdf-modal" class="no-print">
+<div id="pdf-modal">
     <div class="flex flex-col items-center gap-4">
-        <div class="flex gap-4">
-            <button onclick="window.print()" class="bg-emerald-600 text-white px-6 py-3 rounded-full font-black uppercase shadow-xl">💾 DOSYAYA KAYDET (PDF)</button>
-            <button onclick="document.getElementById('pdf-modal').style.display='none'" class="bg-white text-red-600 px-6 py-3 rounded-full font-black uppercase">✕ KAPAT</button>
+        <div id="pdf-modal-btns" class="no-print flex gap-4">
+            <button onclick="window.print()" class="bg-emerald-600 text-white px-8 py-3 rounded-full font-black uppercase shadow-xl">💾 DOSYAYA KAYDET (PDF)</button>
+            <button onclick="document.getElementById('pdf-modal').style.display='none'" class="bg-white text-red-600 px-8 py-3 rounded-full font-black uppercase shadow-lg">✕ KAPAT</button>
         </div>
-        <div id="pdf-preview-wrap" class="bg-white shadow-2xl"></div>
+        <div id="pdf-preview-wrap" class="bg-white shadow-2xl overflow-hidden"></div>
     </div>
 </div>
 
@@ -52,7 +50,7 @@
     <button onclick="tab('pay')" id="t-pay" class="flex-1 p-4 font-black text-[11px] bg-white text-slate-400 uppercase">📊 ARŞİV</button>
 </div>
 
-<div id="s-inv" class="card bg-white shadow-2xl mx-auto rounded-3xl relative overflow-hidden max-w-[850px]">
+<div id="s-inv" class="card bg-white shadow-2xl mx-auto rounded-3xl relative overflow-hidden max-w-[850px] no-print">
     <div class="h-grad p-10 flex justify-between items-center">
         <div class="flex items-center gap-5">
             <div class="w-20 h-20 bg-white rounded-2xl p-1 shadow-inner cursor-pointer" onclick="document.getElementById('logoI').click()">
@@ -61,14 +59,14 @@
             </div>
             <div>
                 <h1 class="text-3xl font-black italic uppercase tracking-tighter text-white">H2 <span class="text-sky-400">TECH</span>SERVICE</h1>
-                <p class="text-[9px] font-bold tracking-[0.5em] text-sky-100 opacity-80 uppercase">Osman Tuncer Professional</p>
+                <p class="text-[9px] font-bold tracking-[0.5em] text-sky-100 opacity-80 uppercase italic">Osman Tuncer Professional</p>
             </div>
         </div>
         <div class="text-right bg-white/10 p-4 rounded-2xl border border-white/20 min-w-[160px]">
             <div class="flex items-center justify-end gap-2 text-white font-black text-xl">
-                <button onclick="changeSeq(-1)" class="no-print bg-white/20 w-6 h-6 flex items-center justify-center rounded text-sm">-</button>
+                <button onclick="changeSeq(-1)" class="bg-white/20 w-6 h-6 flex items-center justify-center rounded text-sm">-</button>
                 <span id="inv-n"></span>
-                <button onclick="changeSeq(1)" class="no-print bg-white/20 w-6 h-6 flex items-center justify-center rounded text-sm">+</button>
+                <button onclick="changeSeq(1)" class="bg-white/20 w-6 h-6 flex items-center justify-center rounded text-sm">+</button>
             </div>
             <p id="cur-date" class="text-lg font-black mt-1 text-white border-t border-white/20 pt-1"></p>
         </div>
@@ -85,83 +83,48 @@
         </div>
         <div class="text-right">
             <b class="text-blue-600 text-[10px] uppercase font-black tracking-widest">Empfänger</b>
-            <div class="no-print mb-2"><select id="c-db" class="w-full border-2 border-blue-50 p-2 rounded-xl text-[11px] font-black text-blue-700 bg-blue-50" onchange="loadC()"><option value="">— Müşteri Seç —</option></select></div>
-            
-            <div id="cust-box">
-                <input id="c-n" placeholder="Name / Firma *" class="text-right font-black outline-none w-full border-b-2 border-slate-100 no-print text-base mb-1">
-                <div id="c-n-p" class="print-text font-black text-right text-base text-slate-900"></div>
-                
-                <input id="c-s" placeholder="Straße & Hausnr." class="text-right outline-none w-full border-b border-slate-100 no-print mb-1">
-                <div id="c-s-p" class="print-text text-right text-slate-600"></div>
-                
-                <input id="c-c" placeholder="PLZ Ort" class="text-right outline-none w-full border-b border-slate-100 no-print mb-1">
-                <div id="c-c-p" class="print-text text-right text-slate-600"></div>
-
-                <div class="flex justify-end gap-2 mt-1">
-                    <span class="no-print font-bold text-blue-500">☎️</span>
-                    <input id="c-p" placeholder="Telefon" class="text-right font-black outline-none border-b border-slate-100 no-print w-40">
-                    <div id="c-p-p" class="print-text text-right font-black"></div>
-                </div>
-
-                <div class="flex justify-end gap-2 mt-1">
-                    <span class="no-print text-[9px] text-slate-400">📑</span>
-                    <input id="c-i" placeholder="Steuer-ID" class="text-right text-slate-400 font-mono text-[9px] outline-none border-b border-slate-100 no-print w-40">
-                    <div id="c-i-p" class="print-text text-right text-slate-400 font-mono text-[9px]"></div>
-                </div>
-            </div>
-            <button onclick="saveC()" class="no-print bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full mt-3 font-black uppercase">Müşteriyi Kaydet</button>
+            <select id="c-db" class="w-full border-2 border-blue-50 p-2 rounded-xl text-[11px] font-black text-blue-700 bg-blue-50 mb-2" onchange="loadC()"><option value="">— Müşteri Seç —</option></select>
+            <input id="c-n" placeholder="Name / Firma *" class="text-right font-black outline-none w-full border-b-2 border-slate-100 text-base mb-1">
+            <input id="c-s" placeholder="Straße & Hausnr." class="text-right outline-none w-full border-b border-slate-100 mb-1">
+            <input id="c-c" placeholder="PLZ Ort" class="text-right outline-none w-full border-b border-slate-100 mb-1">
+            <input id="c-p" placeholder="Telefon" class="text-right font-black outline-none border-b border-slate-100 w-full mb-1">
+            <input id="c-i" placeholder="Steuer-ID" class="text-right text-slate-400 font-mono text-[9px] outline-none border-b border-slate-100 w-full mb-2">
+            <button onclick="saveC()" class="bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full font-black uppercase">Müşteriyi Kaydet</button>
         </div>
     </div>
 
-    <div class="px-10 min-h-[400px]">
-        <table class="w-full border-collapse">
+    <div class="px-10 pb-10">
+        <table class="w-full">
             <thead class="bg-slate-100 border-y-2 text-[9px] font-black text-slate-500 uppercase">
-                <tr>
-                    <th class="py-4 text-left px-4">Beschreibung</th>
-                    <th class="w-10 text-center">Stk</th>
-                    <th class="w-20 text-right">Netto (€)</th>
-                    <th class="w-20 text-right text-blue-600">19% MwSt</th>
-                    <th class="w-24 text-right px-4">Gesamt (€)</th>
-                    <th class="no-print w-8"></th>
-                </tr>
+                <tr><th class="py-4 text-left px-4">Beschreibung</th><th class="w-10">Stk</th><th class="w-20 text-right">Netto</th><th class="w-24 text-right px-4">Gesamt</th><th class="w-8"></th></tr>
             </thead>
             <tbody id="rows">
                 <tr class="border-b">
-                    <td class="py-4 px-4"><textarea rows="1" class="auto-grow" placeholder="Yapılan iş..." oninput="autoExpand(this); calc()"></textarea><div class="print-text font-bold"></div></td>
+                    <td class="py-4 px-4"><textarea rows="1" class="auto-grow" placeholder="Yapılan iş..." oninput="autoExpand(this); calc()"></textarea></td>
                     <td><input type="number" value="1" class="qty w-full text-center font-black outline-none" oninput="calc()"></td>
                     <td><input type="number" step="0.01" class="prc w-full text-right font-black outline-none" placeholder="0.00" oninput="calc()"></td>
-                    <td class="text-right font-bold text-blue-600 row-mwst">0,00</td>
                     <td class="text-right font-black px-4 row-total">0,00</td>
-                    <td class="no-print text-center"><button onclick="this.closest('tr').remove();calc()" class="text-red-300">✕</button></td>
+                    <td class="text-center"><button onclick="this.closest('tr').remove();calc()" class="text-red-300">✕</button></td>
                 </tr>
             </tbody>
         </table>
-        <button onclick="addR()" class="no-print mt-6 text-[10px] font-black text-blue-600 border border-blue-200 px-6 py-2 rounded-xl">+ YENİ SATIR</button>
+        <button onclick="addR()" class="mt-4 text-[10px] font-black text-blue-600 border border-blue-200 px-6 py-2 rounded-xl hover:bg-blue-50">+ SATIR EKLE</button>
     </div>
 
-    <div class="m-10 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center shadow-2xl border-4 border-white">
-        <div id="qr" class="bg-white p-2 rounded-xl"></div>
-        <div class="text-right">
-            <p class="text-[10px] font-black text-sky-400 uppercase tracking-widest">Rechnungsbetrag</p>
-            <p id="total" class="text-5xl font-black text-white italic tracking-tighter">0,00 €</p>
-        </div>
+    <div class="m-10 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center text-white">
+        <div id="qr-main" class="bg-white p-1 rounded-lg"></div>
+        <div class="text-right"><p class="text-[10px] font-black text-sky-400 uppercase tracking-widest">Gesamtbetrag</p><p id="total" class="text-5xl font-black italic tracking-tighter">0,00 €</p></div>
     </div>
 
     <div class="px-10 pb-28 flex justify-between items-end">
         <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase italic">Osman Tuncer</div>
         <div class="text-right">
-            <div class="no-print flex gap-2 justify-end mb-3">
-                <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[9px] px-4 py-1.5 rounded-full font-black uppercase">🔓 İmza</button>
-                <button onclick="sPad.clear()" class="bg-slate-200 text-slate-500 text-[9px] px-4 py-1.5 rounded-full font-black uppercase">SİL</button>
+            <div class="flex gap-2 justify-end mb-3">
+                <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[9px] px-4 py-1.5 rounded-full font-black uppercase shadow-lg">🔓 İmza Aç</button>
+                <button onclick="sPad.clear()" class="bg-slate-200 text-slate-500 text-[9px] px-4 py-1.5 rounded-full font-black uppercase shadow-lg">Sil</button>
             </div>
-            <div id="sig-wrapper" class="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-1"><canvas id="sig-canvas" width="250" height="80" class="no-print"></canvas></div>
-            <img id="sig-img" class="hidden h-16 border-b-2 border-slate-900 ml-auto">
+            <div id="sig-wrapper" class="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-1"><canvas id="sig-canvas" width="250" height="80"></canvas></div>
         </div>
-    </div>
-
-    <div class="footer-balken flex justify-between items-center px-10">
-        <div><p class="text-[9px] font-black text-sky-400 uppercase">Bank</p><p class="text-sm font-black text-white italic">IBAN: LT78 3250 0925 1892 8659  BIC: REVOLT21</p></div>
-        <div class="text-right"><p class="text-[9px] font-black text-sky-400 uppercase">Status</p><p class="text-sm font-black text-white uppercase tracking-widest">Sofort fällig</p></div>
     </div>
 </div>
 
@@ -172,25 +135,16 @@
 
 <div class="fab-container no-print">
     <div class="fab-main" onclick="this.parentElement.classList.toggle('active')">+</div>
-    <div class="fab-sub" onclick="finalize()" title="PDF"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6"></div>
-    <div class="fab-sub" onclick="shareWA()" title="WhatsApp"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6"></div>
+    <div class="fab-sub" onclick="finalize()" title="Kaydet"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6"></div>
 </div>
 
 <script>
     const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n);
-    const qr = new QRCode(document.getElementById("qr"), { width: 60, height: 60 });
     const sPad = new SignaturePad(document.getElementById('sig-canvas'));
     let sigLocked = true; sPad.off();
 
-    function autoExpand(f) { f.style.height = 'inherit'; f.style.height = f.scrollHeight + 'px'; f.nextElementSibling.innerText = f.value; }
-    
-    function tab(t) {
-        ['s-inv','s-pay'].forEach(x => document.getElementById(x).classList.add('hidden'));
-        ['t-inv','t-pay'].forEach(x => x === 't-'+t ? document.getElementById(x).className = 'flex-1 p-4 font-black text-[11px] bg-blue-700 text-white uppercase' : document.getElementById(x).className = 'flex-1 p-4 font-black text-[11px] bg-white text-slate-400 uppercase');
-        document.getElementById('s-'+t).classList.remove('hidden');
-        if(t==='pay') renderArchive();
-    }
-
+    function autoExpand(f) { f.style.height = 'inherit'; f.style.height = f.scrollHeight + 'px'; }
+    function tab(t) { ['s-inv','s-pay'].forEach(x => document.getElementById(x).classList.add('hidden')); document.getElementById('s-'+t).classList.remove('hidden'); if(t==='pay') renderArchive(); }
     function changeSeq(v) { let s = Math.max(0, (parseInt(localStorage.getItem('h2_seq')||0)) + v); localStorage.setItem('h2_seq', s); updateInvID(); }
     function updateInvID() { const s = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0'); document.getElementById('inv-n').innerText = `H2${new Date().getFullYear()}${s}`; }
 
@@ -199,142 +153,118 @@
         document.querySelectorAll("#rows tr").forEach(r => { 
             const q = parseFloat(r.querySelector(".qty").value)||0;
             const p = parseFloat(r.querySelector(".prc").value)||0;
-            const netto = q * p;
-            const mwst = netto * 0.19;
-            r.querySelector(".row-mwst").innerText = mwst.toLocaleString('de-DE', {minimumFractionDigits:2});
-            r.querySelector(".row-total").innerText = (netto + mwst).toLocaleString('de-DE', {minimumFractionDigits:2});
-            grand += (netto + mwst);
+            const t = q * p * 1.19;
+            r.querySelector(".row-total").innerText = t.toLocaleString('de-DE', {minimumFractionDigits:2});
+            grand += t;
         }); 
-        document.getElementById("total").innerText = fmt(grand); 
-        qr.makeCode(`H2-PAY-${grand.toFixed(2)}`); return grand; 
+        document.getElementById("total").innerText = fmt(grand); return grand; 
     }
 
     function finalize() {
-        const amount = calc(); if(amount <= 0) return alert("Hata!");
-        const items = []; document.querySelectorAll("#rows tr").forEach(r => { 
-            items.push({ d: r.querySelector("textarea").value, q: r.querySelector(".qty").value, p: r.querySelector(".prc").value }); 
-        });
-
-        const currentID = document.getElementById('inv-n').innerText;
-        const currentData = {
-            id: currentID,
-            k: document.getElementById('c-n').value || "Unbekannt",
-            a: amount,
-            d: document.getElementById('cur-date').innerText,
-            items: items,
-            cust: {
-                s: document.getElementById('c-s').value,
-                c: document.getElementById('c-c').value,
-                p: document.getElementById('c-p').value,
-                i: document.getElementById('c-i').value
-            },
-            sig: sPad.isEmpty() ? null : sPad.toDataURL()
+        const amount = calc(); if(amount <= 0) return alert("Lütfen tutar girin!");
+        const items = []; document.querySelectorAll("#rows tr").forEach(r => { items.push({ d: r.querySelector("textarea").value, q: r.querySelector(".qty").value, p: r.querySelector(".prc").value }); });
+        
+        const data = {
+            id: document.getElementById('inv-n').innerText,
+            date: document.getElementById('cur-date').innerText,
+            cust: { n: document.getElementById('c-n').value, s: document.getElementById('c-s').value, c: document.getElementById('c-c').value, p: document.getElementById('c-p').value, i: document.getElementById('c-i').value },
+            items, total: amount, sig: sPad.isEmpty() ? null : sPad.toDataURL()
         };
 
         let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        tr.push(currentData);
-        localStorage.setItem('h2_tracker', JSON.stringify(tr));
+        tr.push(data); localStorage.setItem('h2_tracker', JSON.stringify(tr));
         localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
 
-        // Yazdırma moduna hazırlık
-        ['c-n', 'c-s', 'c-c', 'c-p', 'c-i'].forEach(f => {
-            const v = document.getElementById(f).value;
-            const p = document.getElementById(f + '-p');
-            if(p) { p.innerText = v; p.style.display = v ? 'block' : 'none'; }
-        });
-        document.querySelectorAll("#rows textarea").forEach(tx => { tx.nextElementSibling.innerText = tx.value; });
-        if(!sPad.isEmpty()) { document.getElementById('sig-img').src = sPad.toDataURL(); document.getElementById('sig-img').classList.remove('hidden'); document.getElementById('sig-wrapper').classList.add('hidden'); }
-        
-        window.print();
-        setTimeout(() => { if(confirm("Hesap kaydedildi. Sayfa sıfırlansın mı?")) location.reload(); }, 1000);
+        showPDF(data);
     }
 
-    // ARŞİVDEN PDF OLARAK AÇMA FONKSİYONU
-    function openAsPDF(i) {
-        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        const data = tr[i];
+    function showPDF(data) {
         const wrap = document.getElementById('pdf-preview-wrap');
-        const modal = document.getElementById('pdf-modal');
-
+        document.getElementById('pdf-modal').style.display = 'block';
+        
         wrap.innerHTML = `
-            <div class="card bg-white w-[800px] min-h-[1100px] relative mx-auto">
+            <div class="card bg-white w-[850px] min-h-[1150px] relative mx-auto p-0">
                 <div class="h-grad p-10 flex justify-between items-center text-white">
-                    <div class="flex items-center gap-4">
-                        <img src="${localStorage.getItem('h2_logo')||''}" class="w-20 h-20 bg-white p-1 rounded-xl object-contain">
-                        <div><h1 class="text-3xl font-black italic uppercase">H2 TECHSERVICE</h1><p class="text-[9px] font-bold tracking-[0.5em] opacity-80">Osman Tuncer Professional</p></div>
+                    <div class="flex items-center gap-5">
+                        <img src="${localStorage.getItem('h2_logo')||''}" class="w-20 h-20 bg-white p-1 rounded-2xl object-contain">
+                        <div><h1 class="text-3xl font-black italic uppercase">H2 TECHSERVICE</h1><p class="text-[9px] font-bold tracking-[0.5em] opacity-80 uppercase">Osman Tuncer Professional</p></div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-black">${data.id}</p>
-                        <p class="text-lg font-bold border-t border-white/20 mt-1">${data.d}</p>
+                    <div class="text-right border-l border-white/20 pl-6">
+                        <p class="text-2xl font-black tracking-widest">${data.id}</p>
+                        <p class="text-lg font-black mt-1">${data.date}</p>
                     </div>
                 </div>
-                <div class="p-10 grid grid-cols-2 gap-10">
-                    <div><b class="text-blue-600 uppercase text-[10px]">Absender</b><p class="text-base font-black">Osman Tuncer</p><p>Suntalstrasse 48, 31552 Rodenberg</p></div>
-                    <div class="text-right"><b class="text-blue-600 uppercase text-[10px]">Empfänger</b><p class="text-base font-black">${data.k}</p><p>${data.cust.s}</p><p>${data.cust.c}</p><p class="font-bold">☎️ ${data.cust.p}</p></div>
+                <div class="p-12 grid grid-cols-2 gap-20">
+                    <div class="space-y-1">
+                        <b class="text-blue-600 uppercase text-[10px] font-black tracking-widest">Absender</b>
+                        <p class="text-base font-black">Osman Tuncer</p>
+                        <p>Suntalstrasse 48, 31552 Rodenberg</p>
+                        <p class="font-bold">☎️ +49 176 66658777</p>
+                        <p class="text-blue-700 font-bold italic">✉️ 74star@gmail.com</p>
+                        <p class="text-slate-400 font-mono text-[9px]">📑 Steuer-ID: 41/320/887966</p>
+                    </div>
+                    <div class="text-right space-y-1">
+                        <b class="text-blue-600 uppercase text-[10px] font-black tracking-widest">Empfänger</b>
+                        <p class="text-base font-black">${data.cust.n}</p>
+                        <p>${data.cust.s}</p><p>${data.cust.c}</p>
+                        <p class="font-bold">☎️ ${data.cust.p}</p>
+                        ${data.cust.i ? `<p class="text-slate-400 font-mono text-[9px]">📑 Steuer-ID: ${data.cust.i}</p>` : ''}
+                    </div>
                 </div>
-                <div class="px-10">
+                <div class="px-12">
                     <table class="w-full text-[11px]">
-                        <thead class="bg-slate-100 border-y-2 font-black uppercase"><tr><th class="py-4 text-left px-4">Beschreibung</th><th class="w-10">Stk</th><th class="w-20 text-right">Netto</th><th class="w-24 text-right px-4">Gesamt</th></tr></thead>
-                        <tbody>${data.items.map(it => `<tr class="border-b"><td class="py-4 px-4 font-bold">${it.d}</td><td class="text-center">${it.q}</td><td class="text-right">${fmt(it.p)}</td><td class="text-right font-black px-4">${fmt(it.p * it.q * 1.19)}</td></tr>`).join('')}</tbody>
+                        <thead class="bg-slate-100 border-y-2 font-black uppercase"><tr><th class="py-4 text-left px-4">Beschreibung</th><th class="w-10">Stk</th><th class="w-20 text-right">Netto</th><th class="w-24 text-right px-4">Gesamt (19%)</th></tr></thead>
+                        <tbody>${data.items.map(it => `<tr class="border-b"><td class="py-4 px-4 font-bold whitespace-pre-wrap">${it.d}</td><td class="text-center">${it.q}</td><td class="text-right">${fmt(it.p)}</td><td class="text-right font-black px-4">${fmt(it.p * it.q * 1.19)}</td></tr>`).join('')}</tbody>
                     </table>
                 </div>
-                <div class="m-10 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center text-white">
-                    <div id="qr-arch" class="bg-white p-1 rounded-lg"></div>
-                    <div class="text-right"><p class="text-[10px] font-black text-sky-400 uppercase">Rechnungsbetrag</p><p class="text-5xl font-black italic tracking-tighter">${fmt(data.a)}</p></div>
+                <div class="m-12 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center text-white shadow-2xl">
+                    <div id="qr-modal" class="bg-white p-1 rounded-lg"></div>
+                    <div class="text-right"><p class="text-[10px] font-black text-sky-400 uppercase tracking-widest">Gesamtbetrag</p><p class="text-5xl font-black italic tracking-tighter">${fmt(data.total)}</p></div>
                 </div>
-                <div class="px-10 pb-20 flex justify-between items-end">
-                    <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase italic">Osman Tuncer</div>
-                    <img src="${data.sig||''}" class="h-16 border-b-2 border-slate-900 ml-auto ${data.sig ? '' : 'hidden'}">
+                <div class="px-12 pb-24 flex justify-between items-end">
+                    <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase italic">Unterschrift Osman Tuncer</div>
+                    <img src="${data.sig||''}" class="h-20 border-b-2 border-slate-900 ml-auto ${data.sig ? '' : 'hidden'}">
                 </div>
-                <div class="footer-balken absolute bottom-0 left-0 right-0 flex justify-between px-10 text-white">
-                    <p class="text-sm font-black italic">IBAN: LT78 3250 0925 1892 8659</p>
-                    <p class="text-sm font-black uppercase">Sofort fällig</p>
+                <div class="footer-balken absolute bottom-0 left-0 right-0 flex justify-between px-12">
+                    <div><p class="text-[9px] font-black text-sky-400 uppercase">Bankverbindung</p><p class="text-sm font-black text-white italic">IBAN: LT78 3250 0925 1892 8659</p></div>
+                    <div class="text-right"><p class="text-sm font-black text-white uppercase tracking-widest">Sofort fällig</p></div>
                 </div>
             </div>
         `;
-        modal.style.display = 'block';
-        new QRCode(document.getElementById("qr-arch"), { text: `H2-PAY-${data.a}`, width: 60, height: 60 });
+        new QRCode(document.getElementById("qr-modal"), { text: `H2-PAY-${data.total}`, width: 60, height: 60 });
     }
 
     function renderArchive() {
         const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
         const container = document.getElementById('archive-list');
-        container.innerHTML = "";
-        tr.forEach((x, i) => {
-            const card = document.createElement('div');
-            card.className = "bg-white border-2 border-slate-100 rounded-3xl flex justify-between items-center p-6 shadow-sm cursor-pointer hover:border-blue-200 transition-all";
-            card.setAttribute('onclick', `openAsPDF(${i})`);
-            card.innerHTML = `
+        container.innerHTML = tr.map((x, i) => `
+            <div class="p-6 bg-white border-2 border-slate-100 rounded-3xl flex justify-between items-center shadow-sm hover:border-blue-300 transition-all cursor-pointer" onclick='showPDF(${JSON.stringify(x).replace(/'/g, "&apos;")})'>
                 <div class="flex items-center gap-4">
-                    <div class="bg-blue-600 text-white font-black px-3 py-1.5 rounded-xl text-[10px] shadow-md uppercase tracking-wider">${x.id}</div>
-                    <div>
-                        <div class="font-black text-slate-800 text-sm">${x.k}</div>
-                        <div class="text-[10px] text-slate-400 font-bold">${x.d}</div>
-                    </div>
+                    <div class="bg-blue-600 text-white font-black px-3 py-1.5 rounded-xl text-[10px] uppercase shadow-md">${x.id}</div>
+                    <div><div class="font-black text-slate-800 text-sm">${x.cust.n}</div><div class="text-[10px] text-slate-400 font-bold">${x.date}</div></div>
                 </div>
                 <div class="flex items-center gap-6">
-                    <span class="text-lg font-black text-slate-900 tracking-tighter">${fmt(x.a)}</span>
-                    <button onclick="event.stopPropagation(); deleteArchive(${i})" class="text-red-300 hover:text-red-600 transition-colors text-xl font-black">✕</button>
+                    <span class="text-lg font-black text-slate-900 tracking-tighter">${fmt(x.total)}</span>
+                    <button onclick="event.stopPropagation(); deleteArchive(${i})" class="text-red-300 hover:text-red-600 text-xl font-black">✕</button>
                 </div>
-            `;
-            container.prepend(card);
-        });
+            </div>
+        `).reverse().join('');
     }
 
     function deleteArchive(i) { if(confirm("Siliyorum Osman?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(i, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderArchive(); } }
     function saveC() { const n = document.getElementById('c-n').value; if(!n) return; let db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, i:document.getElementById('c-i').value }; db = db.filter(x => x.n !== n); db.push(obj); localStorage.setItem('h2_db', JSON.stringify(db)); updateCList(); alert("Kaydedildi!"); }
     function updateCList() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option value="">— Müşteri Seç —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join(''); }
     function loadC() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value]; if(c) { document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; document.getElementById('c-c').value=c.c; document.getElementById('c-p').value=c.p; document.getElementById('c-i').value=c.i||''; calc(); } }
-    function toggleSig() { sigLocked = !sigLocked; const b = document.getElementById('btn-lock'); if(sigLocked) { sPad.off(); b.innerText = '🔓 İmza'; } else { sPad.on(); b.innerText = '🔒 Kapat'; } }
+    function toggleSig() { sigLocked = !sigLocked; if(sigLocked) sPad.off(); else sPad.on(); document.getElementById('btn-lock').innerText = sigLocked ? '🔓 İmza Aç' : '🔒 Kapat'; }
     function addR() { const r = document.querySelector("#rows tr").cloneNode(true); r.querySelectorAll("input,textarea").forEach(i=>i.value=""); r.querySelector(".qty").value="1"; document.getElementById("rows").appendChild(r); }
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
-    function shareWA() { window.open(`https://wa.me/?text=H2-TechService-Rechnung-${document.getElementById('inv-n').innerText}`); }
 
     window.onload = () => {
         updateInvID();
         document.getElementById('cur-date').innerText = new Date().toLocaleDateString('de-DE');
         if(localStorage.getItem('h2_logo')) document.getElementById('l-img').src = localStorage.getItem('h2_logo');
         updateCList();
+        new QRCode(document.getElementById("qr-main"), { text: "H2-OSMAN", width: 60, height: 60 });
     };
 </script>
 </body>
