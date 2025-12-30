@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - v2.1 Full Fix</title>
+    <title>H2 TechService - v2.2 Math Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -40,7 +40,7 @@
 </div>
 
 <div class="max-w-[850px] mx-auto no-print mb-6 flex gap-2">
-    <button onclick="tab('inv')" id="t-inv" class="flex-1 p-4 font-black bg-blue-700 text-white rounded-xl uppercase">📄 FORM</button>
+    <button onclick="tab('inv')" id="t-inv" class="flex-1 p-4 font-black bg-blue-700 text-white rounded-xl uppercase">📄 RECHNUNG</button>
     <button onclick="tab('pay')" id="t-pay" class="flex-1 p-4 font-black bg-white text-slate-400 border rounded-xl uppercase">📊 MUHASEBE</button>
 </div>
 
@@ -82,7 +82,7 @@
             <input id="c-p" placeholder="Telefon" class="text-right font-black outline-none border-b border-slate-100 w-full mb-1">
             <input id="c-m" placeholder="E-Mail" class="text-right outline-none border-b border-slate-100 w-full mb-1">
             <input id="c-i" placeholder="Steuer-ID" class="text-right text-slate-400 font-mono text-[9px] outline-none border-b border-slate-100 w-full mb-2">
-            <button onclick="saveC()" class="bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full font-black uppercase">Müşteriyi Kaydet</button>
+            <button onclick="saveC()" class="bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full font-black uppercase">Kaydet</button>
         </div>
     </div>
 
@@ -91,7 +91,7 @@
             <thead class="bg-slate-100 border-y-2 text-[9px] font-black uppercase">
                 <tr><th class="py-4 text-left px-4">Beschreibung</th><th class="w-10">Stk</th><th class="w-20 text-right">Netto</th><th class="w-20 text-right">19% MwSt</th><th class="w-24 text-right px-4">Gesamt</th><th class="w-8"></th></tr>
             </thead>
-            <tbody id="rows"><tr class="border-b"><td class="py-4 px-4"><textarea rows="1" class="auto-grow" placeholder="İş açıklaması..." oninput="autoExpand(this); calc()"></textarea></td><td><input type="number" value="1" class="qty w-full text-center font-black outline-none" oninput="calc()"></td><td><input type="number" step="0.01" class="prc w-full text-right font-black outline-none" oninput="calc()"></td><td class="text-right text-blue-600 row-mwst">0,00</td><td class="text-right font-black px-4 row-total">0,00</td><td class="text-center"><button onclick="this.closest('tr').remove();calc()" class="text-red-300">✕</button></td></tr></tbody>
+            <tbody id="rows"><tr class="border-b"><td class="py-4 px-4"><textarea rows="1" class="auto-grow" oninput="autoExpand(this); calc()"></textarea></td><td><input type="number" value="1" class="qty w-full text-center font-black outline-none" oninput="calc()"></td><td><input type="number" step="0.01" class="prc w-full text-right font-black outline-none" oninput="calc()"></td><td class="text-right text-blue-600 row-mwst">0,00</td><td class="text-right font-black px-4 row-total">0,00</td><td class="text-center"><button onclick="this.closest('tr').remove();calc()" class="text-red-300">✕</button></td></tr></tbody>
         </table>
         <button onclick="addR()" class="mt-4 text-[10px] font-black text-blue-600 border border-blue-200 px-6 py-2 rounded-xl">+ SATIR EKLE</button>
     </div>
@@ -99,14 +99,14 @@
     <div class="m-10 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center text-white">
         <div id="qr-main" class="bg-white p-1 rounded-lg"></div>
         <div class="text-right">
-            <p class="text-xs font-bold text-sky-400">Netto: <span id="subtotal">0,00 €</span></p>
-            <p class="text-xs font-bold text-white/50">MwSt 19%: <span id="vat-total">0,00 €</span></p>
+            <p class="text-[10px] font-bold text-white/50">MwSt 19%: <span id="vat-total">0,00 €</span></p>
+            <p class="text-[10px] font-bold text-sky-400">Netto Summe: <span id="subtotal">0,00 €</span></p>
             <p id="total" class="text-5xl font-black italic tracking-tighter mt-2">0,00 €</p>
         </div>
     </div>
 
     <div class="px-10 flex justify-between items-end border-b pb-10">
-        <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase">Osman Tuncer</div>
+        <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase tracking-widest">Osman Tuncer</div>
         <div class="text-right">
             <div class="flex gap-2 justify-end mb-3">
                 <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[9px] px-4 py-1.5 rounded-full font-black uppercase">🔓 İmza Aç</button>
@@ -118,14 +118,11 @@
 </div>
 
 <div id="s-pay" class="max-w-[850px] mx-auto hidden no-print bg-white rounded-3xl p-8 shadow-2xl border mt-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-black uppercase italic text-slate-800">📊 Muhasebe Özeti</h2>
-        <button onclick="clearPaid()" class="bg-red-600 text-white text-[10px] px-6 py-2 rounded-full font-black">Ödenenleri Temizle</button>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-        <div class="summary-card"><p class="text-[9px] font-black text-sky-400 uppercase">NET KAZANÇ</p><p id="rep-net" class="text-2xl font-black">0,00 €</p></div>
-        <div class="summary-card" style="background: #1e293b;"><p class="text-[9px] font-black text-orange-400 uppercase">TOPLAM KDV</p><p id="rep-vat" class="text-2xl font-black text-orange-400">0,00 €</p></div>
-        <div class="summary-card" style="background: #1d4ed8;"><p class="text-[9px] font-black text-white/70 uppercase">GENEL TOPLAM</p><p id="rep-total" class="text-2xl font-black text-white">0,00 €</p></div>
+    <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-black uppercase italic text-slate-800">📊 Muhasebe</h2><button onclick="clearPaid()" class="bg-red-600 text-white text-[10px] px-6 py-2 rounded-full font-black">Temizle</button></div>
+    <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="summary-card"><p class="text-[8px] font-black text-sky-400">NET</p><p id="rep-net" class="text-xl font-black">0,00 €</p></div>
+        <div class="summary-card" style="background: #1e293b;"><p class="text-[8px] font-black text-orange-400">KDV</p><p id="rep-vat" class="text-xl font-black text-orange-400">0,00 €</p></div>
+        <div class="summary-card" style="background: #1d4ed8;"><p class="text-[8px] font-black text-white/70">TOPLAM</p><p id="rep-total" class="text-xl font-black text-white">0,00 €</p></div>
     </div>
     <div id="archive-list" class="space-y-4"></div>
 </div>
@@ -179,21 +176,11 @@
         let tN = 0, tV = 0, tG = 0;
         container.innerHTML = tr.map((x, i) => {
             tN += (x.nS||0); tV += (x.vS||0); tG += (x.total||0);
-            return `
-            <div class="p-5 rounded-2xl border-2 ${x.paid ? 'status-paid' : 'status-unpaid'} flex flex-col gap-3 cursor-pointer" onclick='showPDF(${JSON.stringify(x).replace(/'/g, "&apos;")})'>
-                <div class="flex justify-between items-center">
-                    <div><b class="text-slate-800 text-sm">${x.cust.n}</b><p class="text-[9px] text-slate-400 font-bold">${x.id} - ${x.date}</p></div>
-                    <div class="flex items-center gap-2">
-                         <button onclick="event.stopPropagation(); togglePaid(${i})" class="px-4 py-1.5 rounded-full font-black text-[9px] ${x.paid ? 'bg-emerald-600 text-white' : 'bg-white text-red-600 border border-red-200'}">${x.paid ? '✅ ÖDENDİ' : '⌛ BEKLİYOR'}</button>
-                        <button onclick="event.stopPropagation(); deleteArchive(${i})" class="text-slate-300 hover:text-red-600 font-black p-2">✕</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-3 gap-2 bg-white/50 p-2 rounded-xl text-[10px]">
-                    <div class="text-center font-bold text-blue-600">Net: ${fmt(x.nS)}</div>
-                    <div class="text-center font-bold text-orange-500 border-x">KDV: ${fmt(x.vS)}</div>
-                    <div class="text-center font-bold text-slate-900">Brüt: ${fmt(x.total)}</div>
-                </div>
-                <div class="text-[9px] text-slate-400 font-bold italic">📞 ${x.cust.p || '-'} | ✉️ ${x.cust.m || '-'} | 📑 ${x.cust.i || '-'}</div>
+            return `<div class="p-4 rounded-xl border-2 ${x.paid ? 'status-paid' : 'status-unpaid'} flex flex-col gap-2 cursor-pointer" onclick='showPDF(${JSON.stringify(x).replace(/'/g, "&apos;")})'>
+                <div class="flex justify-between items-center"><div><b class="text-sm">${x.cust.n}</b><p class="text-[9px] text-slate-400">${x.id} | ${x.date}</p></div>
+                <div class="flex items-center gap-2"><button onclick="event.stopPropagation(); togglePaid(${i})" class="px-3 py-1 rounded-full font-black text-[8px] ${x.paid ? 'bg-emerald-600 text-white' : 'bg-white text-red-600'}">${x.paid ? 'ÖDENDİ' : 'BEKLİYOR'}</button>
+                <button onclick="event.stopPropagation(); deleteArchive(${i})" class="text-slate-300 hover:text-red-600 font-black p-1">✕</button></div></div>
+                <div class="grid grid-cols-3 gap-1 bg-white/50 p-2 rounded text-[9px] font-bold"><div>NET: ${fmt(x.nS)}</div><div class="border-x text-center">KDV: ${fmt(x.vS)}</div><div class="text-right">TOPLAM: ${fmt(x.total)}</div></div>
             </div>`;
         }).reverse().join('');
         document.getElementById('rep-net').innerText = fmt(tN);
@@ -207,39 +194,25 @@
         wrap.innerHTML = `
             <div class="card bg-white w-[850px] min-h-[1140px] relative mx-auto p-0 shadow-none">
                 <div class="h-grad p-10 flex justify-between items-center text-white">
-                    <div class="flex items-center gap-5">
-                        <img src="${localStorage.getItem('h2_logo')||''}" class="w-16 h-16 bg-white p-1 rounded-xl">
-                        <div><h1 class="text-2xl font-black italic">H2 TECHSERVICE</h1><p class="text-[8px] font-bold tracking-widest uppercase">Osman Tuncer Professional</p></div>
-                    </div>
+                    <div class="flex items-center gap-5"><img src="${localStorage.getItem('h2_logo')||''}" class="w-16 h-16 bg-white p-1 rounded-xl"><div><h1 class="text-2xl font-black italic">H2 TECHSERVICE</h1><p class="text-[8px] font-bold uppercase">Osman Tuncer Professional</p></div></div>
                     <div class="text-right border-l border-white/20 pl-6"><p class="text-xl font-black">${data.id}</p><p class="text-sm font-bold">${data.date}</p></div>
                 </div>
                 <div class="p-12 grid grid-cols-2 gap-20">
-                    <div class="space-y-1">
-                        <b class="text-blue-600 uppercase text-[9px] font-black">Absender</b>
-                        <p class="font-black text-sm">Osman Tuncer</p>
-                        <p>Suntalstrasse 48, 31552 Rodenberg</p>
-                        <p>☎️ +49 176 66658777 | ✉️ 74star@gmail.com</p>
-                        <p class="text-slate-400 font-mono text-[9px]">Steuer-ID: 41/320/887966</p>
-                    </div>
-                    <div class="text-right space-y-1">
-                        <b class="text-blue-600 uppercase text-[9px] font-black">Empfänger</b>
-                        <p class="font-black text-sm">${data.cust.n}</p>
-                        <p>${data.cust.s}</p><p>${data.cust.c}</p>
-                        <p class="text-[10px] font-bold">📞 ${data.cust.p || ''} | ✉️ ${data.cust.m || ''}</p>
-                        <p class="text-[9px] text-slate-400 font-mono">Steuer-ID: ${data.cust.i || ''}</p>
-                    </div>
+                    <div class="space-y-1"><b class="text-blue-600 uppercase text-[9px] font-black">Absender</b><p class="font-black text-sm">Osman Tuncer</p><p>Suntalstrasse 48, 31552 Rodenberg</p><p>☎️ +49 176 66658777 | ✉️ 74star@gmail.com</p><p class="text-slate-400 font-mono text-[9px]">Steuer-ID: 41/320/887966</p></div>
+                    <div class="text-right space-y-1"><b class="text-blue-600 uppercase text-[9px] font-black">Empfänger</b><p class="font-black text-sm">${data.cust.n}</p><p>${data.cust.s}</p><p>${data.cust.c}</p><p class="text-[10px] font-bold">📞 ${data.cust.p || ''} | ✉️ ${data.cust.m || ''}</p><p class="text-[9px] text-slate-400 font-mono">Steuer-ID: ${data.cust.i || ''}</p></div>
                 </div>
-                <div class="px-12 min-h-[450px]">
+                <div class="px-12 min-h-[480px]">
                     <table class="w-full text-[11px]">
-                        <thead class="bg-slate-100 border-y-2 font-black uppercase"><tr><th class="py-3 text-left px-4">Beschreibung</th><th class="w-10">Stk</th><th class="w-20 text-right">Netto</th><th class="w-20 text-right">MwSt</th><th class="w-24 text-right px-4">Gesamt</th></tr></thead>
+                        <thead class="bg-slate-100 border-y-2 font-black uppercase"><tr><th class="py-3 text-left px-4">Beschreibung</th><th class="w-10">Stk</th><th class="w-20 text-right">Netto</th><th class="w-20 text-right">MwSt 19%</th><th class="w-24 text-right px-4">Gesamt</th></tr></thead>
                         <tbody>${data.items.map(it => `<tr class="border-b"><td class="py-3 px-4 font-bold">${it.d}</td><td class="text-center">${it.q}</td><td class="text-right">${fmt(it.p)}</td><td class="text-right">${fmt(it.p * it.q * 0.19)}</td><td class="text-right font-black px-4">${fmt(it.p * it.q * 1.19)}</td></tr>`).join('')}</tbody>
                     </table>
                 </div>
                 <div class="m-12 p-8 bg-slate-900 rounded-[2rem] flex justify-between items-center text-white">
                     <div id="qr-modal" class="bg-white p-1 rounded-lg"></div>
                     <div class="text-right">
-                        <p class="text-xs font-bold text-sky-400">Netto Summe: ${fmt(data.nS)}</p>
-                        <p class="text-4xl font-black italic">${fmt(data.total)}</p>
+                        <p class="text-[11px] font-bold text-white/50">MwSt 19%: ${fmt(data.vS)}</p>
+                        <p class="text-[11px] font-bold text-sky-400">Netto Summe: ${fmt(data.nS)}</p>
+                        <p class="text-4xl font-black italic mt-1">${fmt(data.total)}</p>
                     </div>
                 </div>
                 <div class="px-12 pb-24 flex justify-between items-end">
@@ -250,8 +223,7 @@
                     <div><p class="text-[8px] font-black text-sky-400">Bankverbindung</p><p class="text-xs font-black italic">IBAN: LT78 3250 0925 1892 8659 | BIC: REVOLT21</p></div>
                     <p class="font-black text-[9px] uppercase">Zahlbar sofort</p>
                 </div>
-            </div>
-        `;
+            </div>`;
         new QRCode(document.getElementById("qr-modal"), { text: `H2-PAY-${data.total}`, width: 50, height: 50 });
     }
 
