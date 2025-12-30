@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - v1.9 Financial Report</title>
+    <title>H2 TechService - v2.0 Profile Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -41,8 +41,8 @@
 </div>
 
 <div class="max-w-[850px] mx-auto no-print mb-6 flex gap-2 shadow-xl rounded-2xl overflow-hidden bg-white border">
-    <button onclick="tab('inv')" id="t-inv" class="flex-1 p-4 font-black text-[11px] bg-blue-700 text-white uppercase">📄 RECHNUNG</button>
-    <button onclick="tab('pay')" id="t-pay" class="flex-1 p-4 font-black text-[11px] bg-white text-slate-400 uppercase tracking-widest">📊 MUHASEBE RAPORU</button>
+    <button onclick="tab('inv')" id="t-inv" class="flex-1 p-4 font-black text-[11px] bg-blue-700 text-white uppercase tracking-tighter">📄 RECHNUNG FORMULAR</button>
+    <button onclick="tab('pay')" id="t-pay" class="flex-1 p-4 font-black text-[11px] bg-white text-slate-400 uppercase tracking-tighter">📊 MUHASEBE & ARŞİV</button>
 </div>
 
 <div id="s-inv" class="card bg-white shadow-2xl mx-auto rounded-3xl relative overflow-hidden max-w-[850px] no-print pb-10">
@@ -74,7 +74,7 @@
             <p>📍 Suntalstrasse 48, 31552 Rodenberg</p>
             <p class="font-black">☎️ +49 176 66658777</p>
             <p class="text-blue-700 font-bold italic">✉️ 74star@gmail.com</p>
-            <p class="text-slate-400 font-mono text-[9px]">📑 Steuer-ID: 41/320/887966</p>
+            <p class="text-slate-400 font-mono text-[9px] font-bold">📑 Steuer-ID: 41/320/887966</p>
         </div>
         <div class="text-right">
             <b class="text-blue-600 text-[10px] uppercase font-black tracking-widest">Empfänger</b>
@@ -84,7 +84,7 @@
             <input id="c-c" placeholder="PLZ Ort" class="text-right outline-none w-full border-b border-slate-100 mb-1">
             <input id="c-p" placeholder="Telefon" class="text-right font-black outline-none border-b border-slate-100 w-full mb-1">
             <input id="c-i" placeholder="Steuer-ID" class="text-right text-slate-400 font-mono text-[9px] outline-none border-b border-slate-100 w-full mb-2">
-            <button onclick="saveC()" class="bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full font-black uppercase">Kaydet</button>
+            <button onclick="saveC()" class="bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full font-black uppercase">Müşteriyi Kaydet</button>
         </div>
     </div>
 
@@ -139,7 +139,7 @@
     <div class="mb-8">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-black uppercase italic tracking-tighter text-slate-800">📊 Genel Muhasebe Özeti</h2>
-            <button onclick="clearPaid()" class="bg-red-600 text-white text-[10px] px-6 py-2 rounded-full font-black uppercase shadow-lg">Ödenenleri Temizle</button>
+            <button onclick="clearPaid()" class="bg-red-600 text-white text-[10px] px-6 py-2 rounded-full font-black uppercase">Ödenenleri Temizle</button>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
@@ -151,13 +151,23 @@
                 <p class="text-[9px] font-black text-orange-400 uppercase tracking-widest mb-1">TOPLAM VERGİ (MwSt)</p>
                 <p id="rep-vat" class="text-2xl font-black text-orange-400">0,00 €</p>
             </div>
-            <div class="summary-card" style="background: #1d4ed8; border-bottom-color: #ffffff;">
+            <div class="summary-card" style="background: #1d4ed8;">
                 <p class="text-[9px] font-black text-white/70 uppercase tracking-widest mb-1">GENEL TAHSİLAT</p>
                 <p id="rep-total" class="text-2xl font-black text-white">0,00 €</p>
             </div>
         </div>
         
-        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">FATURA LİSTESİ</h3>
+        <div class="bg-slate-50 p-4 rounded-2xl mb-6 flex justify-between items-center border border-slate-100">
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">PROFIL BILGILERIN</p>
+                <p class="font-black text-slate-800">✉️ 74star@gmail.com</p>
+                <p class="text-[10px] font-bold text-slate-500">📑 Steuer-ID: 41/320/887966</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ADRES</p>
+                <p class="font-bold text-slate-800">Rodenberg, Deutschland</p>
+            </div>
+        </div>
     </div>
     
     <div id="archive-list" class="space-y-4"></div>
@@ -209,14 +219,12 @@
     function renderArchive() {
         const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
         const container = document.getElementById('archive-list');
-        
         let totalNet = 0; let totalVat = 0; let totalGross = 0;
 
         container.innerHTML = tr.map((x, i) => {
             const netto = parseFloat(x.nS) || 0;
             const kdv = parseFloat(x.vS) || 0;
             const brüt = parseFloat(x.total) || 0;
-            
             totalNet += netto; totalVat += kdv; totalGross += brüt;
             
             return `
@@ -234,23 +242,13 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-3 gap-2 bg-white p-4 rounded-2xl border border-slate-100">
-                    <div class="text-center">
-                        <p class="text-[8px] uppercase text-slate-400 font-black tracking-widest">NETTO ALACAĞIN</p>
-                        <p class="font-black text-blue-600 text-base">${fmt(netto)}</p>
-                    </div>
-                    <div class="text-center border-x">
-                        <p class="text-[8px] uppercase text-slate-400 font-black tracking-widest">KDV (19% MwSt)</p>
-                        <p class="font-black text-orange-500 text-base">${fmt(kdv)}</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-[8px] uppercase text-slate-400 font-black tracking-widest">MÜŞTERİ TOPLAM</p>
-                        <p class="font-black text-slate-900 text-base">${fmt(brüt)}</p>
-                    </div>
+                    <div class="text-center"><p class="text-[8px] uppercase text-slate-400 font-black tracking-widest">NETTO</p><p class="font-black text-blue-600 text-base">${fmt(netto)}</p></div>
+                    <div class="text-center border-x"><p class="text-[8px] uppercase text-slate-400 font-black tracking-widest">19% MwSt</p><p class="font-black text-orange-500 text-base">${fmt(kdv)}</p></div>
+                    <div class="text-center"><p class="text-[8px] uppercase text-slate-400 font-black tracking-widest">TOPLAM</p><p class="font-black text-slate-900 text-base">${fmt(brüt)}</p></div>
                 </div>
             </div>`;
         }).reverse().join('');
         
-        // Rapor başlıklarını güncelle
         document.getElementById('rep-net').innerText = fmt(totalNet);
         document.getElementById('rep-vat').innerText = fmt(totalVat);
         document.getElementById('rep-total').innerText = fmt(totalGross);
@@ -269,8 +267,18 @@
                     <div class="text-right border-l border-white/20 pl-6"><p class="text-2xl font-black">${data.id}</p><p class="text-lg font-black mt-1">${data.date}</p></div>
                 </div>
                 <div class="p-12 grid grid-cols-2 gap-20">
-                    <div class="space-y-1"><b class="text-blue-600 uppercase text-[10px] font-black">Absender</b><p class="text-base font-black">Osman Tuncer</p><p>Suntalstrasse 48, 31552 Rodenberg</p><p class="font-bold">☎️ +49 176 66658777</p></div>
-                    <div class="text-right"><b class="text-blue-600 uppercase text-[10px] font-black">Empfänger</b><p class="text-base font-black">${data.cust.n}</p><p>${data.cust.s}</p><p>${data.cust.c}</p></div>
+                    <div class="space-y-1">
+                        <b class="text-blue-600 uppercase text-[10px] font-black tracking-widest">Absender</b>
+                        <p class="text-base font-black">Osman Tuncer</p>
+                        <p>Suntalstrasse 48, 31552 Rodenberg</p>
+                        <p class="font-bold">☎️ +49 176 66658777</p>
+                        <p class="text-blue-700 font-bold italic">✉️ 74star@gmail.com</p>
+                        <p class="text-slate-400 font-mono text-[9px] font-bold">📑 Steuer-ID: 41/320/887966</p>
+                    </div>
+                    <div class="text-right">
+                        <b class="text-blue-600 uppercase text-[10px] font-black tracking-widest">Empfänger</b>
+                        <p class="text-base font-black">${data.cust.n}</p><p>${data.cust.s}</p><p>${data.cust.c}</p>
+                    </div>
                 </div>
                 <div class="px-12 min-h-[400px]">
                     <table class="w-full text-[11px]">
@@ -290,7 +298,10 @@
                     <img src="${data.sig||''}" class="h-20 border-b-2 border-slate-900 ${data.sig ? '' : 'hidden'}">
                 </div>
                 <div class="footer-balken absolute bottom-0 left-0 right-0 flex justify-between px-12 items-center">
-                    <div><p class="text-[9px] font-black text-sky-400 uppercase">Bankverbindung</p><p class="text-sm font-black text-white italic">IBAN: LT78 3250 0925 1892 8659 | BIC: REVOLT21</p></div>
+                    <div>
+                        <p class="text-[9px] font-black text-sky-400 uppercase tracking-widest">Bankverbindung</p>
+                        <p class="text-sm font-black text-white italic uppercase">IBAN: LT78 3250 0925 1892 8659 | BIC: REVOLT21</p>
+                    </div>
                     <div class="text-right text-white font-black uppercase">Zahlbar sofort</div>
                 </div>
             </div>
@@ -300,7 +311,7 @@
 
     function togglePaid(i) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr[i].paid = !tr[i].paid; localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderArchive(); }
     function deleteArchive(i) { if(confirm("Siliyorum?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(i, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderArchive(); } }
-    function clearPaid() { if(confirm("Ödenmişleri sileyim mi Osman?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr = tr.filter(x => !x.paid); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderArchive(); } }
+    function clearPaid() { if(confirm("Ödenmişleri sileyim mi?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr = tr.filter(x => !x.paid); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderArchive(); } }
     function saveC() { const n = document.getElementById('c-n').value; if(!n) return; let db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, i:document.getElementById('c-i').value }; db = db.filter(x => x.n !== n); db.push(obj); localStorage.setItem('h2_db', JSON.stringify(db)); updateCList(); alert("Kaydedildi!"); }
     function updateCList() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option value="">— Müşteri Seç —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join(''); }
     function loadC() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value]; if(c) { document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; document.getElementById('c-c').value=c.c; document.getElementById('c-p').value=c.p; document.getElementById('c-i').value=c.i||''; calc(); } }
