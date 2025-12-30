@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - v2.2 Math Fixed</title>
+    <title>H2 TechService - v2.3 PDF Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -157,7 +157,9 @@
 
     function finalize() {
         const res = calc(); if(res.total <= 0) return alert("Tutar girilmedi!");
-        const items = []; document.querySelectorAll("#rows tr").forEach(r => { items.push({ d: r.querySelector("textarea").value, q: r.querySelector(".qty").value, p: r.querySelector(".prc").value }); });
+        const items = []; document.querySelectorAll("#rows tr").forEach(r => { 
+            items.push({ d: r.querySelector("textarea").value, q: r.querySelector(".qty").value, p: r.querySelector(".prc").value }); 
+        });
         const data = {
             id: document.getElementById('inv-n').innerText,
             date: document.getElementById('cur-date').innerText,
