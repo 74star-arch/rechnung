@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>H2 TechService - H2v1.1 Ultimate</title>
+    <title>H2 TechService - v28 PDF Archive</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -11,29 +11,41 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         @media print {
             @page { size: A4; margin: 0; }
-            body { background: white !important; margin: 0 !important; zoom: 0.82; }
-            .no-print { display: none !important; }
+            body { background: white !important; margin: 0 !important; zoom: 0.85; }
+            .no-print, #pdf-modal { display: none !important; }
+            /* Arşivden açılan PDF modalını baskı sırasında ana içerik yap */
+            #pdf-preview-wrap { display: block !important; position: absolute; top: 0; left: 0; width: 100%; z-index: 9999; }
             .card { box-shadow: none !important; border: none !important; width: 100% !important; border-radius: 0 !important; margin: 0 !important; }
-            .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; background: #0f172a !important; color: white !important; }
+            .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; background: #0f172a !important; }
             .print-text { display: block !important; }
-            textarea, .no-p-input, select { display: none !important; }
+            textarea, .no-p-input { display: none !important; }
         }
         body { background: #f8fafc; font-family: 'Inter', sans-serif; font-size: 11px; color: #1e293b; }
         .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); color: white; }
         .footer-balken { background: #0f172a; color: white; padding: 20px; border-top: 4px solid #38bdf8; }
-        textarea.auto-grow { overflow: hidden; min-height: 24px; resize: none; width: 100%; border: none; background: transparent; font-weight: 700; line-height: 1.4; }
-        .print-text { display: none; white-space: pre-wrap; word-break: break-word; line-height: 1.4; }
+        textarea.auto-grow { overflow: hidden; min-height: 24px; resize: none; width: 100%; border: none; background: transparent; font-weight: 700; }
+        .print-text { display: none; white-space: pre-wrap; word-break: break-word; }
         .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column-reverse; gap: 15px; z-index: 1000; }
         .fab-main { width: 65px; height: 65px; border-radius: 50%; background: #1d4ed8; color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; cursor: pointer; border: 4px solid #10b981; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .fab-sub { width: 50px; height: 50px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transform: scale(0); transition: 0.3s; opacity: 0; }
         .active .fab-sub { transform: scale(1); opacity: 1; }
         .active .fab-main { transform: rotate(45deg); background: #ef4444; }
-        
-        /* Arşivdeki PDF Görünümü Stili */
-        .pdf-preview-box { background: white; border: 2px solid #e2e8f0; border-radius: 15px; padding: 25px; margin-top: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* PDF Önizleme Modalı */
+        #pdf-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; display: none; overflow-y: auto; padding: 20px; }
     </style>
 </head>
 <body class="p-2 md:p-6">
+
+<div id="pdf-modal" class="no-print">
+    <div class="flex flex-col items-center gap-4">
+        <div class="flex gap-4">
+            <button onclick="window.print()" class="bg-emerald-600 text-white px-6 py-3 rounded-full font-black uppercase shadow-xl">💾 DOSYAYA KAYDET (PDF)</button>
+            <button onclick="document.getElementById('pdf-modal').style.display='none'" class="bg-white text-red-600 px-6 py-3 rounded-full font-black uppercase">✕ KAPAT</button>
+        </div>
+        <div id="pdf-preview-wrap" class="bg-white shadow-2xl"></div>
+    </div>
+</div>
 
 <div class="max-w-[850px] mx-auto no-print mb-6 flex gap-2 shadow-xl rounded-2xl overflow-hidden bg-white border">
     <button onclick="tab('inv')" id="t-inv" class="flex-1 p-4 font-black text-[11px] bg-blue-700 text-white uppercase">📄 RECHNUNG</button>
@@ -97,7 +109,7 @@
                     <div id="c-i-p" class="print-text text-right text-slate-400 font-mono text-[9px]"></div>
                 </div>
             </div>
-            <button onclick="saveC()" class="no-print bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full mt-3 font-black uppercase shadow-lg">Müşteriyi Kaydet</button>
+            <button onclick="saveC()" class="no-print bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full mt-3 font-black uppercase">Müşteriyi Kaydet</button>
         </div>
     </div>
 
@@ -105,7 +117,7 @@
         <table class="w-full border-collapse">
             <thead class="bg-slate-100 border-y-2 text-[9px] font-black text-slate-500 uppercase">
                 <tr>
-                    <th class="py-4 text-left px-4">Beschreibung (Auto-Grow)</th>
+                    <th class="py-4 text-left px-4">Beschreibung</th>
                     <th class="w-10 text-center">Stk</th>
                     <th class="w-20 text-right">Netto (€)</th>
                     <th class="w-20 text-right text-blue-600">19% MwSt</th>
@@ -115,16 +127,16 @@
             </thead>
             <tbody id="rows">
                 <tr class="border-b">
-                    <td class="py-4 px-4"><textarea rows="1" class="auto-grow" placeholder="Yapılan işi buraya yazın..." oninput="autoExpand(this); calc()"></textarea><div class="print-text font-bold text-slate-800"></div></td>
+                    <td class="py-4 px-4"><textarea rows="1" class="auto-grow" placeholder="Yapılan iş..." oninput="autoExpand(this); calc()"></textarea><div class="print-text font-bold"></div></td>
                     <td><input type="number" value="1" class="qty w-full text-center font-black outline-none" oninput="calc()"></td>
                     <td><input type="number" step="0.01" class="prc w-full text-right font-black outline-none" placeholder="0.00" oninput="calc()"></td>
                     <td class="text-right font-bold text-blue-600 row-mwst">0,00</td>
                     <td class="text-right font-black px-4 row-total">0,00</td>
-                    <td class="no-print text-center"><button onclick="this.closest('tr').remove();calc()" class="text-red-300 hover:text-red-600">✕</button></td>
+                    <td class="no-print text-center"><button onclick="this.closest('tr').remove();calc()" class="text-red-300">✕</button></td>
                 </tr>
             </tbody>
         </table>
-        <button onclick="addR()" class="no-print mt-6 text-[10px] font-black text-blue-600 border border-blue-200 px-6 py-2 rounded-xl hover:bg-blue-50">+ YENİ SATIR EKLE</button>
+        <button onclick="addR()" class="no-print mt-6 text-[10px] font-black text-blue-600 border border-blue-200 px-6 py-2 rounded-xl">+ YENİ SATIR</button>
     </div>
 
     <div class="m-10 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center shadow-2xl border-4 border-white">
@@ -136,11 +148,11 @@
     </div>
 
     <div class="px-10 pb-28 flex justify-between items-end">
-        <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase italic">Unterschrift Osman Tuncer</div>
+        <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase italic">Osman Tuncer</div>
         <div class="text-right">
             <div class="no-print flex gap-2 justify-end mb-3">
-                <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[9px] px-4 py-1.5 rounded-full font-black uppercase">🔓 İmza Aç</button>
-                <button onclick="sPad.clear()" class="bg-slate-200 text-slate-500 text-[9px] px-4 py-1.5 rounded-full font-black uppercase">Temizle</button>
+                <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[9px] px-4 py-1.5 rounded-full font-black uppercase">🔓 İmza</button>
+                <button onclick="sPad.clear()" class="bg-slate-200 text-slate-500 text-[9px] px-4 py-1.5 rounded-full font-black uppercase">SİL</button>
             </div>
             <div id="sig-wrapper" class="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-1"><canvas id="sig-canvas" width="250" height="80" class="no-print"></canvas></div>
             <img id="sig-img" class="hidden h-16 border-b-2 border-slate-900 ml-auto">
@@ -148,19 +160,19 @@
     </div>
 
     <div class="footer-balken flex justify-between items-center px-10">
-        <div><p class="text-[9px] font-black text-sky-400 uppercase mb-1">Bankverbindung</p><p class="text-sm font-black text-white italic">IBAN: LT78 3250 0925 1892 8659 &nbsp; BIC: REVOLT21</p></div>
-        <div class="text-right"><p class="text-[9px] font-black text-sky-400 uppercase mb-1">Zahlungsziel</p><p class="text-sm font-black text-white uppercase tracking-widest">Sofort fällig</p></div>
+        <div><p class="text-[9px] font-black text-sky-400 uppercase">Bank</p><p class="text-sm font-black text-white italic">IBAN: LT78 3250 0925 1892 8659  BIC: REVOLT21</p></div>
+        <div class="text-right"><p class="text-[9px] font-black text-sky-400 uppercase">Status</p><p class="text-sm font-black text-white uppercase tracking-widest">Sofort fällig</p></div>
     </div>
 </div>
 
 <div id="s-pay" class="max-w-[850px] mx-auto hidden no-print bg-white rounded-3xl p-10 shadow border mt-6">
-    <h2 class="text-2xl font-black uppercase italic mb-8 border-b pb-4 text-slate-800">📊 Rechnungsarchiv (PDF Önizleme)</h2>
-    <div id="archive-list" class="space-y-6"></div>
+    <h2 class="text-2xl font-black uppercase italic mb-8 border-b pb-4">📊 Rechnungsarchiv</h2>
+    <div id="archive-list" class="space-y-4"></div>
 </div>
 
 <div class="fab-container no-print">
     <div class="fab-main" onclick="this.parentElement.classList.toggle('active')">+</div>
-    <div class="fab-sub" onclick="finalize()" title="PDF Olarak Kaydet"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6"></div>
+    <div class="fab-sub" onclick="finalize()" title="PDF"><img src="https://cdn-icons-png.flaticon.com/512/446/446991.png" class="w-6"></div>
     <div class="fab-sub" onclick="shareWA()" title="WhatsApp"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-6"></div>
 </div>
 
@@ -170,11 +182,7 @@
     const sPad = new SignaturePad(document.getElementById('sig-canvas'));
     let sigLocked = true; sPad.off();
 
-    function autoExpand(f) { 
-        f.style.height = 'inherit'; 
-        f.style.height = f.scrollHeight + 'px'; 
-        f.nextElementSibling.innerText = f.value; 
-    }
+    function autoExpand(f) { f.style.height = 'inherit'; f.style.height = f.scrollHeight + 'px'; f.nextElementSibling.innerText = f.value; }
     
     function tab(t) {
         ['s-inv','s-pay'].forEach(x => document.getElementById(x).classList.add('hidden'));
@@ -198,21 +206,37 @@
             grand += (netto + mwst);
         }); 
         document.getElementById("total").innerText = fmt(grand); 
-        qr.makeCode(`H2-OSMAN-PAY-${grand.toFixed(2)}`); return grand; 
+        qr.makeCode(`H2-PAY-${grand.toFixed(2)}`); return grand; 
     }
 
     function finalize() {
-        const amount = calc(); if(amount <= 0) return alert("Hata: Tutar yok!");
+        const amount = calc(); if(amount <= 0) return alert("Hata!");
         const items = []; document.querySelectorAll("#rows tr").forEach(r => { 
             items.push({ d: r.querySelector("textarea").value, q: r.querySelector(".qty").value, p: r.querySelector(".prc").value }); 
         });
-        
+
+        const currentID = document.getElementById('inv-n').innerText;
+        const currentData = {
+            id: currentID,
+            k: document.getElementById('c-n').value || "Unbekannt",
+            a: amount,
+            d: document.getElementById('cur-date').innerText,
+            items: items,
+            cust: {
+                s: document.getElementById('c-s').value,
+                c: document.getElementById('c-c').value,
+                p: document.getElementById('c-p').value,
+                i: document.getElementById('c-i').value
+            },
+            sig: sPad.isEmpty() ? null : sPad.toDataURL()
+        };
+
         let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        tr.push({ id: document.getElementById('inv-n').innerText, k: document.getElementById('c-n').value || "Kunde", a: amount, d: new Date().toLocaleDateString('de-DE'), items: items });
+        tr.push(currentData);
         localStorage.setItem('h2_tracker', JSON.stringify(tr));
         localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0)+1));
 
-        // Yazdırma Hazırlığı
+        // Yazdırma moduna hazırlık
         ['c-n', 'c-s', 'c-c', 'c-p', 'c-i'].forEach(f => {
             const v = document.getElementById(f).value;
             const p = document.getElementById(f + '-p');
@@ -221,9 +245,55 @@
         document.querySelectorAll("#rows textarea").forEach(tx => { tx.nextElementSibling.innerText = tx.value; });
         if(!sPad.isEmpty()) { document.getElementById('sig-img').src = sPad.toDataURL(); document.getElementById('sig-img').classList.remove('hidden'); document.getElementById('sig-wrapper').classList.add('hidden'); }
         
-        // PDF Olarak Kaydetme Penceresi
         window.print();
-        setTimeout(() => { if(confirm("Hesap kaydedildi. Sayfayı yeni işlem için sıfırlayayım mı?")) location.reload(); }, 1200);
+        setTimeout(() => { if(confirm("Hesap kaydedildi. Sayfa sıfırlansın mı?")) location.reload(); }, 1000);
+    }
+
+    // ARŞİVDEN PDF OLARAK AÇMA FONKSİYONU
+    function openAsPDF(i) {
+        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
+        const data = tr[i];
+        const wrap = document.getElementById('pdf-preview-wrap');
+        const modal = document.getElementById('pdf-modal');
+
+        wrap.innerHTML = `
+            <div class="card bg-white w-[800px] min-h-[1100px] relative mx-auto">
+                <div class="h-grad p-10 flex justify-between items-center text-white">
+                    <div class="flex items-center gap-4">
+                        <img src="${localStorage.getItem('h2_logo')||''}" class="w-20 h-20 bg-white p-1 rounded-xl object-contain">
+                        <div><h1 class="text-3xl font-black italic uppercase">H2 TECHSERVICE</h1><p class="text-[9px] font-bold tracking-[0.5em] opacity-80">Osman Tuncer Professional</p></div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-black">${data.id}</p>
+                        <p class="text-lg font-bold border-t border-white/20 mt-1">${data.d}</p>
+                    </div>
+                </div>
+                <div class="p-10 grid grid-cols-2 gap-10">
+                    <div><b class="text-blue-600 uppercase text-[10px]">Absender</b><p class="text-base font-black">Osman Tuncer</p><p>Suntalstrasse 48, 31552 Rodenberg</p></div>
+                    <div class="text-right"><b class="text-blue-600 uppercase text-[10px]">Empfänger</b><p class="text-base font-black">${data.k}</p><p>${data.cust.s}</p><p>${data.cust.c}</p><p class="font-bold">☎️ ${data.cust.p}</p></div>
+                </div>
+                <div class="px-10">
+                    <table class="w-full text-[11px]">
+                        <thead class="bg-slate-100 border-y-2 font-black uppercase"><tr><th class="py-4 text-left px-4">Beschreibung</th><th class="w-10">Stk</th><th class="w-20 text-right">Netto</th><th class="w-24 text-right px-4">Gesamt</th></tr></thead>
+                        <tbody>${data.items.map(it => `<tr class="border-b"><td class="py-4 px-4 font-bold">${it.d}</td><td class="text-center">${it.q}</td><td class="text-right">${fmt(it.p)}</td><td class="text-right font-black px-4">${fmt(it.p * it.q * 1.19)}</td></tr>`).join('')}</tbody>
+                    </table>
+                </div>
+                <div class="m-10 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center text-white">
+                    <div id="qr-arch" class="bg-white p-1 rounded-lg"></div>
+                    <div class="text-right"><p class="text-[10px] font-black text-sky-400 uppercase">Rechnungsbetrag</p><p class="text-5xl font-black italic tracking-tighter">${fmt(data.a)}</p></div>
+                </div>
+                <div class="px-10 pb-20 flex justify-between items-end">
+                    <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase italic">Osman Tuncer</div>
+                    <img src="${data.sig||''}" class="h-16 border-b-2 border-slate-900 ml-auto ${data.sig ? '' : 'hidden'}">
+                </div>
+                <div class="footer-balken absolute bottom-0 left-0 right-0 flex justify-between px-10 text-white">
+                    <p class="text-sm font-black italic">IBAN: LT78 3250 0925 1892 8659</p>
+                    <p class="text-sm font-black uppercase">Sofort fällig</p>
+                </div>
+            </div>
+        `;
+        modal.style.display = 'block';
+        new QRCode(document.getElementById("qr-arch"), { text: `H2-PAY-${data.a}`, width: 60, height: 60 });
     }
 
     function renderArchive() {
@@ -232,65 +302,33 @@
         container.innerHTML = "";
         tr.forEach((x, i) => {
             const card = document.createElement('div');
-            card.className = "bg-white border-2 border-slate-100 rounded-3xl overflow-hidden shadow-sm";
+            card.className = "bg-white border-2 border-slate-100 rounded-3xl flex justify-between items-center p-6 shadow-sm cursor-pointer hover:border-blue-200 transition-all";
+            card.setAttribute('onclick', `openAsPDF(${i})`);
             card.innerHTML = `
-                <div class="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-all" onclick="toggleArchiveDetail(${i})">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-blue-600 text-white font-black px-3 py-1.5 rounded-xl text-[10px] shadow-md uppercase tracking-wider">${x.id}</div>
-                        <div>
-                            <div class="font-black text-slate-800 text-sm">${x.k}</div>
-                            <div class="text-[10px] text-slate-400 font-bold">${x.d}</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <span class="text-lg font-black text-slate-900 tracking-tighter">${fmt(x.a)}</span>
-                        <button onclick="event.stopPropagation(); deleteArchive(${i})" class="text-red-300 hover:text-red-600 transition-colors text-xl font-black">✕</button>
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-600 text-white font-black px-3 py-1.5 rounded-xl text-[10px] shadow-md uppercase tracking-wider">${x.id}</div>
+                    <div>
+                        <div class="font-black text-slate-800 text-sm">${x.k}</div>
+                        <div class="text-[10px] text-slate-400 font-bold">${x.d}</div>
                     </div>
                 </div>
-                <div id="arch-det-${i}" class="hidden p-8 bg-slate-50/50 border-t-2 border-dashed border-slate-100">
-                    <div class="pdf-preview-box shadow-lg">
-                        <div class="flex justify-between border-b-2 border-blue-600 pb-3 mb-4 font-black text-blue-600 uppercase tracking-widest text-[9px]">
-                            <span>Leistungsbeschreibung</span>
-                            <span>Brutto Betrag</span>
-                        </div>
-                        ${x.items.map(it => `
-                            <div class="flex justify-between py-3 border-b border-slate-100 text-[11px]">
-                                <span><b class="text-slate-400 mr-2">${it.q}x</b> ${it.d}</span>
-                                <span class="font-black text-slate-800">${fmt(it.p * it.q * 1.19)}</span>
-                            </div>
-                        `).join('')}
-                        <div class="mt-6 flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl">
-                            <span class="font-black uppercase text-[10px] tracking-widest">Gesamtsumme (inkl. 19% MwSt)</span>
-                            <span class="text-xl font-black italic underline decoration-sky-400">${fmt(x.a)}</span>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex gap-3">
-                        <button onclick="shareWA('${x.id}')" class="flex-1 bg-emerald-500 text-white text-[10px] py-3 rounded-2xl font-black uppercase shadow-lg hover:bg-emerald-600 transition-all">WhatsApp ile Gönder</button>
-                    </div>
+                <div class="flex items-center gap-6">
+                    <span class="text-lg font-black text-slate-900 tracking-tighter">${fmt(x.a)}</span>
+                    <button onclick="event.stopPropagation(); deleteArchive(${i})" class="text-red-300 hover:text-red-600 transition-colors text-xl font-black">✕</button>
                 </div>
             `;
             container.prepend(card);
         });
     }
 
-    function toggleArchiveDetail(i) { document.getElementById(`arch-det-${i}`).classList.toggle('hidden'); }
-    
-    function deleteArchive(i) { 
-        const tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]');
-        if(confirm(`${tr[i].id} numaralı hesabı kalıcı olarak SİLMEK istediğine emin misin Osman?`)) { 
-            tr.splice(i, 1); 
-            localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
-            renderArchive(); 
-        } 
-    }
-
-    function saveC() { const n = document.getElementById('c-n').value; if(!n) return; let db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, i:document.getElementById('c-i').value }; db = db.filter(x => x.n !== n); db.push(obj); localStorage.setItem('h2_db', JSON.stringify(db)); updateCList(); alert("Müşteri Bilgileri Güncellendi!"); }
+    function deleteArchive(i) { if(confirm("Siliyorum Osman?")) { let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); tr.splice(i, 1); localStorage.setItem('h2_tracker', JSON.stringify(tr)); renderArchive(); } }
+    function saveC() { const n = document.getElementById('c-n').value; if(!n) return; let db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const obj = { n, s:document.getElementById('c-s').value, c:document.getElementById('c-c').value, p:document.getElementById('c-p').value, i:document.getElementById('c-i').value }; db = db.filter(x => x.n !== n); db.push(obj); localStorage.setItem('h2_db', JSON.stringify(db)); updateCList(); alert("Kaydedildi!"); }
     function updateCList() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); document.getElementById('c-db').innerHTML = '<option value="">— Müşteri Seç —</option>' + db.map((x,i) => `<option value="${i}">${x.n}</option>`).join(''); }
     function loadC() { const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); const c = db[document.getElementById('c-db').value]; if(c) { document.getElementById('c-n').value=c.n; document.getElementById('c-s').value=c.s; document.getElementById('c-c').value=c.c; document.getElementById('c-p').value=c.p; document.getElementById('c-i').value=c.i||''; calc(); } }
-    function toggleSig() { sigLocked = !sigLocked; const b = document.getElementById('btn-lock'); if(sigLocked) { sPad.off(); b.innerText = '🔓 İmza Aç'; } else { sPad.on(); b.innerText = '🔒 Kapat'; } }
+    function toggleSig() { sigLocked = !sigLocked; const b = document.getElementById('btn-lock'); if(sigLocked) { sPad.off(); b.innerText = '🔓 İmza'; } else { sPad.on(); b.innerText = '🔒 Kapat'; } }
     function addR() { const r = document.querySelector("#rows tr").cloneNode(true); r.querySelectorAll("input,textarea").forEach(i=>i.value=""); r.querySelector(".qty").value="1"; document.getElementById("rows").appendChild(r); }
     function upLogo(i) { if(i.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('l-img').src = e.target.result; localStorage.setItem('h2_logo', e.target.result); }; r.readAsDataURL(i.files[0]); } }
-    function shareWA(id) { window.open(`https://wa.me/?text=H2-TechService-Rechnung-${id || document.getElementById('inv-n').innerText}`); }
+    function shareWA() { window.open(`https://wa.me/?text=H2-TechService-Rechnung-${document.getElementById('inv-n').innerText}`); }
 
     window.onload = () => {
         updateInvID();
