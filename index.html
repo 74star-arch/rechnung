@@ -9,39 +9,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { background: #f0f3f7; padding: 20px; font-family: 'Segoe UI', Arial, sans-serif; transition: all 0.3s; }
+        body { background: #f0f3f7; padding: 15px; font-family: 'Segoe UI', Arial, sans-serif; transition: all 0.3s; font-size: 16px; }
         body.dark-mode { background: #121212; color: #e0e0e0; }
         .invoice-box {
             max-width: 950px;
-            margin: 20px auto;
+            margin: 10px auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.12);
             overflow: hidden;
-            transition: background 0.3s;
         }
         body.dark-mode .invoice-box { background: #1e1e1e; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .header {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
             color: white;
-            padding: 50px 30px;
+            padding: 40px 20px;
             text-align: center;
         }
-        .header h1 { margin: 0; font-size: 38px; font-weight: 700; }
-        .content { padding: 40px 30px; }
+        .header h1 { margin: 0; font-size: 36px; font-weight: 700; }
+        .content { padding: 30px 20px; }
         body.dark-mode .content { color: #e0e0e0; }
-        .section-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 20px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; }
         body.dark-mode .section-title { color: #e0e0e0; }
         .table thead { background: var(--primary-color); color: white; }
         body.dark-mode .table { color: #e0e0e0; background: #2d2d2d; border-color: #444; }
-        .summary { background: #f8f9fa; padding: 25px; border-radius: 16px; margin-top: 30px; }
+        .summary { background: #f8f9fa; padding: 20px; border-radius: 16px; margin-top: 30px; }
         body.dark-mode .summary { background: #2d2d2d; }
         .total-row { border-top: 4px solid var(--primary-color); }
-        #logo-preview { max-height: 120px; margin: 15px auto; display: block; border: 1px dashed #ccc; border-radius: 8px; }
+        #logo-preview { max-height: 120px; margin: 10px auto; display: block; border: 1px dashed #ccc; border-radius: 8px; }
         body.dark-mode #logo-preview { border-color: #555; }
         .card { transition: background 0.3s; }
         body.dark-mode .card { background: #2d2d2d; }
         body.dark-mode .form-control, body.dark-mode .form-select { background: #333; color: #e0e0e0; border-color: #555; }
+        .btn { margin: 5px; }
         @media print {
             body { background: white; padding: 0; color: black; }
             .no-print { display: none !important; }
@@ -56,44 +56,307 @@
 </head>
 <body>
 
-    <!-- Buttons und Einstellungen wie zuvor -->
+    <div class="container no-print text-center mb-3">
+        <button id="save-invoice" class="btn btn-success btn-lg">💾 Speichern</button>
+        <button id="pdf-download" class="btn btn-primary btn-lg">📄 PDF</button>
+        <button id="excel-download" class="btn btn-info btn-lg">📊 Excel</button>
+        <button id="email-send" class="btn btn-warning btn-lg">✉️ E-Mail</button>
+        <button id="print-button" class="btn btn-secondary btn-lg">🖨️ Drucken</button>
+        <button id="new-invoice" class="btn btn-danger btn-lg">🆕 Neue Rechnung</button>
+    </div>
+
+    <div class="container no-print mb-4">
+        <div class="row g-2">
+            <div class="col-6 col-md-3">
+                <div class="card p-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="dark-mode-switch">
+                        <label class="form-check-label" for="dark-mode-switch">Dark Mode</label>
+                    </div>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="kleinunternehmer-mode">
+                        <label class="form-check-label" for="kleinunternehmer-mode">Kleinunternehmer (§19)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card p-3">
+                    <label>Firmenname</label>
+                    <input type="text" id="company-name" class="form-control" value="H2TechService">
+                    <label class="mt-2">Farbe</label>
+                    <input type="color" id="color-picker" class="form-control form-control-color" value="#007bff">
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card p-3">
+                    <label>Logo (optional)</label>
+                    <input type="file" id="logo-upload" accept="image/*" class="form-control">
+                    <img id="logo-preview" src="https://cdn.grok.x.ai/assets/images/1/1.jpg" class="mt-2">
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card p-3">
+                    <label>MwSt. (%)</label>
+                    <input type="number" id="tax-rate" class="form-control text-center" value="19" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12 col-md-8">
+                <div class="card p-3">
+                    <label>AGB</label>
+                    <textarea id="agb-text" class="form-control" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card p-3">
+                    <input type="text" id="template-name" class="form-control mb-2" placeholder="Vorlagenname">
+                    <button id="save-template" class="btn btn-success btn-sm w-100 mb-2">Speichern</button>
+                    <select id="template-select" class="form-select mb-2"></select>
+                    <button id="load-template" class="btn btn-primary btn-sm w-100 mb-2">Laden</button>
+                    <button id="delete-template" class="btn btn-danger btn-sm w-100 mb-3">Löschen</button>
+                    <button id="show-archive" class="btn btn-secondary btn-sm w-100">Archiv</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="invoice-box" id="invoice-content">
-        <!-- Rechnungs-Layout wie zuvor -->
+        <div class="header">
+            <h1>Rechnung</h1>
+        </div>
+        <div class="content">
+            <div class="row info-block">
+                <div class="col-md-6">
+                    <div class="section-title">Absender</div>
+                    <strong id="display-company-name">H2TechService</strong><br>
+                    Suntalstraße 48<br>
+                    31552 Rodenberg<br>
+                    Deutschland<br><br>
+                    Steuer-ID: 41/320/887966<br>
+                    E-Mail: 74star@gmail.com<br>
+                    Telefon: +49 176 66658777
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <img id="invoice-logo" src="https://cdn.grok.x.ai/assets/images/1/1.jpg" style="max-height: 120px;"><br>
+                    <strong>Rechnungsnummer:</strong> <span id="invoice-number">H22026-0001</span><br>
+                    <strong>Rechnungsdatum:</strong> <span id="invoice-date"></span><br>
+                    <strong>Fällig am:</strong> <span id="due-date"></span><br>
+                    Zahlungsbedingung: 14 Tage netto
+                </div>
+            </div>
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Beschreibung</th>
-                    <th class="text-center">Menge</th>
-                    <th class="text-end">Einzelpreis (€)</th>
-                    <th class="text-end">Gesamt (€)</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="invoice-items">
-                <tr class="item">
-                    <td><input type="text" class="form-control border-0" placeholder="Beschreibung"></td>
-                    <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="1" min="1"></td>
-                    <td class="text-end"><input type="number" class="form-control text-end price border-0" value="0.00" step="0.01"></td>
-                    <td class="line-total text-end">0,00</td>
-                    <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">X</button></td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="5" class="text-end">
-                        <button id="add-row" class="btn btn-primary">+ Position</button>
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
+            <div class="row info-block no-print">
+                <div class="col-12">
+                    <div class="section-title">Kunde</div>
+                    <div class="row g-2">
+                        <div class="col-6"><select id="customer-select" class="form-select"></select></div>
+                        <div class="col-6"><button id="save-customer" class="btn btn-outline-primary w-100">Speichern</button></div>
+                        <div class="col-6"><input type="text" id="customer-name" class="form-control" placeholder="Name/Firma"></div>
+                        <div class="col-6"><input type="text" id="customer-street" class="form-control" placeholder="Straße"></div>
+                        <div class="col-4"><input type="text" id="customer-city" class="form-control" placeholder="PLZ Ort"></div>
+                        <div class="col-8"><input type="text" id="customer-email" class="form-control" placeholder="E-Mail"></div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Zusammenfassung wie zuvor -->
+            <div class="row info-block">
+                <div class="col-md-6">
+                    <div class="section-title">Rechnung an</div>
+                    <div id="customer-info">Bitte Kunden auswählen.</div>
+                </div>
+            </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Beschreibung</th>
+                        <th class="text-center">Menge</th>
+                        <th class="text-end">Einzelpreis (€)</th>
+                        <th class="text-end">Gesamt (€)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-items">
+                    <tr class="item">
+                        <td><input type="text" class="form-control border-0 desc-input" placeholder="Beschreibung"></td>
+                        <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="1" min="1"></td>
+                        <td class="text-end"><input type="number" class="form-control text-end price border-0" value="0.00" step="0.01"></td>
+                        <td class="line-total text-end">0,00</td>
+                        <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">X</button></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-end">
+                            <button id="add-row" class="btn btn-primary">+ Position hinzufügen</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="row">
+                <div class="col-md-6 offset-md-6">
+                    <div class="summary">
+                        <table class="w-100">
+                            <tr>
+                                <td><strong>Nettobetrag</strong></td>
+                                <td class="text-end" id="subtotal">0,00 €</td>
+                            </tr>
+                            <tr>
+                                <td>Rabatt</td>
+                                <td class="text-end"><input type="number" id="discount" class="form-control text-end d-inline-block" value="0.00" step="0.01" style="width:120px;"> €</td>
+                            </tr>
+                            <tr id="tax-row">
+                                <td>zzgl. <span id="tax-label">19</span>% MwSt.</td>
+                                <td class="text-end" id="tax">0,00 €</td>
+                            </tr>
+                            <tr id="kleinunternehmer-hinweis" class="d-none">
+                                <td colspan="2" class="text-end fst-italic">Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen.</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td><strong>Gesamtbetrag</strong></td>
+                                <td class="text-end" id="grandtotal"><strong>0,00 €</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <div class="section-title">Zahlungsinformationen</div>
+                Bank: Revolut<br>
+                IBAN: LT78 3250 0925 1892 8659<br>
+                BIC: REVOLT21<br><br>
+                Vielen Dank für Ihren Auftrag!<br>
+                Bei Fragen stehen wir gerne zur Verfügung.
+            </div>
+
+            <div class="mt-5" id="agb-section">
+                <div class="section-title">Allgemeine Geschäftsbedingungen</div>
+                <div id="agb-content">Hier stehen deine AGB.</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Automatische Berechnung – verbessert
+        const { jsPDF } = window.jspdf;
+
+        // Dark Mode
+        const darkSwitch = document.getElementById('dark-mode-switch');
+        darkSwitch.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode', darkSwitch.checked);
+            localStorage.setItem('h2DarkMode', darkSwitch.checked);
+        });
+        if (localStorage.getItem('h2DarkMode') === 'true') darkSwitch.checked = true, document.body.classList.add('dark-mode');
+
+        // Firmenname
+        const companyInput = document.getElementById('company-name');
+        const companyDisplay = document.getElementById('display-company-name');
+        companyInput.addEventListener('input', () => {
+            companyDisplay.textContent = companyInput.value || 'H2TechService';
+            localStorage.setItem('h2CompanyName', companyInput.value);
+        });
+        const savedCompany = localStorage.getItem('h2CompanyName');
+        if (savedCompany) companyInput.value = savedCompany, companyDisplay.textContent = savedCompany;
+
+        // Farbe
+        const colorPicker = document.getElementById('color-picker');
+        colorPicker.addEventListener('input', e => {
+            const color = e.target.value;
+            document.documentElement.style.setProperty('--primary-color', color);
+            document.documentElement.style.setProperty('--primary-dark', adjustColor(color, -40));
+            localStorage.setItem('h2PrimaryColor', color);
+        });
+        function adjustColor(color, amount) {
+            return '#' + color.replace(/^#/, '').replace(/../g, c => ('0'+Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)).substr(-2));
+        }
+        const savedColor = localStorage.getItem('h2PrimaryColor');
+        if (savedColor) colorPicker.value = savedColor, colorPicker.dispatchEvent(new Event('input'));
+
+        // Logo
+        const logoUpload = document.getElementById('logo-upload');
+        const logoPreview = document.getElementById('logo-preview');
+        const invoiceLogo = document.getElementById('invoice-logo');
+        logoUpload.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const url = ev.target.result;
+                    logoPreview.src = url;
+                    invoiceLogo.src = url;
+                    localStorage.setItem('h2CustomLogo', url);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        const savedLogo = localStorage.getItem('h2CustomLogo');
+        if (savedLogo) logoPreview.src = invoiceLogo.src = savedLogo;
+        else logoPreview.src = invoiceLogo.src = 'https://cdn.grok.x.ai/assets/images/1/1.jpg';
+
+        // MwSt. & Kleinunternehmer
+        const taxRate = document.getElementById('tax-rate');
+        const taxLabel = document.getElementById('tax-label');
+        const taxRow = document.getElementById('tax-row');
+        const kleinHinweis = document.getElementById('kleinunternehmer-hinweis');
+        const kleinSwitch = document.getElementById('kleinunternehmer-mode');
+        kleinSwitch.addEventListener('change', () => {
+            if (kleinSwitch.checked) {
+                taxRate.value = 0;
+                taxLabel.textContent = 0;
+                taxRow.classList.add('d-none');
+                kleinHinweis.classList.remove('d-none');
+            } else {
+                const saved = localStorage.getItem('h2TaxRate') || 19;
+                taxRate.value = saved;
+                taxLabel.textContent = saved;
+                taxRow.classList.remove('d-none');
+                kleinHinweis.classList.add('d-none');
+            }
+            calculate();
+            localStorage.setItem('h2Kleinunternehmer', kleinSwitch.checked);
+        });
+        taxRate.addEventListener('input', () => {
+            taxLabel.textContent = taxRate.value;
+            calculate();
+            localStorage.setItem('h2TaxRate', taxRate.value);
+        });
+        const savedTax = localStorage.getItem('h2TaxRate') || 19;
+        taxRate.value = savedTax;
+        taxLabel.textContent = savedTax;
+        if (localStorage.getItem('h2Kleinunternehmer') === 'true') kleinSwitch.checked = true, kleinSwitch.dispatchEvent(new Event('change'));
+
+        // AGB
+        const agbText = document.getElementById('agb-text');
+        const agbContent = document.getElementById('agb-content');
+        agbText.addEventListener('input', () => {
+            agbContent.innerHTML = agbText.value.replace(/\n/g, '<br>') || 'Hier stehen deine AGB.';
+            localStorage.setItem('h2AGB', agbText.value);
+        });
+        const savedAGB = localStorage.getItem('h2AGB');
+        if (savedAGB) agbText.value = savedAGB, agbContent.innerHTML = savedAGB.replace(/\n/g, '<br>');
+
+        // Datum & Nummer
+        function updateDates() {
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            document.getElementById('invoice-date').textContent = `\( {dd}. \){mm}.${yyyy}`;
+            const due = new Date(today);
+            due.setDate(due.getDate() + 14);
+            document.getElementById('due-date').textContent = `\( {String(due.getDate()).padStart(2, '0')}. \){String(due.getMonth() + 1).padStart(2, '0')}.${due.getFullYear()}`;
+        }
+        function updateInvoiceNumber() {
+            let counter = parseInt(localStorage.getItem('h2InvoiceCounter') || '0');
+            counter++;
+            document.getElementById('invoice-number').textContent = `H22026-${String(counter).padStart(4, '0')}`;
+            localStorage.setItem('h2InvoiceCounter', counter);
+        }
+
+        // Berechnung
         function calculate() {
             let subtotal = 0;
             document.querySelectorAll('.item').forEach(row => {
@@ -103,11 +366,10 @@
                 row.querySelector('.line-total').textContent = total.toFixed(2).replace('.', ',');
                 subtotal += total;
             });
-
             const discount = parseFloat(document.getElementById('discount').value) || 0;
             const taxable = subtotal - discount;
-            const taxRate = parseFloat(document.getElementById('tax-rate').value) / 100 || 0.19;
-            const tax = taxable * taxRate;
+            const taxRateVal = kleinSwitch.checked ? 0 : parseFloat(taxRate.value) / 100 || 0.19;
+            const tax = taxable * taxRateVal;
             const grand = taxable + tax;
 
             document.getElementById('subtotal').textContent = subtotal.toFixed(2).replace('.', ',') + ' €';
@@ -115,30 +377,27 @@
             document.getElementById('grandtotal').innerHTML = '<strong>' + grand.toFixed(2).replace('.', ',') + ' €</strong>';
         }
 
-        // Bei jeder Eingabe in Menge oder Preis sofort rechnen
+        // Eingaben verknüpfen
         document.getElementById('invoice-items').addEventListener('input', e => {
-            if (e.target.classList.contains('qty') || e.target.classList.contains('price')) {
-                calculate();
-            }
+            if (e.target.classList.contains('qty') || e.target.classList.contains('price')) calculate();
         });
-
         document.getElementById('discount').addEventListener('input', calculate);
-        document.getElementById('tax-rate').addEventListener('input', calculate);
 
-        // Neue Zeile hinzufügen – mit automatischer Berechnung
+        // + Position – neue Zeile mit Fokus auf Beschreibung
         document.getElementById('add-row').addEventListener('click', () => {
             const tbody = document.getElementById('invoice-items');
             const newRow = document.createElement('tr');
             newRow.className = 'item';
             newRow.innerHTML = `
-                <td><input type="text" class="form-control border-0" placeholder="Beschreibung"></td>
+                <td><input type="text" class="form-control border-0 desc-input" placeholder="Beschreibung"></td>
                 <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="1" min="1"></td>
                 <td class="text-end"><input type="number" class="form-control text-end price border-0" value="0.00" step="0.01"></td>
                 <td class="line-total text-end">0,00</td>
                 <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">X</button></td>
             `;
             tbody.appendChild(newRow);
-            // Neue Eingabefelder auch mit Berechnung verknüpfen
+            const descInput = newRow.querySelector('.desc-input');
+            descInput.focus(); // Tastatur öffnet sich sofort
             newRow.querySelectorAll('.qty, .price').forEach(input => input.addEventListener('input', calculate));
             calculate();
         });
@@ -151,14 +410,16 @@
             }
         });
 
-        // Initiale Berechnung
+        // Neue Rechnung (mobil ohne Pop-up)
+        document.getElementById('new-invoice').addEventListener('click', () => {
+            localStorage.removeItem('lastH2Invoice');
+            location.reload();
+        });
+
+        // Initialisierung
+        updateDates();
+        updateInvoiceNumber();
         calculate();
-
-        // Dein Logo fest eingebaut
-        document.getElementById('logo-preview').src = 'https://cdn.grok.x.ai/assets/images/1/1.jpg';
-        document.getElementById('invoice-logo').src = 'https://cdn.grok.x.ai/assets/images/1/1.jpg';
-
-        // Alle anderen Funktionen (Speichern, PDF, E-Mail, Neue Rechnung ohne Pop-up, etc.) bleiben wie zuvor
     </script>
 </body>
 </html>
