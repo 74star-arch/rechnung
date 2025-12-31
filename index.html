@@ -298,7 +298,7 @@
         if (savedLogo) logoPreview.src = invoiceLogo.src = savedLogo;
         else logoPreview.src = invoiceLogo.src = 'https://cdn.grok.x.ai/assets/images/1/1.jpg';
 
-        // Standard MwSt. für neue Zeilen
+        // Standard MwSt.
         const defaultTaxRate = document.getElementById('default-tax-rate');
 
         // Kleinunternehmer
@@ -339,7 +339,7 @@
         agbText.value = savedAGB;
         updateAGB();
 
-        // Datum – immer aktuell
+        // Automatisches Datum – immer aktuell
         function updateDates() {
             const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');
@@ -418,7 +418,6 @@
 
         // Neue Rechnung
         document.getElementById('new-invoice').addEventListener('click', () => {
-            localStorage.removeItem('lastH2Invoice');
             location.reload();
         });
 
