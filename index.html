@@ -10,42 +10,59 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { background: #f0f3f7; padding: 15px; font-family: 'Segoe UI', Arial, sans-serif; transition: all 0.3s; font-size: 16px; }
+        body { background: #f0f3f7; padding: 10px; font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; }
         body.dark-mode { background: #121212; color: #e0e0e0; }
         .invoice-box {
-            max-width: 950px;
+            max-width: 900px;
             margin: 10px auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        body.dark-mode .invoice-box { background: #1e1e1e; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        body.dark-mode .invoice-box { background: #1e1e1e; }
         .header {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
             color: white;
-            padding: 40px 20px;
+            padding: 25px 20px;
             text-align: center;
         }
-        .header h1 { margin: 0; font-size: 36px; font-weight: 700; }
-        .content { padding: 30px 20px; }
+        .header h1 { margin: 0; font-size: 32px; font-weight: 700; }
+        .content { padding: 20px; line-height: 1.4; }
         body.dark-mode .content { color: #e0e0e0; }
-        .section-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; }
+        .section-title { font-size: 16px; font-weight: 600; color: #333; margin: 15px 0 8px; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; }
         body.dark-mode .section-title { color: #e0e0e0; }
+        .table { font-size: 14px; margin-bottom: 10px; }
         .table thead { background: var(--primary-color); color: white; }
-        body.dark-mode .table { color: #e0e0e0; background: #2d2d2d; border-color: #444; }
-        .summary { background: #f8f9fa; padding: 20px; border-radius: 16px; margin-top: 30px; }
+        .table th, .table td { padding: 8px; vertical-align: middle; }
+        .summary { background: #f8f9fa; padding: 15px; border-radius: 12px; margin-top: 20px; font-size: 16px; }
         body.dark-mode .summary { background: #2d2d2d; }
-        .total-row { border-top: 4px solid var(--primary-color); }
-        .card { transition: background 0.3s; }
-        body.dark-mode .card { background: #2d2d2d; }
-        body.dark-mode .form-control, body.dark-mode .form-select { background: #333; color: #e0e0e0; border-color: #555; }
-        .btn { margin: 5px; }
+        .total-row { border-top: 3px solid var(--primary-color); font-weight: bold; }
+        .card { font-size: 14px; }
+        .btn { margin: 3px; font-size: 14px; padding: 8px 12px; }
         @media print {
-            body { background: white; padding: 0; color: black; }
+            @page { size: A4; margin: 10mm; }
+            body { background: white; padding: 0; margin: 0; font-size: 11pt; line-height: 1.3; }
             .no-print { display: none !important; }
-            .invoice-box { box-shadow: none; border-radius: 0; margin: 0; max-width: none; background: white; }
-            .content { padding: 40px; }
+            .invoice-box {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                padding: 0;
+                max-width: none;
+                width: 190mm;
+                min-height: 277mm;
+                box-sizing: border-box;
+            }
+            .header { padding: 15px; }
+            .header h1 { font-size: 24pt; }
+            .content { padding: 15px; }
+            .section-title { font-size: 12pt; margin: 10px 0 5px; }
+            .table { font-size: 10pt; }
+            .table th, .table td { padding: 5px; }
+            .summary { padding: 10px; font-size: 12pt; }
+            .mt-4, .mt-5 { margin-top: 10px !important; }
+            #invoice-logo { max-height: 70px; }
         }
         :root {
             --primary-color: #007bff;
@@ -56,13 +73,13 @@
 <body>
 
     <div class="container no-print text-center mb-3">
-        <button id="save-invoice" class="btn btn-success btn-lg">💾 Speichern</button>
-        <button id="pdf-download" class="btn btn-primary btn-lg">📄 PDF</button>
-        <button id="excel-download" class="btn btn-info btn-lg">📊 Excel</button>
-        <button id="email-send" class="btn btn-warning btn-lg">✉️ E-Mail</button>
-        <button id="print-button" class="btn btn-secondary btn-lg">🖨️ Drucken</button>
-        <button id="new-invoice" class="btn btn-danger btn-lg">🆕 Neue Rechnung</button>
-        <button id="show-archive" class="btn btn-outline-dark btn-lg">📁 Archiv</button>
+        <button id="save-invoice" class="btn btn-success">💾 Speichern</button>
+        <button id="pdf-download" class="btn btn-primary">📄 PDF</button>
+        <button id="excel-download" class="btn btn-info">📊 Excel</button>
+        <button id="email-send" class="btn btn-warning">✉️ E-Mail</button>
+        <button id="print-button" class="btn btn-secondary">🖨️ Drucken</button>
+        <button id="new-invoice" class="btn btn-danger">🆕 Neue Rechnung</button>
+        <button id="show-archive" class="btn btn-outline-dark">📁 Archiv</button>
     </div>
 
     <div class="container no-print mb-4">
@@ -97,7 +114,6 @@
                 <div class="card p-3">
                     <label>Standard MwSt. (%)</label>
                     <input type="number" id="default-tax-rate" class="form-control text-center" value="19" step="0.1">
-                    <small>Fällig am = Datum + 14 Tage</small>
                 </div>
             </div>
         </div>
@@ -106,12 +122,7 @@
             <div class="col-12 col-md-8">
                 <div class="card p-3">
                     <label>Allgemeine Geschäftsbedingungen (erscheint nur bei Inhalt)</label>
-                    <textarea id="agb-text" class="form-control" rows="4" placeholder="Deine AGB hier eingeben..."></textarea>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="card p-3">
-                    <strong>Dein Logo ist fest eingebaut und sichtbar auf allen Geräten!</strong>
+                    <textarea id="agb-text" class="form-control" rows="3" placeholder="Deine AGB hier eingeben..."></textarea>
                 </div>
             </div>
         </div>
@@ -134,7 +145,7 @@
                     Telefon: +49 176 66658777
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <img id="invoice-logo" src="https://cdn.grok.x.ai/assets/images/1/1.jpg" style="max-height: 120px;"><br>
+                    <img id="invoice-logo" src="https://cdn.grok.x.ai/assets/images/1/1.jpg" style="max-height: 90px;"><br>
                     <strong>Rechnungsnummer:</strong> <span id="invoice-number">H22026-0001</span><br>
                     <strong>Rechnungsdatum:</strong> <span id="invoice-date"></span><br>
                     <strong>Fällig am:</strong> <span id="due-date"></span><br>
@@ -203,7 +214,7 @@
                             </tr>
                             <tr>
                                 <td>Rabatt</td>
-                                <td class="text-end"><input type="number" id="discount" class="form-control text-end d-inline-block" value="0.00" step="0.01" style="width:120px;"> €</td>
+                                <td class="text-end"><input type="number" id="discount" class="form-control text-end d-inline-block" value="0.00" step="0.01" style="width:100px;"> €</td>
                             </tr>
                             <tr id="tax-row">
                                 <td>zzgl. MwSt.</td>
@@ -221,7 +232,7 @@
                 </div>
             </div>
 
-            <div class="mt-5">
+            <div class="mt-4">
                 <div class="section-title">Zahlungsinformationen</div>
                 Bank: Revolut<br>
                 IBAN: LT78 3250 0925 1892 8659<br>
@@ -230,7 +241,7 @@
                 Bei Fragen stehen wir gerne zur Verfügung.
             </div>
 
-            <div class="mt-5 d-none" id="agb-section">
+            <div class="mt-4 d-none" id="agb-section">
                 <div class="section-title">Allgemeine Geschäftsbedingungen</div>
                 <div id="agb-content"></div>
             </div>
@@ -243,7 +254,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Rechnungsarchiv</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <table class="table table-hover" id="archive-table">
@@ -320,6 +331,7 @@
             }
             calculate();
         });
+        if (localStorage.getItem('h2Kleinunternehmer') === 'true') kleinSwitch.checked = true, kleinSwitch.dispatchEvent(new Event('change'));
 
         // AGB
         const agbText = document.getElementById('agb-text');
@@ -366,13 +378,23 @@
         }
         invoiceDateInput.addEventListener('input', updateDueDate);
 
-        // Rechnungsnummer
-        function updateInvoiceNumber() {
-            let counter = parseInt(localStorage.getItem('h2InvoiceCounter') || '0');
-            counter++;
-            document.getElementById('invoice-number').textContent = `H22026-${String(counter).padStart(4, '0')}`;
-            localStorage.setItem('h2InvoiceCounter', counter);
+        // Rechnungsnummer – neue Nummer nur bei neuer Rechnung
+        function updateInvoiceNumber(isNew = false) {
+            if (isNew) {
+                let counter = parseInt(localStorage.getItem('h2InvoiceCounter') || '0');
+                counter++;
+                document.getElementById('invoice-number').textContent = `H22026-${String(counter).padStart(4, '0')}`;
+                localStorage.setItem('h2InvoiceCounter', counter);
+            }
         }
+
+        // Beim Laden der Seite: neue Nummer generieren (da neue Rechnung)
+        updateInvoiceNumber(true);
+
+        // Neue Rechnung – reload und neue Nummer
+        document.getElementById('new-invoice').addEventListener('click', () => {
+            location.reload();
+        });
 
         // Berechnung
         function calculate() {
@@ -484,7 +506,7 @@
             window.print();
         });
 
-        // Rechnungsarchiv
+        // Rechnungsarchiv – speichern, laden, löschen
         function saveCurrentInvoice() {
             const invoiceData = {
                 number: document.getElementById('invoice-number').textContent,
@@ -589,6 +611,7 @@
                     });
                     calculate();
                     bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide();
+                    alert(`Rechnung ${inv.number} geladen – du kannst sie jetzt bearbeiten!`);
                 }
             } else if (e.target.classList.contains('delete-invoice')) {
                 if (confirm('Rechnung löschen?')) {
@@ -601,14 +624,8 @@
             }
         });
 
-        // Neue Rechnung
-        document.getElementById('new-invoice').addEventListener('click', () => {
-            location.reload();
-        });
-
         // Initialisierung
         updateDueDate();
-        updateInvoiceNumber();
         calculate();
     </script>
 </body>
