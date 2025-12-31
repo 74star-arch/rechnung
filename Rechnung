@@ -96,8 +96,8 @@
             </div>
             <div class="col-6 col-md-3">
                 <div class="card p-3">
-                    <label>MwSt. (%)</label>
-                    <input type="number" id="tax-rate" class="form-control text-center" value="19" step="0.1">
+                    <label>Standard MwSt. (%)</label>
+                    <input type="number" id="default-tax-rate" class="form-control text-center" value="19" step="0.1">
                 </div>
             </div>
         </div>
@@ -105,8 +105,8 @@
         <div class="row mt-3">
             <div class="col-12 col-md-8">
                 <div class="card p-3">
-                    <label>AGB</label>
-                    <textarea id="agb-text" class="form-control" rows="4"></textarea>
+                    <label>Allgemeine Geschäftsbedingungen (erscheint nur bei Inhalt)</label>
+                    <textarea id="agb-text" class="form-control" rows="4" placeholder="Deine AGB hier eingeben..."></textarea>
                 </div>
             </div>
             <div class="col-12 col-md-4">
@@ -174,6 +174,7 @@
                         <th>Beschreibung</th>
                         <th class="text-center">Menge</th>
                         <th class="text-end">Einzelpreis (€)</th>
+                        <th class="text-center">MwSt. (%)</th>
                         <th class="text-end">Gesamt (€)</th>
                         <th></th>
                     </tr>
@@ -183,13 +184,14 @@
                         <td><input type="text" class="form-control border-0 desc-input" placeholder="Beschreibung"></td>
                         <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="1" min="1"></td>
                         <td class="text-end"><input type="number" class="form-control text-end price border-0" value="0.00" step="0.01"></td>
+                        <td class="text-center"><input type="number" class="form-control text-center tax-rate-input border-0" value="19" min="0" step="0.1"></td>
                         <td class="line-total text-end">0,00</td>
                         <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">X</button></td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="5" class="text-end">
+                        <td colspan="6" class="text-end">
                             <button id="add-row" class="btn btn-primary">+ Position hinzufügen</button>
                         </td>
                     </tr>
@@ -209,7 +211,7 @@
                                 <td class="text-end"><input type="number" id="discount" class="form-control text-end d-inline-block" value="0.00" step="0.01" style="width:120px;"> €</td>
                             </tr>
                             <tr id="tax-row">
-                                <td>zzgl. <span id="tax-label">19</span>% MwSt.</td>
+                                <td>zzgl. MwSt.</td>
                                 <td class="text-end" id="tax">0,00 €</td>
                             </tr>
                             <tr id="kleinunternehmer-hinweis" class="d-none">
@@ -233,9 +235,9 @@
                 Bei Fragen stehen wir gerne zur Verfügung.
             </div>
 
-            <div class="mt-5" id="agb-section">
+            <div class="mt-5 d-none" id="agb-section">
                 <div class="section-title">Allgemeine Geschäftsbedingungen</div>
-                <div id="agb-content">Hier stehen deine AGB.</div>
+                <div id="agb-content"></div>
             </div>
         </div>
     </div>
@@ -296,49 +298,48 @@
         if (savedLogo) logoPreview.src = invoiceLogo.src = savedLogo;
         else logoPreview.src = invoiceLogo.src = 'https://cdn.grok.x.ai/assets/images/1/1.jpg';
 
-        // MwSt. & Kleinunternehmer
-        const taxRate = document.getElementById('tax-rate');
-        const taxLabel = document.getElementById('tax-label');
+        // Standard MwSt. für neue Zeilen
+        const defaultTaxRate = document.getElementById('default-tax-rate');
+
+        // Kleinunternehmer
+        const kleinSwitch = document.getElementById('kleinunternehmer-mode');
         const taxRow = document.getElementById('tax-row');
         const kleinHinweis = document.getElementById('kleinunternehmer-hinweis');
-        const kleinSwitch = document.getElementById('kleinunternehmer-mode');
         kleinSwitch.addEventListener('change', () => {
             if (kleinSwitch.checked) {
-                taxRate.value = 0;
-                taxLabel.textContent = 0;
+                document.querySelectorAll('.tax-rate-input').forEach(input => input.value = 0);
                 taxRow.classList.add('d-none');
                 kleinHinweis.classList.remove('d-none');
             } else {
-                const saved = localStorage.getItem('h2TaxRate') || 19;
-                taxRate.value = saved;
-                taxLabel.textContent = saved;
+                document.querySelectorAll('.tax-rate-input').forEach(input => input.value = defaultTaxRate.value);
                 taxRow.classList.remove('d-none');
                 kleinHinweis.classList.add('d-none');
             }
             calculate();
             localStorage.setItem('h2Kleinunternehmer', kleinSwitch.checked);
         });
-        taxRate.addEventListener('input', () => {
-            taxLabel.textContent = taxRate.value;
-            calculate();
-            localStorage.setItem('h2TaxRate', taxRate.value);
-        });
-        const savedTax = localStorage.getItem('h2TaxRate') || 19;
-        taxRate.value = savedTax;
-        taxLabel.textContent = savedTax;
         if (localStorage.getItem('h2Kleinunternehmer') === 'true') kleinSwitch.checked = true, kleinSwitch.dispatchEvent(new Event('change'));
 
-        // AGB
+        // AGB – nur anzeigen wenn Inhalt
         const agbText = document.getElementById('agb-text');
+        const agbSection = document.getElementById('agb-section');
         const agbContent = document.getElementById('agb-content');
-        agbText.addEventListener('input', () => {
-            agbContent.innerHTML = agbText.value.replace(/\n/g, '<br>') || 'Hier stehen deine AGB.';
+        function updateAGB() {
+            const text = agbText.value.trim();
+            if (text === '') {
+                agbSection.classList.add('d-none');
+            } else {
+                agbSection.classList.remove('d-none');
+                agbContent.innerHTML = text.replace(/\n/g, '<br>');
+            }
             localStorage.setItem('h2AGB', agbText.value);
-        });
-        const savedAGB = localStorage.getItem('h2AGB');
-        if (savedAGB) agbText.value = savedAGB, agbContent.innerHTML = savedAGB.replace(/\n/g, '<br>');
+        }
+        agbText.addEventListener('input', updateAGB);
+        const savedAGB = localStorage.getItem('h2AGB') || '';
+        agbText.value = savedAGB;
+        updateAGB();
 
-        // Datum & Nummer
+        // Datum – immer aktuell
         function updateDates() {
             const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');
@@ -349,6 +350,8 @@
             due.setDate(due.getDate() + 14);
             document.getElementById('due-date').textContent = `\( {String(due.getDate()).padStart(2, '0')}. \){String(due.getMonth() + 1).padStart(2, '0')}.${due.getFullYear()}`;
         }
+
+        // Rechnungsnummer
         function updateInvoiceNumber() {
             let counter = parseInt(localStorage.getItem('h2InvoiceCounter') || '0');
             counter++;
@@ -356,34 +359,37 @@
             localStorage.setItem('h2InvoiceCounter', counter);
         }
 
-        // Berechnung
+        // Berechnung mit MwSt. pro Zeile
         function calculate() {
             let subtotal = 0;
+            let totalTax = 0;
             document.querySelectorAll('.item').forEach(row => {
                 const qty = parseFloat(row.querySelector('.qty').value) || 0;
                 const price = parseFloat(row.querySelector('.price').value) || 0;
-                const total = qty * price;
-                row.querySelector('.line-total').textContent = total.toFixed(2).replace('.', ',');
-                subtotal += total;
+                const net = qty * price;
+                const taxRateLine = parseFloat(row.querySelector('.tax-rate-input').value) / 100 || 0;
+                const taxLine = net * taxRateLine;
+                const totalLine = net + taxLine;
+                row.querySelector('.line-total').textContent = totalLine.toFixed(2).replace('.', ',');
+                subtotal += net;
+                totalTax += taxLine;
             });
             const discount = parseFloat(document.getElementById('discount').value) || 0;
             const taxable = subtotal - discount;
-            const taxRateVal = kleinSwitch.checked ? 0 : parseFloat(taxRate.value) / 100 || 0.19;
-            const tax = taxable * taxRateVal;
-            const grand = taxable + tax;
+            const grand = taxable + totalTax;
 
             document.getElementById('subtotal').textContent = subtotal.toFixed(2).replace('.', ',') + ' €';
-            document.getElementById('tax').textContent = tax.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('tax').textContent = totalTax.toFixed(2).replace('.', ',') + ' €';
             document.getElementById('grandtotal').innerHTML = '<strong>' + grand.toFixed(2).replace('.', ',') + ' €</strong>';
         }
 
         // Eingaben verknüpfen
         document.getElementById('invoice-items').addEventListener('input', e => {
-            if (e.target.classList.contains('qty') || e.target.classList.contains('price')) calculate();
+            if (e.target.classList.contains('qty') || e.target.classList.contains('price') || e.target.classList.contains('tax-rate-input')) calculate();
         });
         document.getElementById('discount').addEventListener('input', calculate);
 
-        // + Position – neue Zeile mit Fokus auf Beschreibung
+        // + Position – Fokus auf Beschreibung
         document.getElementById('add-row').addEventListener('click', () => {
             const tbody = document.getElementById('invoice-items');
             const newRow = document.createElement('tr');
@@ -392,13 +398,13 @@
                 <td><input type="text" class="form-control border-0 desc-input" placeholder="Beschreibung"></td>
                 <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="1" min="1"></td>
                 <td class="text-end"><input type="number" class="form-control text-end price border-0" value="0.00" step="0.01"></td>
+                <td class="text-center"><input type="number" class="form-control text-center tax-rate-input border-0" value="${defaultTaxRate.value}" min="0" step="0.1"></td>
                 <td class="line-total text-end">0,00</td>
                 <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">X</button></td>
             `;
             tbody.appendChild(newRow);
-            const descInput = newRow.querySelector('.desc-input');
-            descInput.focus(); // Tastatur öffnet sich sofort
-            newRow.querySelectorAll('.qty, .price').forEach(input => input.addEventListener('input', calculate));
+            newRow.querySelector('.desc-input').focus();
+            newRow.querySelectorAll('.qty, .price, .tax-rate-input').forEach(input => input.addEventListener('input', calculate));
             calculate();
         });
 
@@ -410,7 +416,7 @@
             }
         });
 
-        // Neue Rechnung (mobil ohne Pop-up)
+        // Neue Rechnung
         document.getElementById('new-invoice').addEventListener('click', () => {
             localStorage.removeItem('lastH2Invoice');
             location.reload();
