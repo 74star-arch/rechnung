@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rechnung – H2TechService</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -110,11 +111,7 @@
             </div>
             <div class="col-12 col-md-4">
                 <div class="card p-3">
-                    <input type="text" id="template-name" class="form-control mb-2" placeholder="Vorlagenname">
-                    <button id="save-template" class="btn btn-success btn-sm w-100 mb-2">Speichern</button>
-                    <select id="template-select" class="form-select mb-2"></select>
-                    <button id="load-template" class="btn btn-primary btn-sm w-100 mb-2">Laden</button>
-                    <button id="delete-template" class="btn btn-danger btn-sm w-100 mb-3">Löschen</button>
+                    <strong>Dein Logo ist fest eingebaut und sichtbar auf allen Geräten!</strong>
                 </div>
             </div>
         </div>
@@ -241,15 +238,14 @@
     </div>
 
     <!-- Archiv Modal -->
-    <div class="modal fade" id="archive-modal" tabindex="-1">
+    <div class="modal fade" id="archive-modal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Rechnungsarchiv – Dein Rechnungsordner</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">Rechnungsarchiv</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Hier findest du alle gespeicherten Rechnungen.</strong> Klicke auf "Laden", um eine Rechnung zu bearbeiten oder als PDF zu versenden.</p>
                     <table class="table table-hover" id="archive-table">
                         <thead class="table-light">
                             <tr>
@@ -276,7 +272,7 @@
             document.body.classList.toggle('dark-mode', darkSwitch.checked);
             localStorage.setItem('h2DarkMode', darkSwitch.checked);
         });
-        if (localStorage.getItem('h2DarkMode') === 'true') darkSwitch.checked = true, document.body.classList.add('dark-mode');
+        if (localStorage.getItem('h2DarkMode') === 'true') document.body.classList.add('dark-mode');
 
         // Firmenname
         const companyInput = document.getElementById('company-name');
@@ -323,11 +319,9 @@
                 kleinHinweis.classList.add('d-none');
             }
             calculate();
-            localStorage.setItem('h2Kleinunternehmer', kleinSwitch.checked);
         });
-        if (localStorage.getItem('h2Kleinunternehmer') === 'true') kleinSwitch.checked = true, kleinSwitch.dispatchEvent(new Event('change'));
 
-        // AGB – nur anzeigen wenn Inhalt
+        // AGB
         const agbText = document.getElementById('agb-text');
         const agbSection = document.getElementById('agb-section');
         const agbContent = document.getElementById('agb-content');
@@ -339,18 +333,14 @@
                 agbSection.classList.remove('d-none');
                 agbContent.innerHTML = text.replace(/\n/g, '<br>');
             }
-            localStorage.setItem('h2AGB', agbText.value);
         }
         agbText.addEventListener('input', updateAGB);
-        const savedAGB = localStorage.getItem('h2AGB') || '';
-        agbText.value = savedAGB;
         updateAGB();
 
-        // Rechnungsdatum manuell + Fällig am berechnen
+        // Rechnungsdatum manuell + Fällig am
         const invoiceDateInput = document.getElementById('invoice-date-input');
         const invoiceDateDisplay = document.getElementById('invoice-date');
         const dueDateDisplay = document.getElementById('due-date');
-
         function updateDueDate() {
             const dateStr = invoiceDateInput.value.trim();
             if (dateStr) {
@@ -374,7 +364,6 @@
                 dueDateDisplay.textContent = 'wird berechnet';
             }
         }
-
         invoiceDateInput.addEventListener('input', updateDueDate);
 
         // Rechnungsnummer
@@ -385,7 +374,7 @@
             localStorage.setItem('h2InvoiceCounter', counter);
         }
 
-        // Berechnung mit MwSt. pro Zeile
+        // Berechnung
         function calculate() {
             let subtotal = 0;
             let totalTax = 0;
@@ -415,7 +404,7 @@
         });
         document.getElementById('discount').addEventListener('input', calculate);
 
-        // + Position – Fokus auf Beschreibung
+        // + Position
         document.getElementById('add-row').addEventListener('click', () => {
             const tbody = document.getElementById('invoice-items');
             const newRow = document.createElement('tr');
@@ -442,11 +431,64 @@
             }
         });
 
-        // Rechnungsarchiv – mehrere Rechnungen speichern, laden, ändern, löschen
+        // PDF-Download
+        document.getElementById('pdf-download').addEventListener('click', async () => {
+            const element = document.getElementById('invoice-content');
+            const canvas = await html2canvas(element, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const width = pdf.internal.pageSize.getWidth();
+            const height = pdf.internal.pageSize.getHeight();
+            pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+            pdf.save(`Rechnung_${document.getElementById('invoice-number').textContent || 'Entwurf'}.pdf`);
+        });
+
+        // Excel-Download
+        document.getElementById('excel-download').addEventListener('click', () => {
+            const wb = XLSX.utils.book_new();
+            const data = [];
+            data.push(["Rechnung", document.getElementById('invoice-number').textContent || 'Entwurf']);
+            data.push(["Datum", document.getElementById('invoice-date').textContent]);
+            data.push(["Kunde", document.getElementById('customer-info').innerText.split('\n')[0] || '']);
+            data.push([]);
+            data.push(["Beschreibung", "Menge", "Einzelpreis", "MwSt. (%)", "Gesamt"]);
+            document.querySelectorAll('.item').forEach(row => {
+                const desc = row.querySelector('input[type=text]').value;
+                const qty = row.querySelector('.qty').value;
+                const price = row.querySelector('.price').value;
+                const tax = row.querySelector('.tax-rate-input').value;
+                const total = row.querySelector('.line-total').textContent;
+                data.push([desc, qty, price, tax, total]);
+            });
+            data.push([]);
+            data.push(["Nettobetrag", document.getElementById('subtotal').textContent]);
+            data.push(["Rabatt", document.getElementById('discount').value + " €"]);
+            data.push(["MwSt.", document.getElementById('tax').textContent]);
+            data.push(["Gesamtbetrag", document.getElementById('grandtotal').textContent]);
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "Rechnung");
+            XLSX.writeFile(wb, `Rechnung_${document.getElementById('invoice-number').textContent || 'Entwurf'}.xlsx`);
+        });
+
+        // E-Mail
+        document.getElementById('email-send').addEventListener('click', () => {
+            const customerEmail = document.getElementById('customer-email').value.trim() || '';
+            const subject = encodeURIComponent(`Rechnung ${document.getElementById('invoice-number').textContent || 'Entwurf'} von H2TechService`);
+            const body = encodeURIComponent(`Sehr geehrte Damen und Herren,\n\nanbei die Rechnung ${document.getElementById('invoice-number').textContent || 'Entwurf'} vom ${document.getElementById('invoice-date').textContent} über ${document.getElementById('grandtotal').textContent}.\n\nVielen Dank!\n\nH2TechService`);
+            window.location.href = `mailto:\( {customerEmail}?subject= \){subject}&body=${body}`;
+        });
+
+        // Drucken
+        document.getElementById('print-button').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Rechnungsarchiv
         function saveCurrentInvoice() {
             const invoiceData = {
                 number: document.getElementById('invoice-number').textContent,
-                date: invoiceDateInput.value || document.getElementById('invoice-date').textContent,
+                date: document.getElementById('invoice-date').textContent,
                 customerName: document.getElementById('customer-name').value || 'Kein Kunde',
                 grandtotal: document.getElementById('grandtotal').textContent,
                 fullData: {
@@ -501,7 +543,7 @@
                     <td>${inv.customerName}</td>
                     <td>${inv.grandtotal}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary load-invoice" data-index="${index}">Laden & Bearbeiten</button>
+                        <button class="btn btn-sm btn-primary load-invoice" data-index="${index}">Laden</button>
                         <button class="btn btn-sm btn-danger delete-invoice" data-index="${index}">Löschen</button>
                     </td>
                 `;
@@ -511,7 +553,8 @@
 
         document.getElementById('show-archive').addEventListener('click', () => {
             loadArchive();
-            new bootstrap.Modal(document.getElementById('archive-modal')).show();
+            const archiveModal = new bootstrap.Modal(document.getElementById('archive-modal'));
+            archiveModal.show();
         });
 
         document.querySelector('#archive-table tbody').addEventListener('click', e => {
@@ -546,10 +589,9 @@
                     });
                     calculate();
                     bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide();
-                    alert(`Rechnung ${inv.number} geladen – du kannst sie jetzt bearbeiten!`);
                 }
             } else if (e.target.classList.contains('delete-invoice')) {
-                if (confirm('Rechnung wirklich löschen?')) {
+                if (confirm('Rechnung löschen?')) {
                     const index = e.target.dataset.index;
                     let archive = JSON.parse(localStorage.getItem('h2InvoiceArchive') || '[]');
                     archive.splice(index, 1);
