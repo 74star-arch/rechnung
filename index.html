@@ -1,463 +1,191 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-   <title>H2 TechService - v2.4 MwSt Schweiz</title>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-   <style>
-       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-       @media print {
-           @page { size: A4; margin: 0; }
-           body { background: white !important; margin: 0 !important; zoom: 0.82; }
-           .no-print { display: none !important; }
-           #pdf-modal { position: absolute; top: 0; left: 0; width: 100%; display: block !important; padding: 0 !important; }
-           .footer-balken { position: absolute; bottom: 0; left: 0; right: 0; display: flex !important; background: #0f172a !important; color: white !important; }
-       }
-       body { background: #f8fafc; font-family: 'Inter', sans-serif; font-size: 11px; color: #1e293b; }
-       .h-grad { background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); color: white; }
-       .footer-balken { background: #0f172a; color: white; padding: 20px; border-top: 4px solid #38bdf8; }
-       textarea.auto-grow { overflow: hidden; min-height: 24px; resize: none; width: 100%; border: none; background: transparent; font-weight: 700; }
-       .fab-main { width: 65px; height: 65px; border-radius: 50%; background: #1d4ed8; color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; border: 4px solid #10b981; position: fixed; bottom: 30px; right: 30px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-       #pdf-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; overflow-y: auto; padding: 20px; }
-       .status-unpaid { border: 2px solid #ef4444; background: #fff1f2; }
-       .status-paid { border: 2px solid #10b981; background: #f0fdf4; }
-       .summary-card { background: #0f172a; color: white; border-radius: 20px; padding: 15px; border-bottom: 4px solid #38bdf8; }
-   </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechnung</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f3f7; padding: 40px; font-family: 'Segoe UI', Arial, sans-serif; }
+        .invoice-box {
+            max-width: 950px;
+            margin: auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #0056b3, #007bff);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+        .header h1 { margin: 0; font-size: 40px; font-weight: 700; letter-spacing: 1px; }
+        .content { padding: 50px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 20px; border-bottom: 2px solid #007bff; padding-bottom: 8px; }
+        .info-block { margin-bottom: 40px; }
+        .table thead { background: #007bff; color: white; font-weight: 600; }
+        .table th, .table td { vertical-align: middle; }
+        .summary { background: #f8f9fa; padding: 30px; border-radius: 16px; margin-top: 40px; }
+        .summary table { width: 100%; font-size: 18px; }
+        .summary td { padding: 12px 0; }
+        .total-row { border-top: 4px solid #007bff; font-weight: bold; }
+        @media print {
+            body { background: white; padding: 0; }
+            .invoice-box { box-shadow: none; border-radius: 0; }
+        }
+    </style>
 </head>
-<body class="p-2 md:p-6">
-
-<div id="pdf-modal">
-   <div class="flex flex-col items-center gap-4">
-       <div id="pdf-modal-btns" class="no-print flex gap-4">
-           <button onclick="window.print()" class="bg-emerald-600 text-white px-8 py-3 rounded-full font-black uppercase shadow-xl">💾 KAYDET / YAZDIR</button>
-           <button onclick="document.getElementById('pdf-modal').style.display='none'" class="bg-white text-red-600 px-8 py-3 rounded-full font-black uppercase shadow-lg">✕ KAPAT</button>
-       </div>
-       <div id="pdf-preview-wrap" class="bg-white shadow-2xl overflow-hidden"></div>
-   </div>
-</div>
-
-<div class="max-w-[850px] mx-auto no-print mb-6 flex gap-2">
-   <button onclick="tab('inv')" id="t-inv" class="flex-1 p-4 font-black bg-blue-700 text-white rounded-xl uppercase">📄 RECHNUNG</button>
-   <button onclick="tab('pay')" id="t-pay" class="flex-1 p-4 font-black bg-white text-slate-400 border rounded-xl uppercase">📊 MUHASEBE</button>
-</div>
-
-<div id="s-inv" class="card bg-white shadow-2xl mx-auto rounded-3xl relative overflow-hidden max-w-[850px] no-print pb-10">
-   <div class="h-grad p-10 flex justify-between items-center">
-       <div class="flex items-center gap-5">
-           <img id="l-img" src="https://cdn-icons-png.flaticon.com/512/1063/1063196.png" class="w-20 h-20 bg-white p-1 rounded-2xl cursor-pointer" onclick="document.getElementById('logoI').click()">
-           <input type="file" id="logoI" class="hidden" onchange="upLogo(this)">
-           <div>
-               <h1 class="text-3xl font-black italic uppercase">H2 <span class="text-sky-400">TECH</span>SERVICE</h1>
-               <p class="text-[9px] font-bold tracking-[0.5em] opacity-80 italic">Osman Tuncer Professional</p>
-           </div>
-       </div>
-       <div class="text-right">
-           <div class="flex items-center justify-end gap-2 text-white font-black text-xl">
-               <button onclick="changeSeq(-1)" class="bg-white/20 w-6 h-6 rounded">-</button>
-               <span id="inv-n"></span>
-               <button onclick="changeSeq(1)" class="bg-white/20 w-6 h-6 rounded">+</button>
-           </div>
-           <p id="cur-date" class="text-lg font-black mt-1"></p>
-       </div>
-   </div>
-
-   <div class="p-10 grid grid-cols-2 gap-12 border-b">
-       <div class="space-y-1">
-           <b class="text-blue-600 text-[10px] uppercase font-black tracking-widest">Absender</b>
-           <p class="text-base font-black uppercase">Osman Tuncer</p>
-           <p>📍 Suntalstrasse 48, 31552 Rodenberg</p>
-           <p>☎️ +49 176 66658777</p>
-           <p class="text-blue-700 font-bold">✉️ 74star@gmail.com</p>
-           <p class="text-slate-400 font-mono text-[9px] font-bold">📑 Steuer-ID: 41/320/887966</p>
-       </div>
-       <div class="text-right">
-           <b class="text-blue-600 text-[10px] uppercase font-black tracking-widest">Empfänger</b>
-           <select id="c-db" class="w-full border-2 border-blue-50 p-2 rounded-xl text-[11px] font-black text-blue-700 bg-blue-50 mb-2" onchange="loadC()"><option value="">— Müşteri Seç —</option></select>
-           <input id="c-n" placeholder="Name / Firma *" class="text-right font-black outline-none w-full border-b-2 border-slate-100 text-base mb-1">
-           <input id="c-s" placeholder="Straße & Hausnr." class="text-right outline-none w-full border-b border-slate-100 mb-1">
-           <input id="c-c" placeholder="PLZ Ort" class="text-right outline-none w-full border-b border-slate-100 mb-1">
-           <input id="c-p" placeholder="Telefon" class="text-right font-black outline-none border-b border-slate-100 w-full mb-1">
-           <input id="c-m" placeholder="E-Mail" class="text-right outline-none border-b border-slate-100 w-full mb-1">
-           <input id="c-i" placeholder="Steuer-ID" class="text-right text-slate-400 font-mono text-[9px] outline-none border-b border-slate-100 w-full mb-2">
-           <button onclick="saveC()" class="bg-slate-900 text-white text-[8px] px-4 py-1.5 rounded-full font-black uppercase">Kaydet</button>
-       </div>
-   </div>
-
-   <!-- NEU: MwSt.-Auswahl -->
-   <div class="px-10 py-4 bg-blue-50 rounded-xl mx-10">
-       <label class="text-[10px] font-black uppercase text-blue-600 block mb-1">MwSt.-Regelung auswählen</label>
-       <select id="vat-select" class="w-full border-2 border-blue-200 p-3 rounded-xl text-[12px] font-black text-blue-800 bg-white" onchange="calc()">
-           <option value="19">Deutschland – 19 % MwSt. (regelbesteuert)</option>
-           <option value="0" selected>Schweiz – 0 % MwSt. (steuerfrei, Leistungsort Schweiz)</option>
-           <option value="none">Keine MwSt. (z. B. Kleinunternehmer § 19 UStG)</option>
-       </select>
-   </div>
-
-   <div class="px-10 py-6">
-       <table class="w-full">
-           <thead class="bg-slate-100 border-y-2 text-[9px] font-black uppercase">
-               <tr>
-                   <th class="py-4 text-left px-4">Beschreibung</th>
-                   <th class="w-10">Stk</th>
-                   <th class="w-20 text-right">Netto</th>
-                   <th class="w-20 text-right" id="mwst-header">19% MwSt</th>
-                   <th class="w-24 text-right px-4">Gesamt</th>
-                   <th class="w-8"></th>
-               </tr>
-           </thead>
-           <tbody id="rows">
-               <tr class="border-b">
-                   <td class="py-4 px-4"><textarea rows="1" class="auto-grow" oninput="autoExpand(this); calc()"></textarea></td>
-                   <td><input type="number" value="1" class="qty w-full text-center font-black outline-none" oninput="calc()"></td>
-                   <td><input type="number" step="0.01" class="prc w-full text-right font-black outline-none" oninput="calc()"></td>
-                   <td class="text-right text-blue-600 row-mwst">0,00</td>
-                   <td class="text-right font-black px-4 row-total">0,00</td>
-                   <td class="text-center"><button onclick="this.closest('tr').remove();calc()" class="text-red-300">✕</button></td>
-               </tr>
-           </tbody>
-       </table>
-       <button onclick="addR()" class="mt-4 text-[10px] font-black text-blue-600 border border-blue-200 px-6 py-2 rounded-xl">+ SATIR EKLE</button>
-   </div>
-
-   <div class="m-10 p-8 bg-slate-900 rounded-[2.5rem] flex justify-between items-center text-white">
-       <div id="qr-main" class="bg-white p-1 rounded-lg"></div>
-       <div class="text-right">
-           <p class="text-[10px] font-bold text-white/50" id="vat-line">MwSt 19%: <span id="vat-total">0,00 €</span></p>
-           <p class="text-[10px] font-bold text-sky-400">Netto Summe: <span id="subtotal">0,00 €</span></p>
-           <p class="text-[9px] font-bold text-white/70 mt-1" id="vat-hint"></p>
-           <p id="total" class="text-5xl font-black italic tracking-tighter mt-2">0,00 €</p>
-       </div>
-   </div>
-
-   <div class="px-10 flex justify-between items-end border-b pb-10">
-       <div class="w-48 text-center border-t-2 border-slate-900 pt-2 text-[10px] font-black uppercase tracking-widest">Osman Tuncer</div>
-       <div class="text-right">
-           <div class="flex gap-2 justify-end mb-3">
-               <button onclick="toggleSig()" id="btn-lock" class="bg-orange-500 text-white text-[9px] px-4 py-1.5 rounded-full font-black uppercase">🔓 İmza Aç</button>
-               <button onclick="sPad.clear()" class="bg-slate-200 text-slate-500 text-[9px] px-4 py-1.5 rounded-full font-black uppercase">Sil</button>
-           </div>
-           <div class="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-1"><canvas id="sig-canvas" width="250" height="80"></canvas></div>
-       </div>
-   </div>
-</div>
-
-<div id="s-pay" class="max-w-[850px] mx-auto hidden no-print bg-white rounded-3xl p-8 shadow-2xl border mt-6">
-   <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-black uppercase italic text-slate-800">📊 Buchhaltung</h2><button onclick="clearPaid()" class="bg-red-600 text-white text-[10px] px-6 py-2 rounded-full font-black">Zurücksetzen</button></div>
-   <div class="grid grid-cols-3 gap-4 mb-8">
-       <div class="summary-card"><p class="text-[8px] font-black text-sky-400">NETTO</p><p id="rep-net" class="text-xl font-black">0,00 €</p></div>
-       <div class="summary-card" style="background: #1e293b;"><p class="text-[8px] font-black text-orange-400">MwSt</p><p id="rep-vat" class="text-xl font-black text-orange-400">0,00 €</p></div>
-       <div class="summary-card" style="background: #1d4ed8;"><p class="text-[8px] font-black text-white/70">GESAMT</p><p id="rep-total" class="text-xl font-black text-white">0,00 €</p></div>
-   </div>
-   <div id="archive-list" class="space-y-4"></div>
-</div>
-
-<div class="fab-main no-print" onclick="finalize()">💾</div>
-
-<script>
-    const fmt = n => new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n || 0);
-    const sPad = new SignaturePad(document.getElementById('sig-canvas'));
-    let sigLocked = true; sPad.off();
-
-    function autoExpand(f) { f.style.height = 'inherit'; f.style.height = f.scrollHeight + 'px'; }
-
-    function tab(t) { 
-        ['s-inv','s-pay'].forEach(x => document.getElementById(x).classList.add('hidden')); 
-        document.getElementById('s-'+t).classList.remove('hidden'); 
-        if(t==='pay') renderArchive(); 
-    }
-
-    function changeSeq(v) { 
-        let s = Math.max(0, (parseInt(localStorage.getItem('h2_seq')||0)) + v); 
-        localStorage.setItem('h2_seq', s); 
-        updateInvID(); 
-    }
-
-    function updateInvID() { 
-        const s = (parseInt(localStorage.getItem('h2_seq')||0)+1).toString().padStart(4,'0'); 
-        document.getElementById('inv-n').innerText = `H2\( {new Date().getFullYear()} \){s}`; 
-    }
-
-    // MwSt-Konfiguration basierend auf Dropdown
-    function getVatConfig() {
-        const sel = document.getElementById('vat-select').value;
-        if (sel === '19') return { rate: 0.19, label: '19% MwSt', hint: '' };
-        if (sel === '0') return { rate: 0, label: '0% MwSt', hint: 'Steuerfreie Leistung mit Leistungsort Schweiz (§ 3a UStG)' };
-        return { rate: 0, label: 'MwSt', hint: 'Keine Umsatzsteuer aufgrund § 19 UStG (Kleinunternehmer)' };
-    }
-
-    function updateVatDisplay() {
-        const cfg = getVatConfig();
-        document.getElementById('mwst-header').innerText = cfg.label;
-        document.getElementById('vat-line').innerHTML = `${cfg.label}: <span id="vat-total">0,00 €</span>`;
-        document.getElementById('vat-hint').innerText = cfg.hint;
-    }
-
-    function calc() { 
-        const cfg = getVatConfig();
-        let nS = 0; let vS = 0;
-        document.querySelectorAll('#rows tr').forEach(r => { 
-            const q = parseFloat(r.querySelector('.qty').value) || 0;
-            const p = parseFloat(r.querySelector('.prc').value) || 0;
-            const n = q * p;
-            const v = n * cfg.rate;
-            r.querySelector('.row-mwst').innerText = v.toFixed(2).replace('.', ',');
-            r.querySelector('.row-total').innerText = (n + v).toFixed(2).replace('.', ',');
-            nS += n; vS += v;
-        }); 
-        document.getElementById("subtotal").innerText = fmt(nS);
-        document.getElementById("vat-total").innerText = fmt(vS);
-        document.getElementById("total").innerText = fmt(nS + vS);
-        updateVatDisplay();
-        return { nS, vS, total: nS + vS };
-    }
-
-    function addR() { 
-        const r = document.querySelector("#rows tr").cloneNode(true); 
-        r.querySelectorAll("input,textarea").forEach(i => i.value = ""); 
-        r.querySelector(".qty").value = "1"; 
-        document.getElementById("rows").appendChild(r); 
-    }
-
-    function finalize() {
-        const res = calc(); 
-        if (res.total <= 0) return alert("Betrag nicht eingetragen!");
-        const cfg = getVatConfig();
-        const items = [];
-        document.querySelectorAll("#rows tr").forEach(r => { 
-            items.push({ 
-                d: r.querySelector("textarea").value, 
-                q: r.querySelector(".qty").value, 
-                p: r.querySelector(".prc").value 
-            }); 
-        });
-        const data = {
-            id: document.getElementById('inv-n').innerText,
-            date: document.getElementById('cur-date').innerText,
-            cust: { 
-                n: document.getElementById('c-n').value || '', 
-                s: document.getElementById('c-s').value || '', 
-                c: document.getElementById('c-c').value || '', 
-                p: document.getElementById('c-p').value || '', 
-                m: document.getElementById('c-m').value || '', 
-                i: document.getElementById('c-i').value || '' 
-            },
-            items,
-            nS: res.nS,
-            vS: res.vS,
-            total: res.total,
-            sig: sPad.isEmpty() ? null : sPad.toDataURL(),
-            paid: false,
-            vatRate: cfg.rate,
-            vatLabel: cfg.label,
-            vatHint: cfg.hint
-        };
-        let tr = JSON.parse(localStorage.getItem('h2_tracker') || '[]');
-        tr.push(data);
-        localStorage.setItem('h2_tracker', JSON.stringify(tr));
-        localStorage.setItem('h2_seq', (parseInt(localStorage.getItem('h2_seq')||0) + 1));
-        showPDF(data);
-    }
-
-    function showPDF(data) {
-        const wrap = document.getElementById('pdf-preview-wrap');
-        document.getElementById('pdf-modal').style.display = 'block';
-        wrap.innerHTML = `
-            <div class="card bg-white w-[850px] min-h-[1140px] relative mx-auto p-0 shadow-none">
-                <div class="h-grad p-10 flex justify-between items-center text-white">
-                    <div class="flex items-center gap-5">
-                        <img src="${localStorage.getItem('h2_logo') || 'https://cdn-icons-png.flaticon.com/512/1063/1063196.png'}" class="w-16 h-16 bg-white p-1 rounded-xl">
-                        <div><h1 class="text-2xl font-black italic">H2 TECHSERVICE</h1><p class="text-[8px] font-bold uppercase">Osman Tuncer Professional</p></div>
-                    </div>
-                    <div class="text-right border-l border-white/20 pl-6"><p class="text-xl font-black">\( {data.id}</p><p class="text-sm font-bold"> \){data.date}</p></div>
+<body>
+    <div class="invoice-box">
+        <div class="header">
+            <h1>Rechnung</h1>
+        </div>
+        <div class="content">
+            <div class="row info-block">
+                <div class="col-md-6">
+                    <div class="section-title">Absender</div>
+                    <strong>← HIER DEINE DATEN EINGEBEN: Firmenname GmbH / Einzelunternehmen</strong><br>
+                    ← HIER DEINE DATEN EINGEBEN: Straße und Hausnummer<br>
+                    ← HIER DEINE DATEN EINGEBEN: PLZ Ort<br>
+                    Deutschland<br><br>
+                    <strong>Steuernummer:</strong> ← HIER DEINE DATEN EINGEBEN: z. B. 123/456/78901<br>
+                    <strong>USt-IdNr.:</strong> ← HIER DEINE DATEN EINGEBEN: z. B. DE123456789 (falls vorhanden)<br>
+                    <strong>E-Mail:</strong> ← HIER DEINE DATEN EINGEBEN: deine@email.de<br>
+                    <strong>Telefon:</strong> ← HIER DEINE DATEN EINGEBEN: +49 123 4567890
                 </div>
-                <div class="p-12 grid grid-cols-2 gap-20">
-                    <div class="space-y-1">
-                        <b class="text-blue-600 uppercase text-[9px] font-black">Absender</b>
-                        <p class="font-black text-sm">Osman Tuncer</p>
-                        <p>Suntalstrasse 48, 31552 Rodenberg</p>
-                        <p>☎️ +49 176 66658777 | ✉️ 74star@gmail.com</p>
-                        <p class="text-slate-400 font-mono text-[9px]">Steuer-ID: 41/320/887966</p>
-                    </div>
-                    <div class="text-right space-y-1">
-                        <b class="text-blue-600 uppercase text-[9px] font-black">Empfänger</b>
-                        <p class="font-black text-sm">${data.cust.n}</p>
-                        <p>${data.cust.s}</p>
-                        <p>${data.cust.c}</p>
-                        <p class="text-[10px] font-bold">📞 ${data.cust.p || ''} | ✉️ ${data.cust.m || ''}</p>
-                        <p class="text-[9px] text-slate-400 font-mono">Steuer-ID: ${data.cust.i || ''}</p>
-                    </div>
+                <div class="col-md-6 text-md-end">
+                    <!-- Ersetze den Link durch dein echtes Logo (z. B. hochgeladen auf Imgur oder deine Website) -->
+                    <img src="https://via.placeholder.com/240x80?text=Dein+Firmenlogo" alt="Firmenlogo" class="mb-4"><br>
+                    <strong>Rechnungsnummer:</strong> INV-2025-001<br>
+                    <strong>Rechnungsdatum:</strong> 31.12.2025<br>
+                    <strong>Fällig am:</strong> 14.01.2026<br>
+                    <strong>Zahlungsbedingung:</strong> 14 Tage netto
                 </div>
-                <div class="px-12 min-h-[480px]">
-                    <table class="w-full text-[11px]">
-                        <thead class="bg-slate-100 border-y-2 font-black uppercase">
+            </div>
+
+            <div class="row info-block">
+                <div class="col-md-6">
+                    <div class="section-title">Rechnung an</div>
+                    Kunde GmbH<br>
+                    Kundenstraße 45<br>
+                    54321 Kundstadt<br>
+                    Deutschland<br><br>
+                    E-Mail: kunde@email.de
+                </div>
+            </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Beschreibung</th>
+                        <th class="text-center" style="width: 12%;">Menge</th>
+                        <th class="text-end" style="width: 18%;">Einzelpreis (€)</th>
+                        <th class="text-end" style="width: 18%;">Gesamt (€)</th>
+                        <th style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-items">
+                    <tr class="item">
+                        <td><input type="text" class="form-control border-0" value="Dienstleistung / Produktbezeichnung" placeholder="Beschreibung"></td>
+                        <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="1" min="1"></td>
+                        <td class="text-end"><input type="number" class="form-control text-end price border-0" value="0.00" step="0.01"></td>
+                        <td class="line-total text-end">0,00</td>
+                        <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">Löschen</button></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-end">
+                            <button id="add-row" class="btn btn-primary mt-4">Neue Position hinzufügen</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="row">
+                <div class="col-md-6 offset-md-6">
+                    <div class="summary">
+                        <table>
                             <tr>
-                                <th class="py-3 text-left px-4">Beschreibung</th>
-                                <th class="w-10">Stk</th>
-                                <th class="w-20 text-right">Netto</th>
-                                <th class="w-20 text-right">${data.vatLabel}</th>
-                                <th class="w-24 text-right px-4">Gesamt</th>
+                                <td><strong>Nettobetrag</strong></td>
+                                <td class="text-end" id="subtotal">0,00 €</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${data.items.map(it => {
-                                const net = it.q * it.p;
-                                const vat = net * data.vatRate;
-                                return `<tr class="border-b">
-                                    <td class="py-3 px-4 font-bold">${it.d}</td>
-                                    <td class="text-center">${it.q}</td>
-                                    <td class="text-right">${fmt(net)}</td>
-                                    <td class="text-right">${fmt(vat)}</td>
-                                    <td class="text-right font-black px-4">${fmt(net + vat)}</td>
-                                </tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                    \( {data.vatHint ? `<p class="mt-6 text-[10px] text-slate-600 font-bold italic"> \){data.vatHint}</p>` : ''}
-                </div>
-                <div class="m-12 p-8 bg-slate-900 rounded-[2rem] flex justify-between items-center text-white">
-                    <div id="qr-modal" class="bg-white p-1 rounded-lg"></div>
-                    <div class="text-right">
-                        <p class="text-[11px] font-bold text-white/50">${data.vatLabel}: ${fmt(data.vS)}</p>
-                        <p class="text-[11px] font-bold text-sky-400">Netto Summe: ${fmt(data.nS)}</p>
-                        \( {data.vatHint ? `<p class="text-[10px] text-white/70 mt-1"> \){data.vatHint}</p>` : ''}
-                        <p class="text-4xl font-black italic mt-1">${fmt(data.total)}</p>
+                            <tr>
+                                <td>Rabatt</td>
+                                <td class="text-end"><input type="number" id="discount" class="form-control text-end d-inline-block" value="0.00" step="0.01" style="width: 140px;"> €</td>
+                            </tr>
+                            <tr>
+                                <td>zzgl. 19% MwSt.</td>
+                                <td class="text-end" id="tax">0,00 €</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td><strong>Gesamtbetrag</strong></td>
+                                <td class="text-end" id="grandtotal"><strong>0,00 €</strong></td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
-                <div class="px-12 pb-24 flex justify-between items-end">
-                    <div class="w-56 text-center border-t border-slate-900 pt-1 text-[9px] font-black uppercase italic">Osman Tuncer</div>
-                    \( {data.sig ? `<img src=" \){data.sig}" class="h-16">` : ''}
-                </div>
-                <div class="footer-balken absolute bottom-0 left-0 right-0 flex justify-between px-12 items-center">
-                    <div><p class="text-[8px] font-black text-sky-400">Bankverbindung</p><p class="text-xs font-black italic">IBAN: LT78 3250 0925 1892 8659 | BIC: REVOLT21</p></div>
-                    <p class="font-black text-[9px] uppercase">Zahlbar sofort</p>
-                </div>
-            </div>`;
-        new QRCode(document.getElementById("qr-modal"), { 
-            text: `H2-PAY-${fmt(data.total).replace(' €', '€')}`, 
-            width: 100, 
-            height: 100 
+            </div>
+
+            <div class="mt-5">
+                <div class="section-title">Zahlungsinformationen & Notiz</div>
+                Bank: ← HIER DEINE DATEN EINGEBEN: Deine Bank<br>
+                IBAN: ← HIER DEINE DATEN EINGEBEN: DE12 3456 7890 1234 5678 90<br>
+                BIC: ← HIER DEINE DATEN EINGEBEN: COBADEFFXXX<br><br>
+                <strong>Vielen Dank für Ihren Auftrag und die gute Zusammenarbeit!</strong><br>
+                Bei Fragen stehen wir Ihnen jederzeit gerne zur Verfügung.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            let subtotal = 0;
+            document.querySelectorAll('.item').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                const total = qty * price;
+                row.querySelector('.line-total').textContent = total.toFixed(2).replace('.', ',');
+                subtotal += total;
+            });
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const taxable = subtotal - discount;
+            const tax = taxable * 0.19;
+            const grand = taxable + tax;
+
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('tax').textContent = tax.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('grandtotal').innerHTML = '<strong>' + grand.toFixed(2).replace('.', ',') + ' €</strong>';
+        }
+
+        document.getElementById('add-row').addEventListener('click', () => {
+            const tbody = document.getElementById('invoice-items');
+            const newRow = document.createElement('tr');
+            newRow.className = 'item';
+            newRow.innerHTML = `
+                <td><input type="text" class="form-control border-0" placeholder="Beschreibung"></td>
+                <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="1" min="1"></td>
+                <td class="text-end"><input type="number" class="form-control text-end price border-0" value="0.00" step="0.01"></td>
+                <td class="line-total text-end">0,00</td>
+                <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">Löschen</button></td>
+            `;
+            tbody.appendChild(newRow);
+            newRow.querySelectorAll('input').forEach(input => input.addEventListener('input', calculate));
+            calculate();
         });
-    }
 
-    function renderArchive() {
-        const tr = JSON.parse(localStorage.getItem('h2_tracker') || '[]');
-        const container = document.getElementById('archive-list');
-        let tN = 0, tV = 0, tG = 0;
-        container.innerHTML = tr.reverse().map((x, i) => {
-            tN += x.nS; tV += x.vS; tG += x.total;
-            const origI = tr.length - 1 - i; // korrekter Index nach reverse
-            return `<div class="p-4 rounded-xl border-2 \( {x.paid ? 'status-paid' : 'status-unpaid'} flex flex-col gap-2 cursor-pointer" onclick='showPDF( \){JSON.stringify(x)})'>
-                <div class="flex justify-between items-center">
-                    <div><b class="text-sm">\( {x.cust.n}</b><p class="text-[9px] text-slate-400"> \){x.id} | ${x.date}</p></div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="event.stopPropagation(); togglePaid(${origI})" class="px-3 py-1 rounded-full font-black text-[8px] \( {x.paid ? 'bg-emerald-600 text-white' : 'bg-white text-red-600'}"> \){x.paid ? 'PAID' : 'PENDING'}</button>
-                        <button onclick="event.stopPropagation(); deleteArchive(${origI})" class="text-slate-300 hover:text-red-600 font-black p-1">✕</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-3 gap-1 bg-white/50 p-2 rounded text-[9px] font-bold">
-                    <div>NET: ${fmt(x.nS)}</div>
-                    <div class="border-x text-center">VAT: ${fmt(x.vS)}</div>
-                    <div class="text-right">TOTAL: ${fmt(x.total)}</div>
-                </div>
-            </div>`;
-        }).join('');
-        document.getElementById('rep-net').innerText = fmt(tN);
-        document.getElementById('rep-vat').innerText = fmt(tV);
-        document.getElementById('rep-total').innerText = fmt(tG);
-    }
+        document.getElementById('invoice-items').addEventListener('click', e => {
+            if (e.target.classList.contains('remove')) {
+                e.target.closest('tr').remove();
+                calculate();
+            }
+        });
 
-    function togglePaid(i) { 
-        let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); 
-        tr[i].paid = !tr[i].paid; 
-        localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
-        renderArchive(); 
-    }
-
-    function deleteArchive(i) { 
-        if(confirm("Silinsin mi?")) { 
-            let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); 
-            tr.splice(i, 1); 
-            localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
-            renderArchive(); 
-        } 
-    }
-
-    function clearPaid() { 
-        if(confirm("Ödenmişler silinsin mi?")) { 
-            let tr = JSON.parse(localStorage.getItem('h2_tracker')||'[]'); 
-            tr = tr.filter(x => !x.paid); 
-            localStorage.setItem('h2_tracker', JSON.stringify(tr)); 
-            renderArchive(); 
-        } 
-    }
-
-    function saveC() { 
-        const n = document.getElementById('c-n').value; 
-        if(!n) return alert("Firma adı girin!"); 
-        let db = JSON.parse(localStorage.getItem('h2_db')||'[]'); 
-        const obj = { 
-            n, 
-            s: document.getElementById('c-s').value, 
-            c: document.getElementById('c-c').value, 
-            p: document.getElementById('c-p').value, 
-            m: document.getElementById('c-m').value, 
-            i: document.getElementById('c-i').value 
-        }; 
-        db = db.filter(x => x.n !== n); 
-        db.push(obj); 
-        localStorage.setItem('h2_db', JSON.stringify(db)); 
-        updateCList(); 
-        alert("Müşteri kaydedildi!"); 
-    }
-
-    function updateCList() { 
-        const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); 
-        document.getElementById('c-db').innerHTML = '<option value="">— Müşteri Seç —</option>' + 
-            db.map((x, i) => `<option value="\( {i}"> \){x.n}</option>`).join(''); 
-    }
-
-    function loadC() { 
-        const db = JSON.parse(localStorage.getItem('h2_db')||'[]'); 
-        const i = document.getElementById('c-db').value; 
-        const c = db[i]; 
-        if(c) { 
-            document.getElementById('c-n').value = c.n; 
-            document.getElementById('c-s').value = c.s; 
-            document.getElementById('c-c').value = c.c; 
-            document.getElementById('c-p').value = c.p; 
-            document.getElementById('c-m').value = c.m; 
-            document.getElementById('c-i').value = c.i || ''; 
-        } 
-    }
-
-    function toggleSig() { 
-        sigLocked = !sigLocked; 
-        if(sigLocked) sPad.off(); else sPad.on(); 
-        document.getElementById('btn-lock').innerText = sigLocked ? '🔓 İmza Aç' : '🔒 Kilitle'; 
-    }
-
-    function upLogo(i) { 
-        if(i.files[0]) { 
-            const r = new FileReader(); 
-            r.onload = e => { 
-                document.getElementById('l-img').src = e.target.result; 
-                localStorage.setItem('h2_logo', e.target.result); 
-            }; 
-            r.readAsDataURL(i.files[0]); 
-        } 
-    }
-
-    window.onload = () => {
-        updateInvID();
-        document.getElementById('cur-date').innerText = new Date().toLocaleDateString('de-DE');
-        if(localStorage.getItem('h2_logo')) document.getElementById('l-img').src = localStorage.getItem('h2_logo');
-        updateCList();
-        new QRCode(document.getElementById("qr-main"), { text: "H2-OSMAN", width: 50, height: 50 });
-        calc(); // Initiale Berechnung und Anzeige
-    };
-</script>
+        document.querySelectorAll('input').forEach(input => input.addEventListener('input', calculate));
+        document.getElementById('discount').addEventListener('input', calculate);
+        calculate();
+    </script>
 </body>
 </html>
