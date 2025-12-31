@@ -36,8 +36,6 @@
         .summary { background: #f8f9fa; padding: 20px; border-radius: 16px; margin-top: 30px; }
         body.dark-mode .summary { background: #2d2d2d; }
         .total-row { border-top: 4px solid var(--primary-color); }
-        #logo-preview { max-height: 120px; margin: 10px auto; display: block; border: 1px dashed #ccc; border-radius: 8px; }
-        body.dark-mode #logo-preview { border-color: #555; }
         .card { transition: background 0.3s; }
         body.dark-mode .card { background: #2d2d2d; }
         body.dark-mode .form-control, body.dark-mode .form-select { background: #333; color: #e0e0e0; border-color: #555; }
@@ -63,6 +61,7 @@
         <button id="email-send" class="btn btn-warning btn-lg">✉️ E-Mail</button>
         <button id="print-button" class="btn btn-secondary btn-lg">🖨️ Drucken</button>
         <button id="new-invoice" class="btn btn-danger btn-lg">🆕 Neue Rechnung</button>
+        <button id="show-archive" class="btn btn-outline-dark btn-lg">📁 Archiv</button>
     </div>
 
     <div class="container no-print mb-4">
@@ -89,15 +88,15 @@
             </div>
             <div class="col-6 col-md-3">
                 <div class="card p-3">
-                    <label>Logo (optional)</label>
-                    <input type="file" id="logo-upload" accept="image/*" class="form-control">
-                    <img id="logo-preview" src="https://cdn.grok.x.ai/assets/images/1/1.jpg" class="mt-2">
+                    <label>Rechnungsdatum (z. B. 01.01.2026)</label>
+                    <input type="text" id="invoice-date-input" class="form-control" placeholder="TT.MM.JJJJ">
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="card p-3">
                     <label>Standard MwSt. (%)</label>
                     <input type="number" id="default-tax-rate" class="form-control text-center" value="19" step="0.1">
+                    <small>Fällig am = Datum + 14 Tage</small>
                 </div>
             </div>
         </div>
@@ -116,7 +115,6 @@
                     <select id="template-select" class="form-select mb-2"></select>
                     <button id="load-template" class="btn btn-primary btn-sm w-100 mb-2">Laden</button>
                     <button id="delete-template" class="btn btn-danger btn-sm w-100 mb-3">Löschen</button>
-                    <button id="show-archive" class="btn btn-secondary btn-sm w-100">Archiv</button>
                 </div>
             </div>
         </div>
@@ -242,6 +240,33 @@
         </div>
     </div>
 
+    <!-- Archiv Modal -->
+    <div class="modal fade" id="archive-modal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rechnungsarchiv – Dein Rechnungsordner</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Hier findest du alle gespeicherten Rechnungen.</strong> Klicke auf "Laden", um eine Rechnung zu bearbeiten oder als PDF zu versenden.</p>
+                    <table class="table table-hover" id="archive-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Rechnungsnummer</th>
+                                <th>Datum</th>
+                                <th>Kunde</th>
+                                <th>Gesamtbetrag</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const { jsPDF } = window.jspdf;
 
@@ -277,26 +302,8 @@
         const savedColor = localStorage.getItem('h2PrimaryColor');
         if (savedColor) colorPicker.value = savedColor, colorPicker.dispatchEvent(new Event('input'));
 
-        // Logo
-        const logoUpload = document.getElementById('logo-upload');
-        const logoPreview = document.getElementById('logo-preview');
-        const invoiceLogo = document.getElementById('invoice-logo');
-        logoUpload.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const url = ev.target.result;
-                    logoPreview.src = url;
-                    invoiceLogo.src = url;
-                    localStorage.setItem('h2CustomLogo', url);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        const savedLogo = localStorage.getItem('h2CustomLogo');
-        if (savedLogo) logoPreview.src = invoiceLogo.src = savedLogo;
-        else logoPreview.src = invoiceLogo.src = 'https://cdn.grok.x.ai/assets/images/1/1.jpg';
+        // Logo fest eingebaut
+        document.getElementById('invoice-logo').src = 'https://cdn.grok.x.ai/assets/images/1/1.jpg';
 
         // Standard MwSt.
         const defaultTaxRate = document.getElementById('default-tax-rate');
@@ -339,17 +346,36 @@
         agbText.value = savedAGB;
         updateAGB();
 
-        // Automatisches Datum – immer aktuell
-        function updateDates() {
-            const today = new Date();
-            const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const yyyy = today.getFullYear();
-            document.getElementById('invoice-date').textContent = `\( {dd}. \){mm}.${yyyy}`;
-            const due = new Date(today);
-            due.setDate(due.getDate() + 14);
-            document.getElementById('due-date').textContent = `\( {String(due.getDate()).padStart(2, '0')}. \){String(due.getMonth() + 1).padStart(2, '0')}.${due.getFullYear()}`;
+        // Rechnungsdatum manuell + Fällig am berechnen
+        const invoiceDateInput = document.getElementById('invoice-date-input');
+        const invoiceDateDisplay = document.getElementById('invoice-date');
+        const dueDateDisplay = document.getElementById('due-date');
+
+        function updateDueDate() {
+            const dateStr = invoiceDateInput.value.trim();
+            if (dateStr) {
+                invoiceDateDisplay.textContent = dateStr;
+                const parts = dateStr.split('.');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1;
+                    const year = parseInt(parts[2]);
+                    const date = new Date(year, month, day);
+                    if (!isNaN(date.getTime())) {
+                        date.setDate(date.getDate() + 14);
+                        const dueDD = String(date.getDate()).padStart(2, '0');
+                        const dueMM = String(date.getMonth() + 1).padStart(2, '0');
+                        const dueYYYY = date.getFullYear();
+                        dueDateDisplay.textContent = `\( {dueDD}. \){dueMM}.${dueYYYY}`;
+                    }
+                }
+            } else {
+                invoiceDateDisplay.textContent = 'Bitte Datum eingeben';
+                dueDateDisplay.textContent = 'wird berechnet';
+            }
         }
+
+        invoiceDateInput.addEventListener('input', updateDueDate);
 
         // Rechnungsnummer
         function updateInvoiceNumber() {
@@ -416,13 +442,130 @@
             }
         });
 
+        // Rechnungsarchiv – mehrere Rechnungen speichern, laden, ändern, löschen
+        function saveCurrentInvoice() {
+            const invoiceData = {
+                number: document.getElementById('invoice-number').textContent,
+                date: invoiceDateInput.value || document.getElementById('invoice-date').textContent,
+                customerName: document.getElementById('customer-name').value || 'Kein Kunde',
+                grandtotal: document.getElementById('grandtotal').textContent,
+                fullData: {
+                    items: [],
+                    discount: document.getElementById('discount').value,
+                    customerDetails: {
+                        name: document.getElementById('customer-name').value,
+                        street: document.getElementById('customer-street').value,
+                        city: document.getElementById('customer-city').value,
+                        email: document.getElementById('customer-email').value
+                    },
+                    invoiceDate: invoiceDateInput.value
+                }
+            };
+            document.querySelectorAll('.item').forEach(row => {
+                invoiceData.fullData.items.push({
+                    desc: row.querySelector('input[type=text]').value,
+                    qty: row.querySelector('.qty').value,
+                    price: row.querySelector('.price').value,
+                    taxRate: row.querySelector('.tax-rate-input').value
+                });
+            });
+
+            let archive = JSON.parse(localStorage.getItem('h2InvoiceArchive') || '[]');
+            const existingIndex = archive.findIndex(inv => inv.number === invoiceData.number);
+            if (existingIndex > -1) {
+                archive[existingIndex] = invoiceData;
+            } else {
+                archive.push(invoiceData);
+            }
+            localStorage.setItem('h2InvoiceArchive', JSON.stringify(archive));
+        }
+
+        document.getElementById('save-invoice').addEventListener('click', () => {
+            saveCurrentInvoice();
+            alert('Rechnung gespeichert und im Archiv aktualisiert!');
+        });
+
+        function loadArchive() {
+            const archive = JSON.parse(localStorage.getItem('h2InvoiceArchive') || '[]');
+            const tbody = document.querySelector('#archive-table tbody');
+            tbody.innerHTML = '';
+            if (archive.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Noch keine Rechnungen gespeichert.</td></tr>';
+                return;
+            }
+            archive.forEach((inv, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${inv.number}</strong></td>
+                    <td>${inv.date}</td>
+                    <td>${inv.customerName}</td>
+                    <td>${inv.grandtotal}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary load-invoice" data-index="${index}">Laden & Bearbeiten</button>
+                        <button class="btn btn-sm btn-danger delete-invoice" data-index="${index}">Löschen</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('show-archive').addEventListener('click', () => {
+            loadArchive();
+            new bootstrap.Modal(document.getElementById('archive-modal')).show();
+        });
+
+        document.querySelector('#archive-table tbody').addEventListener('click', e => {
+            if (e.target.classList.contains('load-invoice')) {
+                const index = e.target.dataset.index;
+                const archive = JSON.parse(localStorage.getItem('h2InvoiceArchive') || '[]');
+                const inv = archive[index];
+                if (inv && inv.fullData) {
+                    const d = inv.fullData;
+                    document.getElementById('discount').value = d.discount || '0.00';
+                    document.getElementById('customer-name').value = d.customerDetails.name || '';
+                    document.getElementById('customer-street').value = d.customerDetails.street || '';
+                    document.getElementById('customer-city').value = d.customerDetails.city || '';
+                    document.getElementById('customer-email').value = d.customerDetails.email || '';
+                    invoiceDateInput.value = d.invoiceDate || '';
+                    updateDueDate();
+                    const tbody = document.getElementById('invoice-items');
+                    tbody.innerHTML = '';
+                    d.items.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.className = 'item';
+                        row.innerHTML = `
+                            <td><input type="text" class="form-control border-0 desc-input" value="${item.desc || ''}"></td>
+                            <td class="text-center"><input type="number" class="form-control text-center qty border-0" value="${item.qty || 1}"></td>
+                            <td class="text-end"><input type="number" class="form-control text-end price border-0" value="${item.price || '0.00'}"></td>
+                            <td class="text-center"><input type="number" class="form-control text-center tax-rate-input border-0" value="${item.taxRate || defaultTaxRate.value}"></td>
+                            <td class="line-total text-end">0,00</td>
+                            <td class="text-center"><button class="btn btn-sm btn-outline-danger remove">X</button></td>
+                        `;
+                        tbody.appendChild(row);
+                        row.querySelectorAll('.qty, .price, .tax-rate-input').forEach(input => input.addEventListener('input', calculate));
+                    });
+                    calculate();
+                    bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide();
+                    alert(`Rechnung ${inv.number} geladen – du kannst sie jetzt bearbeiten!`);
+                }
+            } else if (e.target.classList.contains('delete-invoice')) {
+                if (confirm('Rechnung wirklich löschen?')) {
+                    const index = e.target.dataset.index;
+                    let archive = JSON.parse(localStorage.getItem('h2InvoiceArchive') || '[]');
+                    archive.splice(index, 1);
+                    localStorage.setItem('h2InvoiceArchive', JSON.stringify(archive));
+                    loadArchive();
+                }
+            }
+        });
+
         // Neue Rechnung
         document.getElementById('new-invoice').addEventListener('click', () => {
             location.reload();
         });
 
         // Initialisierung
-        updateDates();
+        updateDueDate();
         updateInvoiceNumber();
         calculate();
     </script>
