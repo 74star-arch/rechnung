@@ -69,8 +69,13 @@
             <div class="row mb-4">
                 <div class="col-6">
                     <div class="section-title">Absender</div>
-                    <strong>H2TechService</strong><br>Suntalstraße 48, 31552 Rodenberg<br>
-                    <small class="text-muted">74star@gmail.com<br>+49 176 66658777</small>
+                    <strong>H2TechService</strong><br>
+                    Suntalstraße 48, 31552 Rodenberg<br>
+                    <small class="text-muted">
+                        74star@gmail.com<br>
+                        +49 176 66658777<br>
+                        Steuer-ID: 41/320/887966
+                    </small>
                 </div>
                 <div class="col-6 text-end">
                     <img src="https://cdn.grok.x.ai/assets/images/1/1.jpg" style="max-height: 65px;"><br>
@@ -156,7 +161,7 @@
             new bootstrap.Modal(document.getElementById('customer-modal')).show();
         });
 
-        window.delCust = (i) => { let list = JSON.parse(localStorage.getItem('h2_customers')); list.splice(i,1); localStorage.setItem('h2_customers', JSON.stringify(list)); loadCustomerList(); document.getElementById('manage-customers').click(); };
+        window.delCust = (i) => { if(confirm("Kunde wirklich löschen?")) { let list = JSON.parse(localStorage.getItem('h2_customers')); list.splice(i,1); localStorage.setItem('h2_customers', JSON.stringify(list)); loadCustomerList(); document.getElementById('manage-customers').click(); } };
 
         document.getElementById('save-invoice').addEventListener('click', () => {
             const nr = document.getElementById('invoice-number').textContent; let archive = JSON.parse(localStorage.getItem('h2_archive')||'[]');
@@ -164,7 +169,7 @@
             fields.forEach(f => data.customer[f] = document.getElementById(f).value);
             document.querySelectorAll('.item').forEach(row => { data.items.push({ desc: row.querySelector('.desc').value, tax: row.querySelector('.row-tax').value, qty: row.querySelector('.qty').value, price: parseFloat(row.querySelector('.price').value) }); });
             const idx = archive.findIndex(i => i.nr === nr); if(idx > -1) archive[idx] = data; else { archive.push(data); localStorage.setItem('h2_count', (parseInt(localStorage.getItem('h2_count'))||1)+1); }
-            localStorage.setItem('h2_archive', JSON.stringify(archive)); alert("Gespeichert");
+            localStorage.setItem('h2_archive', JSON.stringify(archive)); alert("Archiviert");
         });
 
         document.getElementById('show-archive').addEventListener('click', () => {
@@ -179,7 +184,7 @@
             document.getElementById('invoice-items').innerHTML = ''; inv.items.forEach(item => addRow(item)); bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide();
         };
 
-        window.delInv = (nr) => { let arc = JSON.parse(localStorage.getItem('h2_archive')).filter(i => i.nr !== nr); localStorage.setItem('h2_archive', JSON.stringify(arc)); document.getElementById('show-archive').click(); };
+        window.delInv = (nr) => { if(confirm("Rechnung aus Archiv löschen?")) { let arc = JSON.parse(localStorage.getItem('h2_archive')).filter(i => i.nr !== nr); localStorage.setItem('h2_archive', JSON.stringify(arc)); document.getElementById('show-archive').click(); } };
 
         document.getElementById('export-backup').addEventListener('click', () => {
             const data = { archive: localStorage.getItem('h2_archive'), customers: localStorage.getItem('h2_customers'), count: localStorage.getItem('h2_count') };
@@ -187,7 +192,7 @@
         });
 
         document.getElementById('import-file').addEventListener('change', (e) => {
-            const reader = new FileReader(); reader.onload = (ev) => { const d = JSON.parse(ev.target.result); if(d.archive) localStorage.setItem('h2_archive', d.archive); if(d.customers) localStorage.setItem('h2_customers', d.customers); if(d.count) localStorage.setItem('h2_count', d.count); location.reload(); };
+            const reader = new FileReader(); reader.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if(d.archive) localStorage.setItem('h2_archive', d.archive); if(d.customers) localStorage.setItem('h2_customers', d.customers); if(d.count) localStorage.setItem('h2_count', d.count); location.reload(); } catch(e) { alert("Fehler beim Import"); } };
             reader.readAsText(e.target.files[0]);
         });
 
@@ -196,9 +201,9 @@
         document.querySelectorAll('input').forEach(i => i.addEventListener('input', calculate));
         document.getElementById('add-row').addEventListener('click', () => addRow());
         document.getElementById('print-button').addEventListener('click', () => window.print());
-        document.getElementById('new-invoice').addEventListener('click', () => location.reload());
+        document.getElementById('new-invoice').addEventListener('click', () => { if(confirm("Alles zurücksetzen für neue Rechnung?")) location.reload(); });
         document.getElementById('invoice-items').addEventListener('click', e => { if(e.target.classList.contains('remove-btn')) { e.target.closest('tr').remove(); calculate(); }});
-        document.getElementById('pdf-download').addEventListener('click', async () => { const canvas = await html2canvas(document.getElementById('invoice-content'), {scale:2}); const pdf = new jspdf.jsPDF('p', 'mm', 'a4'); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297); pdf.save(`H2_Rechnung.pdf`); });
+        document.getElementById('pdf-download').addEventListener('click', async () => { const canvas = await html2canvas(document.getElementById('invoice-content'), {scale:2}); const pdf = new jspdf.jsPDF('p', 'mm', 'a4'); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297); pdf.save(`H2_Rechnung_${document.getElementById('invoice-number').textContent}.pdf`); });
     </script>
 </body>
 </html>
