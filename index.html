@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2TechService – Final 2026</title>
+    <title>H2TechService – Final Suite 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --primary: #007bff; --dark-blue: #004085; }
-        body { background: #f4f7f6; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; padding: 10px; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', Arial, sans-serif; font-size: 11.5px; padding: 10px; }
         
         /* DIN A4 Erzwingung */
         .invoice-box {
@@ -18,28 +18,28 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.1); min-height: 296mm; display: flex; flex-direction: column;
         }
         
-        /* Header mit Logo im blauen Balken */
+        /* Header & Logo */
         .header-bar { 
             background: linear-gradient(135deg, var(--dark-blue), var(--primary)); 
-            color: white; padding: 12px 25px; 
-            display: flex; justify-content: space-between; align-items: center;
+            color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center;
         }
         #logo-preview { max-height: 55px; max-width: 170px; object-fit: contain; }
         .logo-placeholder { border: 1px dashed rgba(255,255,255,0.5); padding: 5px; font-size: 10px; cursor: pointer; }
 
-        .content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
-        .section-title { font-size: 13px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #eee; margin-bottom: 5px; }
+        .content { padding: 20px 30px; flex-grow: 1; display: flex; flex-direction: column; }
+        .section-title { font-size: 12px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #eee; margin-bottom: 5px; }
         .summary-box { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
         
-        /* Druck-Einstellungen für 1 Blatt */
+        /* Druck-Layouts */
         @media print {
             @page { size: A4; margin: 0; }
             body { background: white; padding: 0; }
             .no-print { display: none !important; }
             .invoice-box { box-shadow: none; border: none; width: 100%; height: 100%; margin: 0; border-radius: 0; }
             input, select { border: none !important; background: transparent !important; padding: 0 !important; }
-            .item td { padding: 2px !important; }
+            #tax-report-print { display: block !important; padding: 40px; }
         }
+        #tax-report-print { display: none; }
     </style>
 </head>
 <body>
@@ -50,7 +50,7 @@
             <button id="print-button" class="btn btn-secondary btn-sm">🖨️ Drucken</button>
             <button id="pdf-download" class="btn btn-primary btn-sm">📄 PDF</button>
             <button id="new-invoice" class="btn btn-danger btn-sm">🆕 Neu</button>
-            <button id="show-archive" class="btn btn-dark btn-sm">📁 Archiv</button>
+            <button id="show-archive" class="btn btn-dark btn-sm">📁 Archiv & Steuern</button>
             <button id="manage-customers" class="btn btn-info btn-sm text-white">👥 Kunden</button>
             <button id="export-backup" class="btn btn-warning btn-sm">📤 Backup</button>
         </div>
@@ -61,7 +61,7 @@
     <div class="container no-print mb-2">
         <div class="card p-2 shadow-sm">
             <div class="row g-2">
-                <div class="col-md-3 border-end text-center">
+                <div class="col-md-3 border-end">
                     <select id="customer-select" class="form-select form-select-sm mb-1"><option value="">-- Laden --</option></select>
                     <button id="save-customer" class="btn btn-xs btn-outline-primary w-100" style="font-size: 10px;">Profil merken</button>
                 </div>
@@ -92,20 +92,15 @@
             <div class="row mb-3">
                 <div class="col-6">
                     <div class="section-title">Absender</div>
-                    <div style="line-height: 1.4;">
-                        <strong>H2TechService</strong><br>
-                        Suntalstraße 48, 31552 Rodenberg<br>
-                        <span class="text-muted" style="font-size: 11px;">
-                            74star@gmail.com | +49 176 66658777<br>
-                            <strong>Steuer-ID: 41/320/887966</strong>
-                        </span>
+                    <strong>H2TechService</strong><br>Suntalstraße 48, 31552 Rodenberg<br>
+                    <div class="text-muted" style="font-size: 10px; line-height: 1.2;">
+                        74star@gmail.com | +49 176 66658777<br>
+                        <strong>Steuer-ID: 41/320/887966</strong>
                     </div>
                 </div>
                 <div class="col-6 text-end">
-                    <div class="mb-2">
-                        <strong>Rechnungs-Nr:</strong> <span id="invoice-number">H2-2026-001</span><br>
-                        <strong>Datum:</strong> <span id="invoice-date"></span>
-                    </div>
+                    <strong>Nr:</strong> <span id="invoice-number">H2-2026-001</span><br>
+                    <strong>Datum:</strong> <span id="invoice-date"></span>
                     <div id="customer-info-print" class="fw-bold mt-2" style="line-height: 1.3;"></div>
                 </div>
             </div>
@@ -116,15 +111,13 @@
                 </thead>
                 <tbody id="invoice-items"></tbody>
             </table>
-            <button id="add-row" class="btn btn-xs btn-outline-primary no-print">+ Neue Position</button>
+            <button id="add-row" class="btn btn-xs btn-outline-primary no-print">+ Position</button>
 
-            <div class="row mt-auto pt-3">
+            <div class="row mt-auto pt-4">
                 <div class="col-6">
                     <div class="section-title">Zahlungsinformation</div>
-                    <div class="small bg-light p-2 border">
-                        Bank: <strong>Revolut</strong><br>
-                        IBAN: <strong>LT78 3250 0925 1892 8659</strong><br>
-                        BIC: <strong>REVOLT21</strong>
+                    <div class="small bg-light p-2 border" style="font-size: 10px;">
+                        Bank: Revolut | IBAN: LT78 3250 0925 1892 8659 | BIC: REVOLT21
                     </div>
                     <div class="form-check form-switch no-print mt-2">
                         <input class="form-check-input" type="checkbox" id="kleinunternehmer-mode">
@@ -133,7 +126,7 @@
                 </div>
                 <div class="col-6">
                     <div class="summary-box">
-                        <div class="d-flex justify-content-between"><span>Netto-Summe:</span><span id="subtotal">0,00 €</span></div>
+                        <div class="d-flex justify-content-between"><span>Netto:</span><span id="subtotal">0,00 €</span></div>
                         <div id="tax-details"></div>
                         <hr class="my-1">
                         <div class="d-flex justify-content-between fw-bold text-primary" style="font-size: 1.1em;">
@@ -145,22 +138,39 @@
         </div>
     </div>
 
-    <div class="modal fade" id="customer-modal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenliste löschen/verwalten</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table mb-0"><tbody id="customer-list-manage"></tbody></table></div></div></div></div>
-    <div class="modal fade" id="archive-modal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Rechnungen verwalten</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table"><thead><tr><th>Nr.</th><th>Kunde</th><th>Summe</th><th>Aktion</th></tr></thead><tbody id="archive-list"></tbody></table></div></div></div></div>
+    <div id="tax-report-print">
+        <h2 class="text-center">H2TechService - Steuerbericht 2026</h2>
+        <table class="table table-bordered mt-4">
+            <thead><tr><th>Datum</th><th>Nr.</th><th>Kunde</th><th>Netto</th><th>MwSt</th><th>Brutto</th></tr></thead>
+            <tbody id="tax-report-body"></tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="customer-modal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kunden verwalten</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table mb-0"><tbody id="customer-list-manage"></tbody></table></div></div></div></div>
+    
+    <div class="modal fade" id="archive-modal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
+        <div class="modal-header"><h6>Rechnungsarchiv & Steuern</h6>
+            <button class="btn btn-sm btn-outline-dark ms-auto me-2" id="print-tax-report">🖨️ Liste für Steuerberater drucken</button>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-0">
+            <table class="table table-sm mb-0">
+                <thead class="table-dark"><tr><th>Nr.</th><th>Kunde</th><th class="text-end">Netto</th><th class="text-end">MwSt</th><th class="text-end">Brutto</th><th>Aktion</th></tr></thead>
+                <tbody id="archive-list"></tbody>
+                <tfoot id="archive-total-foot"></tfoot>
+            </table>
+        </div>
+    </div></div></div>
 
     <script>
         const fields = ['customer-name', 'customer-street', 'customer-city', 'customer-email', 'customer-phone'];
         document.getElementById('invoice-date').textContent = new Date().toLocaleDateString('de-DE');
 
-        // LOGO HANDLING
+        // LOGO HANDLER
         const logoInp = document.getElementById('logo-upload');
         const logoImg = document.getElementById('logo-preview');
         const logoTxt = document.getElementById('logo-text');
-
-        if(localStorage.getItem('h2_logo')) { 
-            logoImg.src = localStorage.getItem('h2_logo'); logoImg.classList.remove('d-none'); logoTxt.classList.add('d-none');
-        }
-
+        if(localStorage.getItem('h2_logo')) { logoImg.src = localStorage.getItem('h2_logo'); logoImg.classList.remove('d-none'); logoTxt.classList.add('d-none'); }
         logoInp.onchange = e => {
             const reader = new FileReader();
             reader.onload = ev => { localStorage.setItem('h2_logo', ev.target.result); logoImg.src = ev.target.result; logoImg.classList.remove('d-none'); logoTxt.classList.add('d-none'); };
@@ -178,90 +188,77 @@
         }
 
         function calculate() {
-            let net = 0, taxMap = {}; const isKlein = document.getElementById('kleinunternehmer-mode').checked;
+            let net = 0, taxSum = 0; const isKlein = document.getElementById('kleinunternehmer-mode').checked;
             document.querySelectorAll('.item').forEach(row => {
                 const q = parseFloat(row.querySelector('.qty').value)||0, p = parseFloat(row.querySelector('.price').value)||0, t = isKlein?0:(parseFloat(row.querySelector('.row-tax').value)||0);
-                const ln = q*p; net += ln; if(t>0) taxMap[t] = (taxMap[t]||0)+(ln*t/100);
+                const ln = q*p; net += ln; if(t>0) taxSum += (ln*t/100);
                 row.querySelector('.line-total').textContent = ln.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             });
-            let mwst = 0; const tDiv = document.getElementById('tax-details'); tDiv.innerHTML = '';
-            for(let r in taxMap) { mwst += taxMap[r]; tDiv.innerHTML += `<div class="d-flex justify-content-between small text-muted"><span>MwSt ${r}%:</span><span>${taxMap[r].toLocaleString('de-DE',{style:'currency',currency:'EUR'})}</span></div>`; }
             document.getElementById('subtotal').textContent = net.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-            document.getElementById('grandtotal').textContent = (net+mwst).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-            const n = document.getElementById('customer-name').value, s = document.getElementById('customer-street').value, c = document.getElementById('customer-city').value, e = document.getElementById('customer-email').value, p = document.getElementById('customer-phone').value;
-            document.getElementById('customer-info-print').innerHTML = n? `${n}<br><span style="font-weight:normal; font-size:11px;">${s}<br>${c}<br>${e}<br>${p}</span>` : '';
+            document.getElementById('tax-details').innerHTML = `<div class="d-flex justify-content-between small text-muted"><span>Gesamt MwSt:</span><span>${taxSum.toLocaleString('de-DE',{style:'currency',currency:'EUR'})}</span></div>`;
+            document.getElementById('grandtotal').textContent = (net+taxSum).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+            const n = document.getElementById('customer-name').value;
+            document.getElementById('customer-info-print').innerHTML = n? `${n}<br><small style="font-weight:normal;">${document.getElementById('customer-street').value}<br>${document.getElementById('customer-city').value}</small>` : '';
         }
 
-        // SPEICHERN / KUNDEN / ARCHIV
-        document.getElementById('save-customer').onclick = () => {
-            let l = JSON.parse(localStorage.getItem('h2_customers')||'[]'); let c = {}; fields.forEach(f => c[f] = document.getElementById(f).value);
-            if(c['customer-name']) { l.push(c); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); alert("Kundenprofil gespeichert!"); }
-        };
-
-        function loadCust() {
-            const l = JSON.parse(localStorage.getItem('h2_customers')||'[]'); const s = document.getElementById('customer-select');
-            s.innerHTML = '<option value="">-- Laden --</option>'; l.forEach((c, i) => s.innerHTML += `<option value="${i}">${c['customer-name']}</option>`);
-        }
-
-        document.getElementById('customer-select').onchange = e => {
-            if(!e.target.value) return; const c = JSON.parse(localStorage.getItem('h2_customers'))[e.target.value];
-            fields.forEach(f => document.getElementById(f).value = c[f]||''); calculate();
-        };
-
-        document.getElementById('manage-customers').onclick = () => {
-            const l = JSON.parse(localStorage.getItem('h2_customers')||'[]');
-            document.getElementById('customer-list-manage').innerHTML = l.map((c, i) => `<tr><td class="p-2">${c['customer-name']}</td><td class="text-end p-2"><button class="btn btn-xs btn-danger" onclick="delCust(${i})">Entfernen</button></td></tr>`).join('');
-            new bootstrap.Modal(document.getElementById('customer-modal')).show();
-        };
-
-        window.delCust = i => { if(confirm("Kunde endgültig löschen?")) { let l = JSON.parse(localStorage.getItem('h2_customers')); l.splice(i,1); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); document.getElementById('manage-customers').onclick(); } };
-
+        // ARCHIV & SPEICHERN
         document.getElementById('save-invoice').onclick = () => {
             const nr = document.getElementById('invoice-number').textContent; let arc = JSON.parse(localStorage.getItem('h2_archive')||'[]');
-            const data = { nr, customer: {}, items: [], total: document.getElementById('grandtotal').textContent, isKlein: document.getElementById('kleinunternehmer-mode').checked };
+            const nVal = parseFloat(document.getElementById('subtotal').textContent.replace(/[^-0-9,]/g, '').replace(',', '.'));
+            const bVal = parseFloat(document.getElementById('grandtotal').textContent.replace(/[^-0-9,]/g, '').replace(',', '.'));
+            const data = { nr, date: document.getElementById('invoice-date').textContent, net: nVal, tax: (bVal-nVal), gross: bVal, customer: { name: document.getElementById('customer-name').value }, items: [], isKlein: document.getElementById('kleinunternehmer-mode').checked };
             fields.forEach(f => data.customer[f] = document.getElementById(f).value);
             document.querySelectorAll('.item').forEach(row => data.items.push({ desc: row.querySelector('.desc').value, tax: row.querySelector('.row-tax').value, qty: row.querySelector('.qty').value, price: parseFloat(row.querySelector('.price').value) }));
             const idx = arc.findIndex(i => i.nr === nr); if(idx > -1) arc[idx] = data; else { arc.push(data); localStorage.setItem('h2_count', (parseInt(localStorage.getItem('h2_count'))||1)+1); }
-            localStorage.setItem('h2_archive', JSON.stringify(arc)); alert("Rechnung gespeichert!");
+            localStorage.setItem('h2_archive', JSON.stringify(arc)); alert("Rechnung archiviert!");
         };
 
         document.getElementById('show-archive').onclick = () => {
             const l = JSON.parse(localStorage.getItem('h2_archive')||'[]');
-            document.getElementById('archive-list').innerHTML = l.map(i => `<tr><td>${i.nr}</td><td>${i.customer['customer-name']}</td><td>${i.total}</td><td><button class="btn btn-xs btn-primary" onclick="loadInv('${i.nr}')">Laden</button> <button class="btn btn-xs btn-danger" onclick="delInv('${i.nr}')">×</button></td></tr>`).join('');
+            let sN = 0, sM = 0, sB = 0;
+            document.getElementById('archive-list').innerHTML = l.map(i => {
+                sN += i.net; sM += i.tax; sB += i.gross;
+                return `<tr><td>${i.nr}</td><td>${i.customer.name}</td><td class="text-end">${i.net.toFixed(2)} €</td><td class="text-end">${i.tax.toFixed(2)} €</td><td class="text-end fw-bold">${i.gross.toFixed(2)} €</td>
+                <td><button class="btn btn-xs btn-primary" onclick="loadInv('${i.nr}')">Laden</button> <button class="btn btn-xs btn-danger" onclick="delInv('${i.nr}')">×</button></td></tr>`;
+            }).join('');
+            document.getElementById('archive-total-foot').innerHTML = `<tr class="table-secondary fw-bold"><td>SUMME</td><td>Jahresausgleich</td><td class="text-end">${sN.toFixed(2)} €</td><td class="text-end">${sM.toFixed(2)} €</td><td class="text-end">${sB.toFixed(2)} €</td><td></td></tr>`;
             new bootstrap.Modal(document.getElementById('archive-modal')).show();
         };
 
-        window.loadInv = nr => {
-            const inv = JSON.parse(localStorage.getItem('h2_archive')).find(i => i.nr === nr); document.getElementById('invoice-number').textContent = inv.nr;
-            document.getElementById('kleinunternehmer-mode').checked = inv.isKlein; fields.forEach(f => document.getElementById(f).value = inv.customer[f]||'');
-            document.getElementById('invoice-items').innerHTML = ''; inv.items.forEach(it => addRow(it)); bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide();
+        // STEUERBERICHT DRUCKEN
+        document.getElementById('print-tax-report').onclick = () => {
+            const l = JSON.parse(localStorage.getItem('h2_archive')||'[]');
+            let sN = 0, sM = 0, sB = 0;
+            document.getElementById('tax-report-body').innerHTML = l.map(i => {
+                sN += i.net; sM += i.tax; sB += i.gross;
+                return `<tr><td>${i.date}</td><td>${i.nr}</td><td>${i.customer.name}</td><td>${i.net.toFixed(2)} €</td><td>${i.tax.toFixed(2)} €</td><td>${i.gross.toFixed(2)} €</td></tr>`;
+            }).join('');
+            document.getElementById('tax-report-body').innerHTML += `<tr class="fw-bold"><td>SUMME</td><td></td><td>GESAMT</td><td>${sN.toFixed(2)} €</td><td>${sM.toFixed(2)} €</td><td>${sB.toFixed(2)} €</td></tr>`;
+            const mainContent = document.getElementById('invoice-content').style.display;
+            document.getElementById('invoice-content').style.display = 'none';
+            window.print();
+            document.getElementById('invoice-content').style.display = mainContent;
         };
 
-        window.delInv = nr => { if(confirm("Aus Archiv löschen?")) { let arc = JSON.parse(localStorage.getItem('h2_archive')).filter(i => i.nr !== nr); localStorage.setItem('h2_archive', JSON.stringify(arc)); document.getElementById('show-archive').onclick(); } };
-
-        document.getElementById('export-backup').onclick = () => {
-            const d = { arc: localStorage.getItem('h2_archive'), cust: localStorage.getItem('h2_customers'), cnt: localStorage.getItem('h2_count'), logo: localStorage.getItem('h2_logo') };
-            const b = new Blob([JSON.stringify(d)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup_Full.json`; a.click();
-        };
-
-        document.getElementById('import-file').onchange = e => {
-            const r = new FileReader(); r.onload = ev => { const d = JSON.parse(ev.target.result); localStorage.setItem('h2_archive', d.arc); localStorage.setItem('h2_customers', d.cust); localStorage.setItem('h2_count', d.cnt); localStorage.setItem('h2_logo', d.logo); location.reload(); };
-            r.readAsText(e.target.files[0]);
-        };
-
-        // SETUP
+        // KUNDEN & MISC
+        window.loadInv = nr => { const inv = JSON.parse(localStorage.getItem('h2_archive')).find(i => i.nr === nr); document.getElementById('invoice-number').textContent = inv.nr; document.getElementById('kleinunternehmer-mode').checked = inv.isKlein; fields.forEach(f => document.getElementById(f).value = inv.customer[f]||''); document.getElementById('invoice-items').innerHTML = ''; inv.items.forEach(it => addRow(it)); bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide(); };
+        window.delInv = nr => { if(confirm("Löschen?")) { let arc = JSON.parse(localStorage.getItem('h2_archive')).filter(i => i.nr !== nr); localStorage.setItem('h2_archive', JSON.stringify(arc)); document.getElementById('show-archive').onclick(); } };
+        document.getElementById('save-customer').onclick = () => { let l = JSON.parse(localStorage.getItem('h2_customers')||'[]'); let c = {}; fields.forEach(f => c[f] = document.getElementById(f).value); if(c['customer-name']) { l.push(c); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); alert("Kunde gespeichert!"); } };
+        function loadCust() { const l = JSON.parse(localStorage.getItem('h2_customers')||'[]'); const s = document.getElementById('customer-select'); s.innerHTML = '<option value="">-- Laden --</option>'; l.forEach((c, i) => s.innerHTML += `<option value="${i}">${c['customer-name']}</option>`); }
+        document.getElementById('customer-select').onchange = e => { if(!e.target.value) return; const c = JSON.parse(localStorage.getItem('h2_customers'))[e.target.value]; fields.forEach(f => document.getElementById(f).value = c[f]||''); calculate(); };
+        document.getElementById('manage-customers').onclick = () => { const l = JSON.parse(localStorage.getItem('h2_customers')||'[]'); document.getElementById('customer-list-manage').innerHTML = l.map((c, i) => `<tr><td class="p-2">${c['customer-name']}</td><td class="text-end p-2"><button class="btn btn-xs btn-danger" onclick="delCust(${i})">Löschen</button></td></tr>`).join(''); new bootstrap.Modal(document.getElementById('customer-modal')).show(); };
+        window.delCust = i => { if(confirm("Löschen?")) { let l = JSON.parse(localStorage.getItem('h2_customers')); l.splice(i,1); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); document.getElementById('manage-customers').onclick(); } };
+        document.getElementById('export-backup').onclick = () => { const d = { arc: localStorage.getItem('h2_archive'), cust: localStorage.getItem('h2_customers'), cnt: localStorage.getItem('h2_count'), logo: localStorage.getItem('h2_logo') }; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], {type:'application/json'})); a.download = `H2_Backup.json`; a.click(); };
+        
+        // INIT
         addRow(); loadCust();
         const cnt = localStorage.getItem('h2_count')||'1'; document.getElementById('invoice-number').textContent = `H2-2026-${String(cnt).padStart(3, '0')}`;
         document.getElementById('add-row').onclick = () => addRow();
-        document.getElementById('print-button').onclick = () => window.print();
-        document.getElementById('new-invoice').onclick = () => { if(confirm("Neue Rechnung starten?")) location.reload(); };
+        document.getElementById('print-button').onclick = () => { document.getElementById('tax-report-print').style.display = 'none'; window.print(); };
+        document.getElementById('new-invoice').onclick = () => { if(confirm("Alles zurücksetzen?")) location.reload(); };
         document.querySelectorAll('input').forEach(i => i.addEventListener('input', calculate));
         document.getElementById('invoice-items').onclick = e => { if(e.target.classList.contains('remove-btn')) { e.target.closest('tr').remove(); calculate(); }};
-        document.getElementById('pdf-download').onclick = async () => { 
-            const canvas = await html2canvas(document.getElementById('invoice-content'), {scale:2}); 
-            const pdf = new jspdf.jsPDF('p', 'mm', 'a4'); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297); 
-            pdf.save(`H2_Rechnung_${document.getElementById('invoice-number').textContent}.pdf`); 
-        };
+        document.getElementById('pdf-download').onclick = async () => { const canvas = await html2canvas(document.getElementById('invoice-content'), {scale:2}); const pdf = new jspdf.jsPDF('p', 'mm', 'a4'); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297); pdf.save(`Rechnung_${document.getElementById('invoice-number').textContent}.pdf`); };
     </script>
 </body>
 </html>
