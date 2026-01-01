@@ -3,37 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2TechService – AI Business Master 2026</title>
+    <title>H2TechService – Absolute Final 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --primary: #007bff; --dark-blue: #004085; }
-        body { background: #f4f7f6; font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; padding: 10px; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; font-size: 10.5px; padding: 5px; }
         
         /* DIN A4 Erzwingung */
-        .invoice-box { max-width: 800px; margin: 0 auto; background: white; min-height: 296mm; display: flex; flex-direction: column; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-        .header-bar { background: linear-gradient(135deg, var(--dark-blue), var(--primary)); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        #logo-preview { max-height: 55px; max-width: 170px; object-fit: contain; }
-
-        .content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
-        .section-title { font-size: 12px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #eee; margin-bottom: 8px; }
+        .invoice-box { 
+            max-width: 800px; margin: 0 auto; background: white; min-height: 296mm; 
+            display: flex; flex-direction: column; box-shadow: 0 0 15px rgba(0,0,0,0.2); 
+        }
+        .header-bar { 
+            background: linear-gradient(135deg, var(--dark-blue), var(--primary)); 
+            color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; 
+        }
+        #logo-preview { max-height: 55px; max-width: 180px; object-fit: contain; }
+        .content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
         
-        /* Expense & AI Styles */
-        .expense-card { border-left: 5px solid #dee2e6; background: #fff; margin-bottom: 5px; padding: 8px; border: 1px solid #eee; border-radius: 4px; }
-        .cat-material { border-left-color: #198754 !important; background: #f1fcf5; } 
-        .cat-tank { border-left-color: #dc3545 !important; background: #fcf1f1; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Adressblöcke untereinander */
+        .address-block { line-height: 1.4; margin-bottom: 15px; font-size: 11px; white-space: pre-line; }
+        .section-title { font-size: 11px; font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; margin-bottom: 5px; text-transform: uppercase; }
 
         @media print {
             @page { size: A4; margin: 0; }
             body { background: white; padding: 0; }
-            .no-print, .btn-group, .modal { display: none !important; }
-            .invoice-box { box-shadow: none; border: none; width: 100%; height: 100%; margin: 0; }
-            #tax-report-print { display: block !important; padding: 40px; }
+            .no-print { display: none !important; }
+            .invoice-box { box-shadow: none; border: none; width: 100%; height: 100%; margin: 0; border-radius: 0; }
         }
-        #tax-report-print { display: none; }
+
+        /* KI & Expense Style */
+        .expense-card { border-left: 4px solid #dee2e6; background: #f8f9fa; margin-bottom: 4px; padding: 6px; border-radius: 4px; border: 1px solid #eee; }
+        .cat-material { border-left-color: #198754 !important; } 
+        .cat-tank { border-left-color: #dc3545 !important; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -41,10 +47,11 @@
     <div class="container no-print text-center mb-2">
         <div class="btn-group shadow-sm">
             <button id="save-invoice" class="btn btn-success btn-sm">💾 Speichern</button>
-            <button id="open-ai-scan" class="btn btn-warning btn-sm">📸 KI Scanner (Belege)</button>
-            <button id="show-archive" class="btn btn-dark btn-sm">📊 Bilanz & Steuern</button>
+            <button id="open-ai-scan" class="btn btn-warning btn-sm">📸 KI Scanner</button>
+            <button id="btn-cust" class="btn btn-info btn-sm text-white">👥 Kunden</button>
+            <button id="show-archive" class="btn btn-dark btn-sm">📊 Bilanz</button>
             <button onclick="window.print()" class="btn btn-secondary btn-sm">🖨️ Drucken</button>
-            <button id="new-inv" class="btn btn-outline-danger btn-sm">🆕 Neu</button>
+            <button onclick="location.reload()" class="btn btn-outline-danger btn-sm">🆕 Neu</button>
         </div>
     </div>
 
@@ -52,37 +59,40 @@
         <div class="header-bar">
             <div onclick="document.getElementById('logo-upload').click()" style="cursor: pointer;">
                 <img id="logo-preview" src="" class="d-none">
-                <div id="logo-text" class="small border p-1 no-print">Logo laden</div>
+                <div id="logo-text" class="small border p-1 no-print">Logo +</div>
                 <input type="file" id="logo-upload" class="d-none" accept="image/*">
             </div>
-            <h2 class="m-0" style="letter-spacing: 4px; font-weight: bold;">RECHNUNG</h2>
+            <h2 class="m-0" style="letter-spacing: 5px; font-weight: bold;">RECHNUNG</h2>
         </div>
 
         <div class="content">
-            <div class="row mb-4">
+            <div class="row">
                 <div class="col-6">
                     <div class="section-title">Absender</div>
-                    <strong>H2TechService</strong><br>Suntalstraße 48, 31552 Rodenberg<br>
-                    <small class="text-muted">74star@gmail.com | <strong>Steuer-ID: 41/320/887966</strong></small>
+                    <div class="address-block">
+                        <strong>H2TechService</strong>
+                        Suntalstraße 48
+                        31552 Rodenberg
+                        74star@gmail.com
+                        +49 176 66658777
+                        <strong>Steuer-ID: 41/320/887966</strong>
+                    </div>
                 </div>
                 <div class="col-6 text-end">
-                    <strong>Nr:</strong> <span id="inv-nr">H2-2026-001</span><br>
-                    <strong>Datum:</strong> <span id="inv-date"></span>
-                    <div id="cust-print" class="mt-3 fw-bold" style="font-size: 13px;"></div>
+                    <div class="mb-3">
+                        <strong>Rechnungs-Nr:</strong> <span id="inv-nr">H2-2026-001</span><br>
+                        <strong>Datum:</strong> <span id="inv-date">01.01.2026</span>
+                    </div>
+                    <div class="section-title">Empfänger</div>
+                    <div id="cust-print" class="address-block fw-bold">
+                        <span class="text-muted fw-normal">(Kunde über Manager wählen)</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="card p-2 mb-3 no-print bg-light border-0 shadow-sm">
-                <div class="row g-1">
-                    <div class="col-4"><input type="text" id="c-name" class="form-control form-control-sm" placeholder="Kunde / Firma"></div>
-                    <div class="col-4"><input type="text" id="c-street" class="form-control form-control-sm" placeholder="Straße"></div>
-                    <div class="col-4"><input type="text" id="c-city" class="form-control form-control-sm" placeholder="PLZ Ort"></div>
-                </div>
-            </div>
-
-            <table class="table table-sm border">
+            <table class="table table-sm border mt-3">
                 <thead class="table-light">
-                    <tr><th>Beschreibung</th><th class="text-center" style="width:60px;">MwSt</th><th class="text-center" style="width:60px;">Stk.</th><th class="text-end" style="width:90px;">Preis</th><th class="text-end" style="width:100px;">Gesamt</th><th class="no-print"></th></tr>
+                    <tr><th>Beschreibung</th><th class="text-center" style="width:50px;">MwSt</th><th class="text-center" style="width:50px;">Stk.</th><th class="text-end" style="width:80px;">Einzel</th><th class="text-end" style="width:90px;">Gesamt</th><th class="no-print"></th></tr>
                 </thead>
                 <tbody id="inv-items"></tbody>
             </table>
@@ -90,23 +100,23 @@
 
             <div class="row mt-auto pt-4 border-top">
                 <div class="col-7">
-                    <div class="section-title">Zahlungshinweis</div>
+                    <div class="section-title">Zahlungsinformation</div>
                     <div class="p-2 bg-light rounded" style="font-size: 10px;">
-                        Zahlbar innerhalb 14 Tagen. <br>
-                        <strong>IBAN: LT78 3250 0925 1892 8659 (Revolut)</strong>
+                        IBAN: LT78 3250 0925 1892 8659<br>Bank: Revolut | BIC: REVOLT21<br>
+                        <span class="fw-bold">Zahlbar sofort nach Erhalt.</span>
                     </div>
                     <div class="form-check form-switch no-print mt-2">
                         <input class="form-check-input" type="checkbox" id="kleinunternehmer">
-                        <label class="form-check-label small">Kleinunternehmer (§19 UStG)</label>
+                        <label class="form-check-label small">Kleinunternehmer-Regelung</label>
                     </div>
                 </div>
                 <div class="col-5">
-                    <div class="p-3 bg-light rounded border">
+                    <div class="p-3 bg-light rounded border shadow-sm">
                         <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
                         <div class="d-flex justify-content-between small text-muted"><span>MwSt:</span><span id="sum-t">0,00 €</span></div>
                         <hr class="my-1">
                         <div class="d-flex justify-content-between fw-bold text-primary" style="font-size: 1.2em;">
-                            <span>Gesamt:</span><span id="sum-g">0,00 €</span>
+                            <span>GESAMT:</span><span id="sum-g">0,00 €</span>
                         </div>
                     </div>
                 </div>
@@ -114,46 +124,74 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal-ai" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
-        <div class="modal-header bg-warning"><h6>📸 KI-Beleg-Scanner (Automatische Sortierung)</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-info text-white"><h6>👥 Kunden-Datenbank</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
-            <div class="text-center mb-3">
-                <label class="btn btn-primary w-100 p-3 shadow-sm">
-                    <strong>Quittung fotografieren</strong>
-                    <input type="file" id="ai-input" class="d-none" accept="image/*">
-                </label>
-                <div id="ai-loader" class="mt-2 d-none"><div class="loader"></div> <span id="ai-info">KI analysiert Daten...</span></div>
+            <div class="row g-1 mb-3">
+                <div class="col-12"><input type="text" id="m-name" class="form-control form-control-sm" placeholder="Firmenname"></div>
+                <div class="col-12"><input type="text" id="m-street" class="form-control form-control-sm" placeholder="Straße / Nr."></div>
+                <div class="col-12"><input type="text" id="m-city" class="form-control form-control-sm" placeholder="PLZ / Ort"></div>
+                <div class="col-6"><input type="email" id="m-email" class="form-control form-control-sm" placeholder="E-Mail"></div>
+                <div class="col-6"><input type="text" id="m-phone" class="form-control form-control-sm" placeholder="Telefon"></div>
+                <button onclick="saveCust()" class="btn btn-primary btn-sm mt-2">Kunde Speichern & Übernehmen</button>
             </div>
-            <div id="expense-list" style="max-height: 400px; overflow-y: auto;"></div>
+            <div id="cust-list" class="list-group"></div>
         </div>
     </div></div></div>
 
-    <div class="modal fade" id="modal-archive" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
-        <div class="modal-header bg-dark text-white"><h6>📊 Jahresbilanz & Rechnungsarchiv</h6><button class="btn-close text-white" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body">
-            <div class="row g-2 text-center mb-4">
-                <div class="col-4"><div class="card p-3 bg-success text-white">Einnahmen<br><h4 id="stat-in">0 €</h4></div></div>
-                <div class="col-4"><div class="card p-3 bg-danger text-white">Ausgaben<br><h4 id="stat-out">0 €</h4></div></div>
-                <div class="col-4"><div class="card p-3 bg-primary text-white">Gewinn (Steuerbasis)<br><h4 id="stat-win">0 €</h4></div></div>
-            </div>
-            <table class="table table-sm border shadow-sm">
-                <thead class="table-dark"><tr><th>Nr.</th><th>Kunde</th><th>Netto</th><th>MwSt</th><th>Brutto</th><th>Aktion</th></tr></thead>
-                <tbody id="archive-table"></tbody>
-            </table>
+    <div class="modal fade" id="modal-ai" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header bg-warning"><h6>📸 KI Quittungs-Scanner</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body text-center">
+            <label class="btn btn-outline-primary w-100 p-3 mb-3">
+                <strong>Foto auswählen / Kamera</strong>
+                <input type="file" id="ai-input" class="d-none" accept="image/*">
+            </label>
+            <div id="ai-status" class="d-none mb-3"><div class="loader"></div> <span>KI liest Beleg...</span></div>
+            <div id="ex-list"></div>
         </div>
     </div></div></div>
 
     <script>
-        // INIT & RECHNUNGS-LOGIK
+        // INIT
         document.getElementById('inv-date').textContent = new Date().toLocaleDateString('de-DE');
+        
+        // KUNDEN LOGIK
+        const cModal = new bootstrap.Modal(document.getElementById('modal-cust'));
+        document.getElementById('btn-cust').onclick = () => { renderCust(); cModal.show(); };
 
-        function addRow(d={desc:'',tax:19,qty:1,p:0}) {
+        function saveCust() {
+            const c = { name: document.getElementById('m-name').value, street: document.getElementById('m-street').value, city: document.getElementById('m-city').value, email: document.getElementById('m-email').value, phone: document.getElementById('m-phone').value };
+            if(!c.name) return;
+            let l = JSON.parse(localStorage.getItem('h2_clist')||'[]');
+            l.push(c); localStorage.setItem('h2_clist', JSON.stringify(l));
+            useCust(c); cModal.hide();
+        }
+
+        function renderCust() {
+            const l = JSON.parse(localStorage.getItem('h2_clist')||'[]');
+            document.getElementById('cust-list').innerHTML = l.map((c, i) => `
+                <div class="list-group-item d-flex justify-content-between p-1">
+                    <div onclick='useCustByIndex(${i})' style="cursor:pointer"><strong>${c.name}</strong>, ${c.city}</div>
+                    <button class="btn btn-xs text-danger" onclick="delCust(${i})">×</button>
+                </div>`).join('');
+        }
+
+        window.useCustByIndex = i => { useCust(JSON.parse(localStorage.getItem('h2_clist'))[i]); cModal.hide(); };
+        window.delCust = i => { let l = JSON.parse(localStorage.getItem('h2_clist')); l.splice(i,1); localStorage.setItem('h2_clist', JSON.stringify(l)); renderCust(); };
+
+        function useCust(c) {
+            document.getElementById('cust-print').innerHTML = `${c.name}\n${c.street}\n${c.city}\n${c.email}\n${c.phone}`;
+        }
+
+        // RECHNUNG LOGIK
+        function addRow() {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><input type="text" class="form-control form-control-sm desc border-0 bg-transparent" value="${d.desc}"></td>
-                <td><input type="number" class="form-control form-control-sm tax-r text-center border-0 bg-transparent" value="${d.tax}"></td>
-                <td><input type="number" class="form-control form-control-sm qty-r text-center border-0 bg-transparent" value="${d.qty}"></td>
-                <td><input type="number" class="form-control form-control-sm p-r text-end border-0 bg-transparent" value="${d.p}"></td>
-                <td class="text-end fw-bold line-t">0,00 €</td><td class="no-print"><button onclick="this.closest('tr').remove();calc();" class="btn btn-sm text-danger">×</button></td>`;
+            tr.innerHTML = `<td><input type="text" class="form-control form-control-sm border-0 bg-transparent p-0"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 bg-transparent p-0 text-center tax" value="19"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 bg-transparent p-0 text-center qty" value="1"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 bg-transparent p-0 text-end prc" value="0"></td>
+                <td class="text-end fw-bold line-t">0,00 €</td>
+                <td class="no-print"><button onclick="this.closest('tr').remove();calc();" class="btn btn-sm text-danger">×</button></td>`;
             document.getElementById('inv-items').appendChild(tr);
             tr.querySelectorAll('input').forEach(i => i.oninput = calc);
             calc();
@@ -161,80 +199,47 @@
 
         function calc() {
             let n=0, t=0; const isK = document.getElementById('kleinunternehmer').checked;
-            document.querySelectorAll('#inv-items tr').forEach(row => {
-                const q = row.querySelector('.qty-r').value, p = row.querySelector('.p-r').value, tx = isK ? 0 : row.querySelector('.tax-r').value;
-                const line = q * p; n += line; t += (line * tx / 100);
-                row.querySelector('.line-t').textContent = line.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+            document.querySelectorAll('#inv-items tr').forEach(r => {
+                const q = r.querySelector('.qty').value, p = r.querySelector('.prc').value, tx = isK ? 0 : r.querySelector('.tax').value;
+                const l = q * p; n += l; t += (l * tx / 100);
+                r.querySelector('.line-t').textContent = l.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             });
             document.getElementById('sum-n').textContent = n.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             document.getElementById('sum-t').textContent = t.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             document.getElementById('sum-g').textContent = (n+t).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-            document.getElementById('cust-print').innerHTML = document.getElementById('c-name').value + (document.getElementById('c-street').value ? `<br><span style="font-weight:normal; font-size:11px;">${document.getElementById('c-street').value}, ${document.getElementById('c-city').value}</span>` : '');
         }
 
-        // KI SCANNER LOGIK (OCR)
+        // KI SCANNER
         document.getElementById('ai-input').onchange = async (e) => {
             const file = e.target.files[0]; if(!file) return;
-            const loader = document.getElementById('ai-loader'); loader.classList.remove('d-none');
-            
-            try {
-                const { data: { text } } = await Tesseract.recognize(file, 'deu');
-                const t = text.toLowerCase();
-                let cat = "Sonstiges", css = "", store = "Beleg Scan";
-                
-                // KI Wort-Erkennung
-                if(t.includes('bauhaus') || t.includes('obi') || t.includes('hornbach') || t.includes('werkzeug')) { cat="Material"; css="cat-material"; store="Baumarkt"; }
-                else if(t.includes('aral') || t.includes('shell') || t.includes('tanken') || t.includes('diesel') || t.includes('jet')) { cat="Tanken"; css="cat-tank"; store="Tankstelle"; }
-
-                const amount = (t.match(/(\d+,\d{2})/) || ["0,00"])[0];
-                let exs = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-                exs.unshift({ store, val: parseFloat(amount.replace(',','.')), cat, css, date: new Date().toLocaleDateString('de-DE') });
-                localStorage.setItem('h2_ex', JSON.stringify(exs));
-                renderEx();
-            } catch (err) { alert("Scan fehlgeschlagen."); }
-            loader.classList.add('d-none');
+            document.getElementById('ai-status').classList.remove('d-none');
+            const { data: { text } } = await Tesseract.recognize(file, 'deu');
+            const t = text.toLowerCase();
+            let cat = "Sonstiges", css = "", store = "Beleg Scan";
+            if(t.includes('bauhaus') || t.includes('obi') || t.includes('hornbach')) { cat="Material"; css="cat-material"; store="Baumarkt"; }
+            if(t.includes('aral') || t.includes('shell') || t.includes('tank')) { cat="Tanken"; css="cat-tank"; store="Tankstelle"; }
+            const val = parseFloat((t.match(/(\d+,\d{2})/) || ["0,00"])[0].replace(',','.'));
+            let ex = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+            ex.unshift({ store, val, cat, css, date: new Date().toLocaleDateString('de-DE') });
+            localStorage.setItem('h2_ex', JSON.stringify(ex));
+            renderEx();
+            document.getElementById('ai-status').classList.add('d-none');
         };
 
-        // ARCHIV & BILANZ
-        document.getElementById('save-invoice').onclick = () => {
-            let arc = JSON.parse(localStorage.getItem('h2_arc')||'[]');
-            const net = parseFloat(document.getElementById('sum-n').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
-            const tax = parseFloat(document.getElementById('sum-t').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
-            arc.push({ nr: document.getElementById('inv-nr').textContent, cust: document.getElementById('c-name').value, net, tax, gross: (net+tax) });
-            localStorage.setItem('h2_arc', JSON.stringify(arc));
-            localStorage.setItem('h2_cnt', (parseInt(localStorage.getItem('h2_cnt')||1)+1));
-            alert("Erfolgreich gespeichert!");
-        };
-
-        document.getElementById('show-archive').onclick = () => {
-            const invs = JSON.parse(localStorage.getItem('h2_arc')||'[]');
-            const exs = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-            const sIn = invs.reduce((a,b) => a+b.gross, 0);
-            const sOut = exs.reduce((a,b) => a+b.val, 0);
-            document.getElementById('stat-in').textContent = sIn.toFixed(2) + " €";
-            document.getElementById('stat-out').textContent = sOut.toFixed(2) + " €";
-            document.getElementById('stat-win').textContent = (sIn - sOut).toFixed(2) + " €";
-            document.getElementById('archive-table').innerHTML = invs.map((inv, i) => `<tr><td>${inv.nr}</td><td>${inv.cust}</td><td>${inv.net.toFixed(2)}€</td><td>${inv.tax.toFixed(2)}€</td><td><strong>${inv.gross.toFixed(2)}€</strong></td><td><button onclick="delInv(${i})" class="btn btn-xs text-danger">×</button></td></tr>`).join('');
-            new bootstrap.Modal(document.getElementById('modal-archive')).show();
-        };
-
-        // HELPER
         function renderEx() {
-            const exs = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-            document.getElementById('expense-list').innerHTML = exs.map((e, i) => `
-                <div class="expense-card ${e.css} d-flex justify-content-between align-items-center">
-                    <div><strong>${e.store}</strong> <span class="badge bg-light text-dark border ms-2">${e.cat}</span><br><small>${e.date}</small></div>
-                    <div><span class="fw-bold">${e.val.toFixed(2)} €</span><button onclick="delEx(${i})" class="btn btn-xs text-danger ms-2">×</button></div>
+            const ex = JSON.parse(localStorage.getItem('h2_ex')||'[]');
+            document.getElementById('ex-list').innerHTML = ex.map(e => `
+                <div class="expense-card ${e.css} d-flex justify-content-between small">
+                    <div><strong>${e.store}</strong> (${e.cat})</div>
+                    <div class="fw-bold">${e.val.toFixed(2)} €</div>
                 </div>`).join('');
         }
-        window.delEx = i => { let e = JSON.parse(localStorage.getItem('h2_ex')); e.splice(i,1); localStorage.setItem('h2_ex', JSON.stringify(e)); renderEx(); };
-        window.delInv = i => { if(confirm("Löschen?")) { let a = JSON.parse(localStorage.getItem('h2_arc')); a.splice(i,1); localStorage.setItem('h2_arc', JSON.stringify(a)); document.getElementById('show-archive').click(); } };
-        document.getElementById('open-ai-scan').onclick = () => { renderEx(); new bootstrap.Modal(document.getElementById('modal-ai')).show(); };
-        document.getElementById('new-inv').onclick = () => location.reload();
+
+        // LOGO & START
         document.getElementById('logo-upload').onchange = e => { const r = new FileReader(); r.onload = ev => { localStorage.setItem('h2_logo', ev.target.result); location.reload(); }; r.readAsDataURL(e.target.files[0]); };
         if(localStorage.getItem('h2_logo')) { const p = document.getElementById('logo-preview'); p.src = localStorage.getItem('h2_logo'); p.classList.remove('d-none'); document.getElementById('logo-text').classList.add('d-none'); }
-        
-        // START
+        document.getElementById('open-ai-scan').onclick = () => { renderEx(); new bootstrap.Modal(document.getElementById('modal-ai')).show(); };
+        document.getElementById('kleinunternehmer').onchange = calc;
         addRow();
         const cnt = localStorage.getItem('h2_cnt')||'1';
         document.getElementById('inv-nr').textContent = `H2-2026-${String(cnt).padStart(3, '0')}`;
