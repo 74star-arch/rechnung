@@ -28,12 +28,10 @@
         #logo-preview { max-height: 50px; max-width: 160px; object-fit: contain; }
         .content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
         
-        /* Kamera-System */
         #cam-overlay { position: absolute; top: 15%; left: 10%; width: 80%; height: 70%; border: 3px dashed #00ff00; border-radius: 15px; pointer-events: none; z-index: 10; }
         
-        /* Adress-Blöcke strikt UNTEREINANDER */
         .address-block { line-height: 1.4; margin-bottom: 15px; font-size: 10px; display: block; }
-        .address-block span { display: block; } /* Erzwingt neue Zeile für jedes Element */
+        .address-block span { display: block; }
 
         .section-title { font-size: 9px; font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; margin-bottom: 6px; text-transform: uppercase; }
         
@@ -45,7 +43,6 @@
         
         .status-paid { color: var(--success); font-weight: bold; }
         .status-open { color: var(--danger); font-weight: bold; }
-        .expense-card { border-left: 3px solid var(--primary); background: #f8f9fa; margin-bottom: 2px; padding: 4px; border-radius: 3px; font-size: 8px; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -84,7 +81,8 @@
                         <span>31552 Rodenberg</span>
                         <span>74star@gmail.com</span>
                         <span>+49 176 66658777</span>
-                        <strong>Steuer-ID: 41/320/887966</strong>
+                        <span>Steuer-ID: 41/320/887966</span>
+                        <strong>Inhaber: Osman Tuncer</strong>
                     </div>
                 </div>
                 <div class="col-6 text-end">
@@ -94,7 +92,7 @@
                     </div>
                     <div class="section-title">Empfänger</div>
                     <div id="cust-print" class="address-block fw-bold text-primary">
-                        <span class="text-muted fw-normal">(Wähle Kunde oben)</span>
+                        <span class="text-muted fw-normal">(Kunde wählen...)</span>
                     </div>
                 </div>
             </div>
@@ -111,8 +109,8 @@
                 <div class="col-7">
                     <div class="section-title">Zahlungshinweis</div>
                     <div class="p-2 bg-light rounded" style="font-size: 9px;">
+                        <strong>Bankinhaber: Osman Tuncer</strong><br>
                         IBAN: LT78 3250 0925 1892 8659 | Revolut<br>
-                        Zahlbar sofort nach Erhalt.<br>
                         <span id="k-info" class="d-none fw-bold text-danger">Kleinunternehmerregelung gemäß §19 UStG.</span>
                     </div>
                     <div class="form-check form-switch no-print mt-2">
@@ -146,7 +144,7 @@
                     </div>
                     <div class="position-absolute bottom-0 w-100 text-center mb-4">
                         <button id="capture-btn" class="btn btn-light btn-lg rounded-circle shadow" style="width:80px; height:80px; border:5px solid #00ff00;">📸</button>
-                        <button class="btn btn-danger btn-sm ms-3" data-bs-dismiss="modal">Abbrechen</button>
+                        <button class="btn btn-danger btn-sm ms-3" data-bs-dismiss="modal">X</button>
                     </div>
                     <canvas id="cam-canvas" class="d-none"></canvas>
                 </div>
@@ -155,11 +153,11 @@
     </div>
 
     <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
-        <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Offene Posten</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Status</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <div class="row g-1 text-center mb-3">
                 <div class="col-3"><div class="card bg-success text-white p-1 small">Bezahlt<br><b id="s-paid-sum">0€</b></div></div>
-                <div class="col-3"><div class="card bg-danger text-white p-1 small">Schulden<br><b id="s-open-sum">0€</b></div></div>
+                <div class="col-3"><div class="card bg-danger text-white p-1 small">Offen<br><b id="s-open-sum">0€</b></div></div>
                 <div class="col-3"><div class="card bg-warning p-1 small">MwSt<br><b id="s-tax">0€</b></div></div>
                 <div class="col-3"><div class="card bg-primary text-white p-1 small">Gewinn<br><b id="s-win">0€</b></div></div>
             </div>
@@ -171,15 +169,15 @@
         </div>
     </div></div></div>
 
-    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-info text-white"><h6>Kunden verwalten</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-info text-white"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
         <div class="mb-2 p-2 border rounded">
             <input type="text" id="m-name" class="form-control form-control-sm mb-1" placeholder="Firma / Name">
             <input type="text" id="m-street" class="form-control form-control-sm mb-1" placeholder="Straße">
             <input type="text" id="m-city" class="form-control form-control-sm mb-1" placeholder="PLZ Ort">
             <input type="email" id="m-email" class="form-control form-control-sm mb-1" placeholder="E-Mail">
             <input type="text" id="m-tel" class="form-control form-control-sm mb-1" placeholder="Telefon">
-            <input type="text" id="m-taxid" class="form-control form-control-sm mb-1" placeholder="Steuer-ID (optional)">
-            <button onclick="saveCust()" class="btn btn-primary btn-sm w-100 mt-1">Speichern</button>
+            <input type="text" id="m-taxid" class="form-control form-control-sm mb-1" placeholder="Steuer-ID">
+            <button onclick="saveCust()" class="btn btn-primary btn-sm w-100 mt-1">Kunde Speichern</button>
         </div>
         <div id="cust-list" class="list-group"></div>
     </div></div></div></div>
@@ -189,7 +187,6 @@
         const video = document.getElementById('cam-video');
         const canvas = document.getElementById('cam-canvas');
 
-        // RECHNUNGSZEILEN
         function addRow() {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td><input type="text" class="form-control form-control-sm border-0 p-0"></td>
@@ -215,7 +212,6 @@
             document.getElementById('sum-g').textContent = (n+t).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
         }
 
-        // AI SCANNER
         document.getElementById('open-cam-btn').onclick = async () => {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -229,7 +225,6 @@
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0);
             document.getElementById('ai-status').classList.remove('d-none');
-            
             Tesseract.recognize(canvas.toDataURL('image/jpeg'), 'deu').then(({ data: { text } }) => {
                 const t = text.toLowerCase();
                 const val = parseFloat((t.match(/(\d+,\d{2})/) || ["0,00"])[0].replace(',','.'));
@@ -239,43 +234,23 @@
                 document.getElementById('ai-status').classList.add('d-none');
                 video.srcObject.getTracks().forEach(tr => tr.stop());
                 bootstrap.Modal.getInstance(document.getElementById('modal-camera')).hide();
-                alert("Beleg erfasst: " + val.toFixed(2) + " €");
+                alert("Scan Erfolg: " + val.toFixed(2) + " €");
             });
         };
 
-        // KUNDEN & SPEICHERN
         function saveCust() {
-            const c = { 
-                name: document.getElementById('m-name').value, 
-                street: document.getElementById('m-street').value, 
-                city: document.getElementById('m-city').value,
-                email: document.getElementById('m-email').value,
-                tel: document.getElementById('m-tel').value,
-                taxid: document.getElementById('m-taxid').value
-            };
-            let l = JSON.parse(localStorage.getItem('h2_cl')||'[]'); l.push(c); 
-            localStorage.setItem('h2_cl', JSON.stringify(l)); 
-            renderCust();
+            const c = { name: document.getElementById('m-name').value, street: document.getElementById('m-street').value, city: document.getElementById('m-city').value, email: document.getElementById('m-email').value, tel: document.getElementById('m-tel').value, taxid: document.getElementById('m-taxid').value };
+            let l = JSON.parse(localStorage.getItem('h2_cl')||'[]'); l.push(c); localStorage.setItem('h2_cl', JSON.stringify(l)); renderCust();
         }
 
         function renderCust() {
             const l = JSON.parse(localStorage.getItem('h2_cl')||'[]');
-            document.getElementById('cust-list').innerHTML = l.map((c, i) => `
-                <div class="list-group-item list-group-item-action small" onclick='useCustByIndex(${i})' style="cursor:pointer">
-                    <b>${c.name}</b> - ${c.city}
-                </div>`).join('');
+            document.getElementById('cust-list').innerHTML = l.map((c, i) => `<div class="list-group-item list-group-item-action small" onclick='useCustByIndex(${i})'><b>${c.name}</b></div>`).join('');
         }
 
         window.useCustByIndex = i => {
             const c = JSON.parse(localStorage.getItem('h2_cl'))[i];
-            document.getElementById('cust-print').innerHTML = `
-                <span>${c.name}</span>
-                <span>${c.street}</span>
-                <span>${c.city}</span>
-                <span>${c.email}</span>
-                <span>${c.tel}</span>
-                ${c.taxid ? `<span>Steuer-ID: ${c.taxid}</span>` : ''}
-            `;
+            document.getElementById('cust-print').innerHTML = `<span>${c.name}</span><span>${c.street}</span><span>${c.city}</span><span>${c.email}</span><span>${c.tel}</span>${c.taxid ? `<span>Steuer-ID: ${c.taxid}</span>` : ''}`;
         };
 
         document.getElementById('save-invoice').onclick = () => {
@@ -285,7 +260,7 @@
             a.push({ nr: document.getElementById('inv-nr').textContent, date: new Date().toLocaleDateString('de-DE'), cust: document.getElementById('cust-print').querySelector('span').innerText, net, tax, gross: net+tax, paid: false });
             localStorage.setItem('h2_ar', JSON.stringify(a));
             localStorage.setItem('h2_cn', (parseInt(localStorage.getItem('h2_cn')||1)+1));
-            alert("Gespeichert!");
+            alert("Bilanz aktualisiert!");
         };
 
         document.getElementById('show-archive').onclick = () => {
@@ -300,8 +275,7 @@
         };
 
         document.getElementById('make-pdf').onclick = () => {
-            const el = document.getElementById('pdf-area');
-            html2pdf().set({ margin:0, filename: `Rechnung.pdf`, html2canvas:{scale:3}, jsPDF:{unit:'mm', format:'a4'} }).from(el).save();
+            html2pdf().set({ margin:0, filename: `Rechnung.pdf`, html2canvas:{scale:3}, jsPDF:{unit:'mm', format:'a4'} }).from(document.getElementById('pdf-area')).save();
         };
 
         addRow();
