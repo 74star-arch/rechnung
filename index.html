@@ -106,12 +106,6 @@
             </div>
             <div class="col-6 col-md-3">
                 <div class="card p-3">
-                    <label>Rechnungsdatum (z. B. 01.01.2026)</label>
-                    <input type="text" id="invoice-date-input" class="form-control" placeholder="TT.MM.JJJJ">
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card p-3">
                     <label>Standard MwSt. (%)</label>
                     <input type="number" id="default-tax-rate" class="form-control text-center" value="19" step="0.1">
                 </div>
@@ -147,8 +141,7 @@
                 <div class="col-md-6 text-md-end">
                     <img id="invoice-logo" src="https://cdn.grok.x.ai/assets/images/1/1.jpg" style="max-height: 90px;"><br>
                     <strong>Rechnungsnummer:</strong> <span id="invoice-number">H220260001</span><br>
-                    <strong>Rechnungsdatum:</strong> <span id="invoice-date"></span><br>
-                    Zahlungsbedingung: 14 Tage netto
+                    <strong>Rechnungsdatum:</strong> <span id="invoice-date"></span>
                 </div>
             </div>
 
@@ -354,12 +347,15 @@
         agbText.addEventListener('input', updateAGB);
         updateAGB();
 
-        // Rechnungsdatum manuell
-        const invoiceDateInput = document.getElementById('invoice-date-input');
-        const invoiceDateDisplay = document.getElementById('invoice-date');
-        invoiceDateInput.addEventListener('input', () => {
-            invoiceDateDisplay.textContent = invoiceDateInput.value.trim() || 'Bitte Datum eingeben';
-        });
+        // Automatisches Rechnungsdatum vom Smartphone
+        function setCurrentDate() {
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            const dateStr = `\( {dd}. \){mm}.${yyyy}`;
+            document.getElementById('invoice-date').textContent = dateStr;
+        }
 
         // Rechnungsnummer – hochzählen NUR beim Speichern
         const invoiceNumberDisplay = document.getElementById('invoice-number');
@@ -372,20 +368,17 @@
             localStorage.setItem('h2InvoiceCounter', counter);
         }
 
-        // Beim Speichern neue Nummer für die nächste Rechnung vorbereiten
         document.getElementById('save-invoice').addEventListener('click', () => {
             generateNextNumber();
             saveCurrentInvoice();
-            alert('Rechnung gespeichert – neue Nummer für die nächste Rechnung bereit!');
+            alert('Rechnung gespeichert – neue Nummer für nächste Rechnung bereit!');
         });
 
-        // Beim "Neue Rechnung" neue Nummer
         document.getElementById('new-invoice').addEventListener('click', () => {
             generateNextNumber();
             location.reload();
         });
 
-        // Startwert H220260001
         if (!localStorage.getItem('h2InvoiceCounter')) {
             localStorage.setItem('h2InvoiceCounter', '0');
         }
@@ -456,7 +449,7 @@
             if (cust) {
                 customerName.value = cust.name || '';
                 customerStreet.value = cust.street || '';
-847                customerCity.value = cust.city || '';
+                customerCity.value = cust.city || '';
                 customerEmail.value = cust.email || '';
                 updateCustomerInfo();
             }
@@ -493,7 +486,6 @@
             document.getElementById('grandtotal').innerHTML = '<strong>' + grand.toFixed(2).replace('.', ',') + ' €</strong>';
         }
 
-        // Eingaben verknüpfen
         document.getElementById('invoice-items').addEventListener('input', e => {
             if (e.target.classList.contains('qty') || e.target.classList.contains('price') || e.target.classList.contains('tax-rate-input')) calculate();
         });
@@ -594,8 +586,7 @@
                         street: document.getElementById('customer-street').value,
                         city: document.getElementById('customer-city').value,
                         email: document.getElementById('customer-email').value
-                    },
-                    invoiceDate: invoiceDateInput.value
+                    }
                 }
             };
             document.querySelectorAll('.item').forEach(row => {
@@ -664,8 +655,7 @@
                     document.getElementById('customer-street').value = d.customerDetails.street || '';
                     document.getElementById('customer-city').value = d.customerDetails.city || '';
                     document.getElementById('customer-email').value = d.customerDetails.email || '';
-                    invoiceDateInput.value = d.invoiceDate || '';
-                    invoiceDateDisplay.textContent = d.invoiceDate || 'Bitte Datum eingeben';
+                    setCurrentDate();
                     const tbody = document.getElementById('invoice-items');
                     tbody.innerHTML = '';
                     d.items.forEach(item => {
@@ -697,7 +687,7 @@
         });
 
         // Initialisierung
-        invoiceDateDisplay.textContent = invoiceDateInput.value.trim() || 'Bitte Datum eingeben';
+        setCurrentDate();
         calculate();
     </script>
 </body>
