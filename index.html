@@ -3,34 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2TechService – Finale Version 2026</title>
+    <title>H2TechService – Final 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #007bff; --dark: #343a40; }
-        body { background: #f4f7f6; font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; padding: 10px; }
+        :root { --primary: #007bff; --dark-blue: #004085; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; padding: 10px; }
         
-        /* DIN A4 Strenge Komprimierung */
+        /* DIN A4 Erzwingung */
         .invoice-box {
             max-width: 800px; margin: 0 auto; background: white; border-radius: 4px;
             box-shadow: 0 0 15px rgba(0,0,0,0.1); min-height: 296mm; display: flex; flex-direction: column;
-            padding: 0; overflow: hidden;
         }
-        .header { background: linear-gradient(135deg, #004085, var(--primary)); color: white; padding: 15px; text-align: center; }
-        .content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
-        .section-title { font-size: 14px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #eee; margin-bottom: 5px; }
-        #logo-preview { max-height: 70px; max-width: 180px; object-fit: contain; }
-        .logo-area { min-height: 70px; cursor: pointer; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; }
-        .summary-box { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 5px; }
         
+        /* Header mit Logo im blauen Balken */
+        .header-bar { 
+            background: linear-gradient(135deg, var(--dark-blue), var(--primary)); 
+            color: white; padding: 12px 25px; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        #logo-preview { max-height: 55px; max-width: 170px; object-fit: contain; }
+        .logo-placeholder { border: 1px dashed rgba(255,255,255,0.5); padding: 5px; font-size: 10px; cursor: pointer; }
+
+        .content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .section-title { font-size: 13px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #eee; margin-bottom: 5px; }
+        .summary-box { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
+        
+        /* Druck-Einstellungen für 1 Blatt */
         @media print {
             @page { size: A4; margin: 0; }
             body { background: white; padding: 0; }
             .no-print { display: none !important; }
             .invoice-box { box-shadow: none; border: none; width: 100%; height: 100%; margin: 0; border-radius: 0; }
-            input, select { border: none !important; background: transparent !important; }
+            input, select { border: none !important; background: transparent !important; padding: 0 !important; }
+            .item td { padding: 2px !important; }
         }
     </style>
 </head>
@@ -47,19 +55,19 @@
             <button id="export-backup" class="btn btn-warning btn-sm">📤 Backup</button>
         </div>
         <input type="file" id="import-file" class="d-none" accept=".json">
-        <button onclick="document.getElementById('import-file').click()" class="btn btn-outline-info btn-sm">📥 Import</button>
+        <button onclick="document.getElementById('import-file').click()" class="btn btn-outline-info btn-sm ms-1">📥 Import</button>
     </div>
 
     <div class="container no-print mb-2">
         <div class="card p-2 shadow-sm">
             <div class="row g-2">
-                <div class="col-md-3 border-end">
+                <div class="col-md-3 border-end text-center">
                     <select id="customer-select" class="form-select form-select-sm mb-1"><option value="">-- Laden --</option></select>
-                    <button id="save-customer" class="btn btn-xs btn-outline-primary w-100" style="font-size: 10px;">Profil Speichern</button>
+                    <button id="save-customer" class="btn btn-xs btn-outline-primary w-100" style="font-size: 10px;">Profil merken</button>
                 </div>
                 <div class="col-md-9">
                     <div class="row g-1">
-                        <div class="col-md-6"><input type="text" id="customer-name" class="form-control form-control-sm" placeholder="Kunde/Firma"></div>
+                        <div class="col-md-6"><input type="text" id="customer-name" class="form-control form-control-sm" placeholder="Kunde / Firma"></div>
                         <div class="col-md-6"><input type="text" id="customer-street" class="form-control form-control-sm" placeholder="Straße"></div>
                         <div class="col-md-4"><input type="text" id="customer-city" class="form-control form-control-sm" placeholder="PLZ Ort"></div>
                         <div class="col-md-4"><input type="email" id="customer-email" class="form-control form-control-sm" placeholder="E-Mail"></div>
@@ -71,43 +79,46 @@
     </div>
 
     <div class="invoice-box" id="invoice-content">
-        <div class="header"><h2 class="m-0" style="letter-spacing: 3px;">RECHNUNG</h2></div>
+        <div class="header-bar">
+            <div onclick="document.getElementById('logo-upload').click()" style="cursor: pointer;">
+                <img id="logo-preview" src="" class="d-none">
+                <div id="logo-text" class="logo-placeholder no-print">Logo klicken</div>
+                <input type="file" id="logo-upload" class="d-none" accept="image/*">
+            </div>
+            <h2 class="m-0" style="letter-spacing: 5px; font-weight: bold;">RECHNUNG</h2>
+        </div>
         
         <div class="content">
-            <div class="row mb-4">
+            <div class="row mb-3">
                 <div class="col-6">
                     <div class="section-title">Absender</div>
-                    <strong>H2TechService</strong><br>
-                    Suntalstraße 48, 31552 Rodenberg<br>
-                    <div class="text-muted mt-1" style="font-size: 0.85em; line-height: 1.2;">
-                        74star@gmail.com<br>
-                        +49 176 66658777<br>
-                        Steuer-ID: 41/320/887966
+                    <div style="line-height: 1.4;">
+                        <strong>H2TechService</strong><br>
+                        Suntalstraße 48, 31552 Rodenberg<br>
+                        <span class="text-muted" style="font-size: 11px;">
+                            74star@gmail.com | +49 176 66658777<br>
+                            <strong>Steuer-ID: 41/320/887966</strong>
+                        </span>
                     </div>
                 </div>
                 <div class="col-6 text-end">
-                    <div class="logo-area" onclick="document.getElementById('logo-upload').click()">
-                        <img id="logo-preview" src="" class="d-none">
-                        <span id="logo-text" class="no-print text-muted small">Logo hochladen</span>
-                    </div>
-                    <input type="file" id="logo-upload" class="d-none" accept="image/*">
-                    <div class="mt-2">
-                        <strong>Nr:</strong> <span id="invoice-number">H2-2026-001</span><br>
+                    <div class="mb-2">
+                        <strong>Rechnungs-Nr:</strong> <span id="invoice-number">H2-2026-001</span><br>
                         <strong>Datum:</strong> <span id="invoice-date"></span>
                     </div>
-                    <div id="customer-info-print" class="mt-2 fw-bold"></div>
+                    <div id="customer-info-print" class="fw-bold mt-2" style="line-height: 1.3;"></div>
                 </div>
             </div>
 
-            <table class="table table-sm table-hover border">
+            <table class="table table-sm border">
                 <thead class="table-light">
-                    <tr><th>Beschreibung</th><th class="text-center" style="width:50px;">MwSt</th><th class="text-center" style="width:50px;">Menge</th><th class="text-end" style="width:80px;">Einzel (€)</th><th class="text-end" style="width:90px;">Gesamt</th><th class="no-print"></th></tr>
+                    <tr><th>Beschreibung</th><th class="text-center" style="width:50px;">MwSt</th><th class="text-center" style="width:50px;">Stk.</th><th class="text-end" style="width:80px;">Einzel (€)</th><th class="text-end" style="width:90px;">Gesamt</th><th class="no-print"></th></tr>
                 </thead>
                 <tbody id="invoice-items"></tbody>
             </table>
-            <button id="add-row" class="btn btn-xs btn-outline-primary no-print">+ Position</button>
+            <button id="add-row" class="btn btn-xs btn-outline-primary no-print">+ Neue Position</button>
 
-            <div class="row mt-auto pt-4">
+            <div class="row mt-auto pt-3">
                 <div class="col-6">
                     <div class="section-title">Zahlungsinformation</div>
                     <div class="small bg-light p-2 border">
@@ -117,12 +128,12 @@
                     </div>
                     <div class="form-check form-switch no-print mt-2">
                         <input class="form-check-input" type="checkbox" id="kleinunternehmer-mode">
-                        <label class="form-check-label small">Kleinunternehmer (§19)</label>
+                        <label class="form-check-label small">Kleinunternehmer (§19 UStG)</label>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="summary-box">
-                        <div class="d-flex justify-content-between"><span>Netto:</span><span id="subtotal">0,00 €</span></div>
+                        <div class="d-flex justify-content-between"><span>Netto-Summe:</span><span id="subtotal">0,00 €</span></div>
                         <div id="tax-details"></div>
                         <hr class="my-1">
                         <div class="d-flex justify-content-between fw-bold text-primary" style="font-size: 1.1em;">
@@ -134,14 +145,14 @@
         </div>
     </div>
 
-    <div class="modal fade" id="customer-modal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenliste</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table mb-0"><tbody id="customer-list-manage"></tbody></table></div></div></div></div>
-    <div class="modal fade" id="archive-modal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Rechnungsarchiv</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table"><thead><tr><th>Nr.</th><th>Kunde</th><th>Summe</th><th>Aktion</th></tr></thead><tbody id="archive-list"></tbody></table></div></div></div></div>
+    <div class="modal fade" id="customer-modal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenliste löschen/verwalten</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table mb-0"><tbody id="customer-list-manage"></tbody></table></div></div></div></div>
+    <div class="modal fade" id="archive-modal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Rechnungen verwalten</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table"><thead><tr><th>Nr.</th><th>Kunde</th><th>Summe</th><th>Aktion</th></tr></thead><tbody id="archive-list"></tbody></table></div></div></div></div>
 
     <script>
         const fields = ['customer-name', 'customer-street', 'customer-city', 'customer-email', 'customer-phone'];
         document.getElementById('invoice-date').textContent = new Date().toLocaleDateString('de-DE');
 
-        // LOGO LOGIK
+        // LOGO HANDLING
         const logoInp = document.getElementById('logo-upload');
         const logoImg = document.getElementById('logo-preview');
         const logoTxt = document.getElementById('logo-text');
@@ -178,13 +189,13 @@
             document.getElementById('subtotal').textContent = net.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             document.getElementById('grandtotal').textContent = (net+mwst).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             const n = document.getElementById('customer-name').value, s = document.getElementById('customer-street').value, c = document.getElementById('customer-city').value, e = document.getElementById('customer-email').value, p = document.getElementById('customer-phone').value;
-            document.getElementById('customer-info-print').innerHTML = n? `${n}<br><span style="font-weight:normal;">${s}<br>${c}<br>${e}<br>${p}</span>` : '';
+            document.getElementById('customer-info-print').innerHTML = n? `${n}<br><span style="font-weight:normal; font-size:11px;">${s}<br>${c}<br>${e}<br>${p}</span>` : '';
         }
 
-        // KUNDEN & ARCHIV
+        // SPEICHERN / KUNDEN / ARCHIV
         document.getElementById('save-customer').onclick = () => {
             let l = JSON.parse(localStorage.getItem('h2_customers')||'[]'); let c = {}; fields.forEach(f => c[f] = document.getElementById(f).value);
-            if(c['customer-name']) { l.push(c); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); alert("Kunde gespeichert!"); }
+            if(c['customer-name']) { l.push(c); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); alert("Kundenprofil gespeichert!"); }
         };
 
         function loadCust() {
@@ -199,11 +210,11 @@
 
         document.getElementById('manage-customers').onclick = () => {
             const l = JSON.parse(localStorage.getItem('h2_customers')||'[]');
-            document.getElementById('customer-list-manage').innerHTML = l.map((c, i) => `<tr><td class="p-2">${c['customer-name']}</td><td class="text-end p-2"><button class="btn btn-xs btn-danger" onclick="delCust(${i})">Löschen</button></td></tr>`).join('');
+            document.getElementById('customer-list-manage').innerHTML = l.map((c, i) => `<tr><td class="p-2">${c['customer-name']}</td><td class="text-end p-2"><button class="btn btn-xs btn-danger" onclick="delCust(${i})">Entfernen</button></td></tr>`).join('');
             new bootstrap.Modal(document.getElementById('customer-modal')).show();
         };
 
-        window.delCust = i => { if(confirm("Löschen?")) { let l = JSON.parse(localStorage.getItem('h2_customers')); l.splice(i,1); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); document.getElementById('manage-customers').onclick(); } };
+        window.delCust = i => { if(confirm("Kunde endgültig löschen?")) { let l = JSON.parse(localStorage.getItem('h2_customers')); l.splice(i,1); localStorage.setItem('h2_customers', JSON.stringify(l)); loadCust(); document.getElementById('manage-customers').onclick(); } };
 
         document.getElementById('save-invoice').onclick = () => {
             const nr = document.getElementById('invoice-number').textContent; let arc = JSON.parse(localStorage.getItem('h2_archive')||'[]');
@@ -211,7 +222,7 @@
             fields.forEach(f => data.customer[f] = document.getElementById(f).value);
             document.querySelectorAll('.item').forEach(row => data.items.push({ desc: row.querySelector('.desc').value, tax: row.querySelector('.row-tax').value, qty: row.querySelector('.qty').value, price: parseFloat(row.querySelector('.price').value) }));
             const idx = arc.findIndex(i => i.nr === nr); if(idx > -1) arc[idx] = data; else { arc.push(data); localStorage.setItem('h2_count', (parseInt(localStorage.getItem('h2_count'))||1)+1); }
-            localStorage.setItem('h2_archive', JSON.stringify(arc)); alert("Archiviert!");
+            localStorage.setItem('h2_archive', JSON.stringify(arc)); alert("Rechnung gespeichert!");
         };
 
         document.getElementById('show-archive').onclick = () => {
@@ -226,11 +237,11 @@
             document.getElementById('invoice-items').innerHTML = ''; inv.items.forEach(it => addRow(it)); bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide();
         };
 
-        window.delInv = nr => { if(confirm("Löschen?")) { let arc = JSON.parse(localStorage.getItem('h2_archive')).filter(i => i.nr !== nr); localStorage.setItem('h2_archive', JSON.stringify(arc)); document.getElementById('show-archive').onclick(); } };
+        window.delInv = nr => { if(confirm("Aus Archiv löschen?")) { let arc = JSON.parse(localStorage.getItem('h2_archive')).filter(i => i.nr !== nr); localStorage.setItem('h2_archive', JSON.stringify(arc)); document.getElementById('show-archive').onclick(); } };
 
         document.getElementById('export-backup').onclick = () => {
             const d = { arc: localStorage.getItem('h2_archive'), cust: localStorage.getItem('h2_customers'), cnt: localStorage.getItem('h2_count'), logo: localStorage.getItem('h2_logo') };
-            const b = new Blob([JSON.stringify(d)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup.json`; a.click();
+            const b = new Blob([JSON.stringify(d)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `H2_Backup_Full.json`; a.click();
         };
 
         document.getElementById('import-file').onchange = e => {
@@ -238,15 +249,19 @@
             r.readAsText(e.target.files[0]);
         };
 
-        // INIT
+        // SETUP
         addRow(); loadCust();
         const cnt = localStorage.getItem('h2_count')||'1'; document.getElementById('invoice-number').textContent = `H2-2026-${String(cnt).padStart(3, '0')}`;
         document.getElementById('add-row').onclick = () => addRow();
         document.getElementById('print-button').onclick = () => window.print();
-        document.getElementById('new-invoice').onclick = () => { if(confirm("Neue Rechnung?")) location.reload(); };
+        document.getElementById('new-invoice').onclick = () => { if(confirm("Neue Rechnung starten?")) location.reload(); };
         document.querySelectorAll('input').forEach(i => i.addEventListener('input', calculate));
         document.getElementById('invoice-items').onclick = e => { if(e.target.classList.contains('remove-btn')) { e.target.closest('tr').remove(); calculate(); }};
-        document.getElementById('pdf-download').onclick = async () => { const canvas = await html2canvas(document.getElementById('invoice-content'), {scale:2}); const pdf = new jspdf.jsPDF('p', 'mm', 'a4'); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297); pdf.save(`H2_Rechnung.pdf`); };
+        document.getElementById('pdf-download').onclick = async () => { 
+            const canvas = await html2canvas(document.getElementById('invoice-content'), {scale:2}); 
+            const pdf = new jspdf.jsPDF('p', 'mm', 'a4'); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297); 
+            pdf.save(`H2_Rechnung_${document.getElementById('invoice-number').textContent}.pdf`); 
+        };
     </script>
 </body>
 </html>
