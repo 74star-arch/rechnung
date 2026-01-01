@@ -146,9 +146,8 @@
                 </div>
                 <div class="col-md-6 text-md-end">
                     <img id="invoice-logo" src="https://cdn.grok.x.ai/assets/images/1/1.jpg" style="max-height: 90px;"><br>
-                    <strong>Rechnungsnummer:</strong> <span id="invoice-number">H22026-0001</span><br>
+                    <strong>Rechnungsnummer:</strong> <span id="invoice-number">H220260001</span><br>
                     <strong>Rechnungsdatum:</strong> <span id="invoice-date"></span><br>
-                    <strong>Fällig am:</strong> <span id="due-date"></span><br>
                     Zahlungsbedingung: 14 Tage netto
                 </div>
             </div>
@@ -157,8 +156,14 @@
                 <div class="col-12">
                     <div class="section-title">Kunde</div>
                     <div class="row g-2">
-                        <div class="col-6"><select id="customer-select" class="form-select"></select></div>
-                        <div class="col-6"><button id="save-customer" class="btn btn-outline-primary w-100">Speichern</button></div>
+                        <div class="col-6">
+                            <select id="customer-select" class="form-select">
+                                <option value="">-- Neuen Kunden anlegen --</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <button id="save-customer" class="btn btn-outline-primary w-100">Kunde speichern</button>
+                        </div>
                         <div class="col-6"><input type="text" id="customer-name" class="form-control" placeholder="Name/Firma"></div>
                         <div class="col-6"><input type="text" id="customer-street" class="form-control" placeholder="Straße"></div>
                         <div class="col-4"><input type="text" id="customer-city" class="form-control" placeholder="PLZ Ort"></div>
@@ -170,7 +175,7 @@
             <div class="row info-block">
                 <div class="col-md-6">
                     <div class="section-title">Rechnung an</div>
-                    <div id="customer-info">Bitte Kunden auswählen.</div>
+                    <div id="customer-info">Bitte Kunden auswählen oder anlegen.</div>
                 </div>
             </div>
 
@@ -349,52 +354,120 @@
         agbText.addEventListener('input', updateAGB);
         updateAGB();
 
-        // Rechnungsdatum manuell + Fällig am
+        // Rechnungsdatum manuell
         const invoiceDateInput = document.getElementById('invoice-date-input');
         const invoiceDateDisplay = document.getElementById('invoice-date');
-        const dueDateDisplay = document.getElementById('due-date');
-        function updateDueDate() {
-            const dateStr = invoiceDateInput.value.trim();
-            if (dateStr) {
-                invoiceDateDisplay.textContent = dateStr;
-                const parts = dateStr.split('.');
-                if (parts.length === 3) {
-                    const day = parseInt(parts[0]);
-                    const month = parseInt(parts[1]) - 1;
-                    const year = parseInt(parts[2]);
-                    const date = new Date(year, month, day);
-                    if (!isNaN(date.getTime())) {
-                        date.setDate(date.getDate() + 14);
-                        const dueDD = String(date.getDate()).padStart(2, '0');
-                        const dueMM = String(date.getMonth() + 1).padStart(2, '0');
-                        const dueYYYY = date.getFullYear();
-                        dueDateDisplay.textContent = `\( {dueDD}. \){dueMM}.${dueYYYY}`;
-                    }
-                }
-            } else {
-                invoiceDateDisplay.textContent = 'Bitte Datum eingeben';
-                dueDateDisplay.textContent = 'wird berechnet';
-            }
-        }
-        invoiceDateInput.addEventListener('input', updateDueDate);
+        invoiceDateInput.addEventListener('input', () => {
+            invoiceDateDisplay.textContent = invoiceDateInput.value.trim() || 'Bitte Datum eingeben';
+        });
 
-        // Rechnungsnummer – neue Nummer nur bei neuer Rechnung
-        function updateInvoiceNumber(isNew = false) {
-            if (isNew) {
-                let counter = parseInt(localStorage.getItem('h2InvoiceCounter') || '0');
-                counter++;
-                document.getElementById('invoice-number').textContent = `H22026-${String(counter).padStart(4, '0')}`;
-                localStorage.setItem('h2InvoiceCounter', counter);
-            }
+        // Rechnungsnummer – hochzählen NUR beim Speichern
+        const invoiceNumberDisplay = document.getElementById('invoice-number');
+
+        function generateNextNumber() {
+            let counter = parseInt(localStorage.getItem('h2InvoiceCounter') || '0');
+            counter++;
+            const newNumber = `H22026${String(counter).padStart(4, '0')}`;
+            invoiceNumberDisplay.textContent = newNumber;
+            localStorage.setItem('h2InvoiceCounter', counter);
         }
 
-        // Beim Laden der Seite: neue Nummer generieren (da neue Rechnung)
-        updateInvoiceNumber(true);
+        // Beim Speichern neue Nummer für die nächste Rechnung vorbereiten
+        document.getElementById('save-invoice').addEventListener('click', () => {
+            generateNextNumber();
+            saveCurrentInvoice();
+            alert('Rechnung gespeichert – neue Nummer für die nächste Rechnung bereit!');
+        });
 
-        // Neue Rechnung – reload und neue Nummer
+        // Beim "Neue Rechnung" neue Nummer
         document.getElementById('new-invoice').addEventListener('click', () => {
+            generateNextNumber();
             location.reload();
         });
+
+        // Startwert H220260001
+        if (!localStorage.getItem('h2InvoiceCounter')) {
+            localStorage.setItem('h2InvoiceCounter', '0');
+        }
+        const currentCounter = parseInt(localStorage.getItem('h2InvoiceCounter') || '0');
+        invoiceNumberDisplay.textContent = `H22026${String(currentCounter + 1).padStart(4, '0')}`;
+
+        // Kundenverwaltung
+        const customerSelect = document.getElementById('customer-select');
+        const customerName = document.getElementById('customer-name');
+        const customerStreet = document.getElementById('customer-street');
+        const customerCity = document.getElementById('customer-city');
+        const customerEmail = document.getElementById('customer-email');
+        const customerInfo = document.getElementById('customer-info');
+
+        function loadCustomers() {
+            const customers = JSON.parse(localStorage.getItem('h2Customers') || '[]');
+            customerSelect.innerHTML = '<option value="">-- Neuen Kunden anlegen --</option>';
+            customers.forEach((cust, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = cust.name || 'Unbenannter Kunde';
+                customerSelect.appendChild(option);
+            });
+        }
+
+        function updateCustomerInfo() {
+            let html = '';
+            if (customerName.value) html += customerName.value + '<br>';
+            if (customerStreet.value) html += customerStreet.value + '<br>';
+            if (customerCity.value) html += customerCity.value + '<br>';
+            html += 'Deutschland<br><br>';
+            if (customerEmail.value) html += 'E-Mail: ' + customerEmail.value;
+            customerInfo.innerHTML = html || 'Bitte Kunden auswählen oder anlegen.';
+        }
+
+        document.getElementById('save-customer').addEventListener('click', () => {
+            if (!customerName.value.trim()) {
+                alert('Bitte mindestens den Namen eingeben!');
+                return;
+            }
+            const customers = JSON.parse(localStorage.getItem('h2Customers') || '[]');
+            const newCustomer = {
+                name: customerName.value.trim(),
+                street: customerStreet.value.trim(),
+                city: customerCity.value.trim(),
+                email: customerEmail.value.trim()
+            };
+            customers.push(newCustomer);
+            localStorage.setItem('h2Customers', JSON.stringify(customers));
+            loadCustomers();
+            customerSelect.value = customers.length - 1;
+            updateCustomerInfo();
+            alert('Kunde gespeichert!');
+        });
+
+        customerSelect.addEventListener('change', () => {
+            const index = customerSelect.value;
+            if (index === '') {
+                customerName.value = '';
+                customerStreet.value = '';
+                customerCity.value = '';
+                customerEmail.value = '';
+                updateCustomerInfo();
+                return;
+            }
+            const customers = JSON.parse(localStorage.getItem('h2Customers') || '[]');
+            const cust = customers[index];
+            if (cust) {
+                customerName.value = cust.name || '';
+                customerStreet.value = cust.street || '';
+847                customerCity.value = cust.city || '';
+                customerEmail.value = cust.email || '';
+                updateCustomerInfo();
+            }
+        });
+
+        [customerName, customerStreet, customerCity, customerEmail].forEach(input => {
+            input.addEventListener('input', updateCustomerInfo);
+        });
+
+        loadCustomers();
+        updateCustomerInfo();
 
         // Berechnung
         function calculate() {
@@ -506,7 +579,7 @@
             window.print();
         });
 
-        // Rechnungsarchiv – speichern, laden, löschen
+        // Rechnungsarchiv
         function saveCurrentInvoice() {
             const invoiceData = {
                 number: document.getElementById('invoice-number').textContent,
@@ -592,7 +665,7 @@
                     document.getElementById('customer-city').value = d.customerDetails.city || '';
                     document.getElementById('customer-email').value = d.customerDetails.email || '';
                     invoiceDateInput.value = d.invoiceDate || '';
-                    updateDueDate();
+                    invoiceDateDisplay.textContent = d.invoiceDate || 'Bitte Datum eingeben';
                     const tbody = document.getElementById('invoice-items');
                     tbody.innerHTML = '';
                     d.items.forEach(item => {
@@ -611,7 +684,6 @@
                     });
                     calculate();
                     bootstrap.Modal.getInstance(document.getElementById('archive-modal')).hide();
-                    alert(`Rechnung ${inv.number} geladen – du kannst sie jetzt bearbeiten!`);
                 }
             } else if (e.target.classList.contains('delete-invoice')) {
                 if (confirm('Rechnung löschen?')) {
@@ -625,7 +697,7 @@
         });
 
         // Initialisierung
-        updateDueDate();
+        invoiceDateDisplay.textContent = invoiceDateInput.value.trim() || 'Bitte Datum eingeben';
         calculate();
     </script>
 </body>
