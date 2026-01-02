@@ -10,92 +10,133 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --h2-blue: #004085; --h2-light: #007bff; --h2-dark: #2c3e50; }
-        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; font-size: 10px; padding: 5px; }
-        .invoice-box { width: 210mm; height: 296mm; margin: 0 auto; background: white; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; font-size: 10px; margin: 0; display: flex; }
+        
+        /* Seitliches Menü */
+        .sidebar { 
+            width: 160px; 
+            background: var(--h2-dark); 
+            height: 100vh; 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 15px 10px; 
+            gap: 8px; 
+            z-index: 1000;
+        }
+        .sidebar button { 
+            font-size: 9px; 
+            text-align: left; 
+            padding: 8px; 
+            border-radius: 5px; 
+            border: none; 
+            width: 100%; 
+            color: white;
+            transition: 0.2s;
+        }
+        .sidebar .btn-success { background: #27ae60 !important; }
+        .sidebar .btn-info { background: #2980b9 !important; }
+        .sidebar .btn-warning { background: #f39c12 !important; color: black; }
+        .sidebar .btn-dark { background: #34495e !important; border: 1px solid #555; }
+        .sidebar .btn-danger { background: #c0392b !important; }
+
+        /* Hauptbereich */
+        .main-wrapper { margin-left: 160px; flex-grow: 1; padding: 10px; display: flex; justify-content: center; }
+        .invoice-box { width: 210mm; min-height: 296mm; background: white; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
         .content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
         .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 8px; text-transform: uppercase; }
         .address-data { line-height: 1.5; margin-bottom: 20px; font-size: 10.5px; }
-        .address-data span { display: block; width: 100%; }
         .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 12px; border-radius: 5px; font-size: 11px; }
         .totals-box { background: var(--h2-dark); color: white; padding: 12px; border-radius: 8px; }
-        @media print { .no-print { display: none !important; } body { padding: 0; } .invoice-box { box-shadow: none; border: none; margin: 0; width: 100%; height: 100%; } }
+
+        @media print { 
+            .sidebar, .no-print { display: none !important; } 
+            .main-wrapper { margin-left: 0; padding: 0; } 
+            .invoice-box { box-shadow: none; border: none; width: 100%; height: 100%; } 
+        }
     </style>
 </head>
 <body>
 
-    <div class="container no-print text-center mb-2">
-        <div class="btn-group shadow-sm bg-white p-2 rounded flex-wrap">
-            <button onclick="saveInvoice()" class="btn btn-success btn-sm">💾 Speichern</button>
-            <button onclick="openCustomerModal()" class="btn btn-info btn-sm text-white">👥 Kunden</button>
-            <button onclick="openScanner()" class="btn btn-warning btn-sm">📸 Scan</button>
-            <button onclick="showStats()" class="btn btn-dark btn-sm">📊 Bilanz</button>
-            <button onclick="window.print()" class="btn btn-secondary btn-sm">🖨️ Druck</button>
-            <button onclick="downloadPDF()" class="btn btn-danger btn-sm">📄 PDF</button>
-            <button onclick="share('whatsapp')" class="btn btn-outline-success btn-sm">🟢 WA</button>
-            <button onclick="share('telegram')" class="btn btn-outline-info btn-sm">🔵 TG</button>
+    <div class="sidebar no-print shadow">
+        <div class="text-white text-center mb-3 border-bottom pb-2">
+            <strong style="font-size: 11px;">H2-ERP 2026</strong>
+        </div>
+        <button onclick="saveInvoice()" class="btn-success">💾 Speichern</button>
+        <button onclick="openCustomerModal()" class="btn-info text-white">👥 Kunden</button>
+        <button onclick="openScanner()" class="btn-warning">📸 Beleg Scan</button>
+        <button onclick="showStats()" class="btn-dark">📊 Bilanz & Steuer</button>
+        <button onclick="window.print()" class="btn btn-secondary btn-sm" style="background:#7f8c8d">🖨️ Drucken</button>
+        <button onclick="downloadPDF()" class="btn-danger">📄 PDF Export</button>
+        <div class="mt-auto">
+            <button onclick="share('whatsapp')" class="btn btn-outline-success btn-sm w-100 mb-1" style="font-size: 8px;">🟢 WhatsApp</button>
+            <button onclick="share('telegram')" class="btn btn-outline-info btn-sm w-100" style="font-size: 8px;">🔵 Telegram</button>
         </div>
     </div>
 
-    <div id="pdf-area">
-        <div class="invoice-box">
-            <div class="header-bar">
-                <div><h2 class="m-0">H2TechService</h2><small>Inhaber Osman Tuncer</small></div>
-                <h1 class="m-0" style="letter-spacing: 5px; font-weight: 800;">RECHNUNG</h1>
-            </div>
-            
-            <div class="content">
-                <div class="row">
-                    <div class="col-6">
-                        <div class="section-title">Absender</div>
-                        <div class="address-data">
-                            <strong style="font-size: 12px; color: var(--h2-blue); display: block; margin-bottom: 3px;">H2TechService</strong>
-                            <span>Suntalstraße 48</span>
-                            <span>31552 Rodenberg</span>
-                            <span>📧 74star@gmail.com</span>
-                            <span>📞 +49 176 66658777</span>
-                            <span>Steuer-ID: 41/320/887966</span>
-                        </div>
-                    </div>
-                    <div class="col-6 text-end">
-                        <div class="mb-3"><b>Nr:</b> <span id="inv-nr">H2-2026-001</span><br><b>Datum:</b> <span id="inv-date"></span></div>
-                        <div class="section-title">Empfänger</div>
-                        <div id="cust-display" class="address-data fw-bold text-primary">
-                            <span>(Kunde wählen...)</span>
-                        </div>
-                    </div>
+    <div class="main-wrapper">
+        <div id="pdf-area">
+            <div class="invoice-box">
+                <div class="header-bar">
+                    <div><h2 class="m-0">H2TechService</h2><small>Inhaber Osman Tuncer</small></div>
+                    <h1 class="m-0" style="letter-spacing: 5px; font-weight: 800;">RECHNUNG</h1>
                 </div>
-
-                <table class="table table-sm border mt-4">
-                    <thead>
-                        <tr class="table-light">
-                            <th>Leistungsbeschreibung</th>
-                            <th class="text-center" style="width:50px;">Menge</th>
-                            <th class="text-end" style="width:80px;">Einzel (€)</th>
-                            <th class="text-center" style="width:60px;">MwSt %</th>
-                            <th class="text-center" style="width:80px;">MwSt Betrag</th>
-                            <th class="text-end" style="width:90px;">Gesamt (€)</th>
-                            <th class="no-print"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="inv-items"></tbody>
-                </table>
-                <button onclick="addRow()" class="btn btn-xs btn-outline-primary no-print">+ Position</button>
-
-                <div class="row mt-auto pt-4 border-top">
-                    <div class="col-7">
-                        <div class="payment-box">
-                            <strong>Bankverbindung Osman Tuncer</strong><br>
-                            <span>IBAN: <b>LT78 3250 0925 1892 8659</b></span><br>
-                            <span>BIC: <b>REVOLT21</b></span>
+                
+                <div class="content">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="section-title">Absender</div>
+                            <div class="address-data">
+                                <strong style="font-size: 12px; color: var(--h2-blue); display: block; margin-bottom: 3px;">H2TechService</strong>
+                                <span>Suntalstraße 48</span><br>
+                                <span>31552 Rodenberg</span><br>
+                                <span>📧 74star@gmail.com</span><br>
+                                <span>📞 +49 176 66658777</span><br>
+                                <span>Steuer-ID: 41/320/887966</span>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <div class="mb-3"><b>Nr:</b> <span id="inv-nr" contenteditable="true">H2-2026-001</span><br><b>Datum:</b> <span id="inv-date"></span></div>
+                            <div class="section-title">Empfänger</div>
+                            <div id="cust-display" class="address-data fw-bold text-primary">
+                                <span>(Kunde wählen...)</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-5">
-                        <div class="totals-box">
-                            <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
-                            <div class="d-flex justify-content-between small opacity-75"><span>MwSt gesamt:</span><span id="sum-t">0,00 €</span></div>
-                            <hr class="my-1">
-                            <div class="d-flex justify-content-between fw-bold" style="font-size: 1.2em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
+
+                    <table class="table table-sm border mt-4">
+                        <thead>
+                            <tr class="table-light">
+                                <th>Leistungsbeschreibung</th>
+                                <th class="text-center" style="width:50px;">Stk</th>
+                                <th class="text-end" style="width:80px;">Einzel (€)</th>
+                                <th class="text-center" style="width:60px;">MwSt %</th>
+                                <th class="text-end" style="width:90px;">Gesamt (€)</th>
+                                <th class="no-print"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="inv-items"></tbody>
+                    </table>
+                    <button onclick="addRow()" class="btn btn-xs btn-outline-primary no-print">+ Position</button>
+
+                    <div class="row mt-auto pt-4 border-top">
+                        <div class="col-7">
+                            <div class="payment-box">
+                                <strong>Bankverbindung Osman Tuncer</strong><br>
+                                <span>IBAN: <b>LT78 3250 0925 1892 8659</b></span><br>
+                                <span>BIC: <b>REVOLT21</b></span>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="totals-box">
+                                <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
+                                <div class="d-flex justify-content-between small opacity-75"><span>MwSt gesamt:</span><span id="sum-t">0,00 €</span></div>
+                                <hr class="my-1">
+                                <div class="d-flex justify-content-between fw-bold" style="font-size: 1.2em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -104,7 +145,7 @@
     </div>
 
     <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
-        <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuer-Pool</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuer-Übersicht</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
         <div class="modal-body text-center">
             <div class="row g-2 mb-3">
                 <div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0€</b></div></div>
@@ -146,7 +187,6 @@
                 <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="1" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="0" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-center tx" value="19" oninput="calc()"></td>
-                <td class="text-center tax-val">0,00 €</td>
                 <td class="text-end fw-bold lt">0,00 €</td>
                 <td class="no-print"><button onclick="this.closest('tr').remove();calc();" class="btn btn-sm text-danger">×</button></td>`;
             document.getElementById('inv-items').appendChild(tr);
@@ -157,7 +197,6 @@
             document.querySelectorAll('#inv-items tr').forEach(r => {
                 const q=parseFloat(r.querySelector('.qt').value)||0, p=parseFloat(r.querySelector('.pr').value)||0, txR=parseFloat(r.querySelector('.tx').value)||0;
                 const net = q*p; const tax = net*(txR/100);
-                r.querySelector('.tax-val').textContent = tax.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
                 r.querySelector('.lt').textContent = (net+tax).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
                 n+=net; t+=tax;
             });
@@ -214,7 +253,7 @@
             new bootstrap.Modal(document.getElementById('modal-cust')).show();
         }
         function selectCust(i) {
-            const c = db.customers[i]; document.getElementById('cust-display').innerHTML = `<span>${c.name}</span><span>${c.street}</span><span>${c.city}</span><span>📧 ${c.mail}</span><span>📞 ${c.phone}</span>`;
+            const c = db.customers[i]; document.getElementById('cust-display').innerHTML = `<span>${c.name}</span><br><span>${c.street}</span><br><span>${c.city}</span><br><span>📧 ${c.mail}</span><br><span>📞 ${c.phone}</span>`;
             bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
         }
         addRow();
