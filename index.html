@@ -38,7 +38,7 @@
         }
         .sidebar .btn-success { background: #27ae60 !important; }
         .sidebar .btn-info { background: #2980b9 !important; }
-        .sidebar .btn-warning { background: #f39c12 !important; color: black; }
+        .sidebar .sidebar .btn-warning { background: #f39c12 !important; color: black; }
         .sidebar .btn-dark { background: #34495e !important; border: 1px solid #555; }
         .sidebar .btn-danger { background: #c0392b !important; }
 
@@ -154,7 +154,7 @@
                 <div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0€</b></div></div>
             </div>
             <button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">📗 Excel/CSV Export</button>
-            <table class="table table-sm x-small text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th></tr></thead><tbody id="stat-table"></tbody></table>
+            <table class="table table-sm x-small text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th><th>Aktionen</th></tr></thead><tbody id="stat-table"></tbody></table>
         </div>
     </div></div></div>
 
@@ -177,86 +177,224 @@
     </div></div></div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('h2_final_v9') || '{"invoices":[], "expenses":[], "customers":[]}');
+        let db = JSON.parse(localStorage.getItem('h2_final_v10') || '{"invoices":[], "expenses":[], "customers":[]}');  // Version hochgesetzt für Kompatibilität
         document.getElementById('inv-date').textContent = new Date().toLocaleDateString('de-DE');
         let stream = null;
+        let currentInvoice = { items: [], customer: null };  // Temporäre Speicherung der aktuellen Rechnung
 
-        function addRow() {
+        function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><input type="text" class="form-control form-control-sm border-0 p-0"></td>
-                <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="1" oninput="calc()"></td>
-                <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="0" oninput="calc()"></td>
-                <td><input type="number" class="form-control form-control-sm border-0 text-center tx" value="19" oninput="calc()"></td>
+            tr.innerHTML = `<td><input type="text" class="form-control form-control-sm border-0 p-0 desc" value="${desc}"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="${qty}" oninput="calc()"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="${price}" oninput="calc()"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 text-center tx" value="${tax}" oninput="calc()"></td>
                 <td class="text-end fw-bold lt">0,00 €</td>
                 <td class="no-print"><button onclick="this.closest('tr').remove();calc();" class="btn btn-sm text-danger">×</button></td>`;
             document.getElementById('inv-items').appendChild(tr);
+            calc();
         }
 
         function calc() {
-            let n=0, t=0;
-            document.querySelectorAll('#inv-items tr').forEach(r => {
-                const q=parseFloat(r.querySelector('.qt').value)||0, p=parseFloat(r.querySelector('.pr').value)||0, txR=parseFloat(r.querySelector('.tx').value)||0;
-                const net = q*p; const tax = net*(txR/100);
-                r.querySelector('.lt').textContent = (net+tax).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-                n+=net; t+=tax;
+            let netTotal = 0, taxTotal = 0;
+            document.querySelectorAll('#inv-items tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qt').value) || 0;
+                const price = parseFloat(row.querySelector('.pr').value) || 0;
+                const taxRate = parseFloat(row.querySelector('.tx').value) || 0;
+                const net = qty * price;
+                const tax = net * (taxRate / 100);
+                const gross = net + tax;
+                row.querySelector('.lt').textContent = gross.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'});
+                netTotal += net;
+                taxTotal += tax;
             });
-            document.getElementById('sum-n').textContent = n.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-            document.getElementById('sum-t').textContent = t.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
-            document.getElementById('sum-g').textContent = (n+t).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+            const grossTotal = netTotal + taxTotal;
+            document.getElementById('sum-n').textContent = netTotal.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'});
+            document.getElementById('sum-t').textContent = taxTotal.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'});
+            document.getElementById('sum-g').textContent = grossTotal.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'});
         }
 
         function saveInvoice() {
-            const b = parseFloat(document.getElementById('sum-g').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
-            const m = parseFloat(document.getElementById('sum-t').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
-            db.invoices.push({ date: new Date().toLocaleDateString('de-DE'), nr: document.getElementById('inv-nr').textContent, brutto: b, mwst: m });
-            localStorage.setItem('h2_final_v9', JSON.stringify(db)); alert("Gespeichert!");
+            const nr = document.getElementById('inv-nr').textContent.trim();
+            if (!/^[a-zA-Z0-9-]+$/.test(nr)) { alert('Ungültige Rechnungsnummer (nur Buchstaben, Zahlen, - erlaubt)'); return; }
+            currentInvoice.items = Array.from(document.querySelectorAll('#inv-items tr')).map(row => ({
+                desc: row.querySelector('.desc').value,
+                qty: parseFloat(row.querySelector('.qt').value),
+                price: parseFloat(row.querySelector('.pr').value),
+                tax: parseFloat(row.querySelector('.tx').value)
+            }));
+            currentInvoice.customer = db.customers.find(c => c.name === document.getElementById('cust-display').querySelector('span').textContent) || null;
+            const gross = parseFloat(document.getElementById('sum-g').textContent.replace(/[^0-9,.]/g, '').replace(',', '.'));
+            const tax = parseFloat(document.getElementById('sum-t').textContent.replace(/[^0-9,.]/g, '').replace(',', '.'));
+            db.invoices.push({ date: new Date().toLocaleDateString('de-DE'), nr, gross, tax, items: currentInvoice.items, customer: currentInvoice.customer });
+            localStorage.setItem('h2_final_v10', JSON.stringify(db));
+            alert('Rechnung gespeichert!');
+            resetInvoice();
+        }
+
+        function resetInvoice() {
+            document.getElementById('inv-nr').textContent = 'H2-2026-' + (db.invoices.length + 1).toString().padStart(3, '0');
+            document.getElementById('inv-items').innerHTML = '';
+            document.getElementById('cust-display').innerHTML = '<span>(Kunde wählen...)</span>';
+            addRow();
         }
 
         function showStats() {
-            let b=0, m=0, a=0; const table = document.getElementById('stat-table'); table.innerHTML = '';
-            db.invoices.forEach(i => { b += i.brutto; m += i.mwst; table.innerHTML += `<tr class="table-success"><td>Rechnung</td><td>${i.nr}</td><td>+${i.mwst.toFixed(2)}€</td><td>${i.brutto.toFixed(2)}€</td></tr>`; });
-            db.expenses.forEach(ex => { a += ex.amt; table.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg</td><td>-</td><td>-${ex.amt.toFixed(2)}€</td></tr>`; });
-            document.getElementById('st-brutto').innerText = b.toFixed(2) + "€"; document.getElementById('st-steuer').innerText = m.toFixed(2) + "€";
-            document.getElementById('st-ausg').innerText = a.toFixed(2) + "€"; document.getElementById('st-gewinn').innerText = (b-m-a).toFixed(2) + "€";
+            let grossTotal = 0, taxTotal = 0, expenseTotal = 0;
+            const tableBody = document.getElementById('stat-table');
+            tableBody.innerHTML = '';
+            db.invoices.forEach((inv, idx) => {
+                grossTotal += inv.gross;
+                taxTotal += inv.tax;
+                const row = document.createElement('tr');
+                row.className = 'table-success';
+                row.innerHTML = `<td>Rechnung</td><td>\( {inv.nr}</td><td>+ \){inv.tax.toFixed(2)}€</td><td>${inv.gross.toFixed(2)}€</td>
+                                 <td><button class="btn btn-xs btn-info" onclick="loadInvoice(${idx})">Laden</button></td>`;
+                tableBody.appendChild(row);
+            });
+            db.expenses.forEach((ex, idx) => {
+                expenseTotal += ex.amt;
+                const row = document.createElement('tr');
+                row.className = 'table-danger';
+                row.innerHTML = `<td>Ausgabe</td><td>Beleg vom \( {ex.date}</td><td>-</td><td>- \){ex.amt.toFixed(2)}€</td><td></td>`;
+                tableBody.appendChild(row);
+            });
+            document.getElementById('st-brutto').textContent = grossTotal.toFixed(2) + '€';
+            document.getElementById('st-steuer').textContent = taxTotal.toFixed(2) + '€';
+            document.getElementById('st-ausg').textContent = expenseTotal.toFixed(2) + '€';
+            document.getElementById('st-gewinn').textContent = (grossTotal - taxTotal - expenseTotal).toFixed(2) + '€';
             new bootstrap.Modal(document.getElementById('modal-stats')).show();
         }
 
-        function share(p) { 
-            const msg = encodeURIComponent("H2TechService Rechnung: " + document.getElementById('sum-g').textContent);
-            window.open(p === 'whatsapp' ? `https://wa.me/?text=${msg}` : `https://t.me/share/url?url=${msg}`);
+        function loadInvoice(idx) {
+            const inv = db.invoices[idx];
+            document.getElementById('inv-nr').textContent = inv.nr;
+            document.getElementById('inv-date').textContent = inv.date;
+            document.getElementById('inv-items').innerHTML = '';
+            inv.items.forEach(item => addRow(item.desc, item.qty, item.price, item.tax));
+            if (inv.customer) selectCust(inv.customer, true);
+            calc();
+            bootstrap.Modal.getInstance(document.getElementById('modal-stats')).hide();
+        }
+
+        function share(platform) { 
+            const msg = encodeURIComponent(`H2TechService Rechnung: ${document.getElementById('sum-g').textContent}`);
+            window.open(platform === 'whatsapp' ? `https://wa.me/?text=\( {msg}` : `https://t.me/share/url?url= \){msg}`);
         }
 
         function exportToCSV() {
-            let csv = "Datum;Typ;Info;MwSt;Betrag\n";
-            db.invoices.forEach(i => csv += `${i.date};Rechnung;${i.nr};${i.mwst.toFixed(2)};${i.brutto.toFixed(2)}\n`);
-            db.expenses.forEach(ex => csv += `${new Date().toLocaleDateString()};Ausgabe;Beleg;-;${ex.amt.toFixed(2)}\n`);
-            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); link.download = "H2_Bilanz.csv"; link.click();
+            let csv = 'Datum;Typ;Info;MwSt;Betrag\n';
+            db.invoices.forEach(inv => csv += `\( {inv.date};Rechnung; \){inv.nr};\( {inv.tax.toFixed(2)}; \){inv.gross.toFixed(2)}\n`);
+            db.expenses.forEach(ex => csv += `\( {ex.date};Ausgabe;Beleg;-; \){ex.amt.toFixed(2)}\n`);
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+            link.download = 'H2_Bilanz.csv';
+            link.click();
         }
 
-        function downloadPDF() { html2pdf().from(document.getElementById('pdf-area')).set({margin:0, filename:'H2_Rechnung.pdf', jsPDF:{format:'a4'}}).save(); }
-        async function openScanner() { stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); document.getElementById('cam-video').srcObject = stream; new bootstrap.Modal(document.getElementById('modal-scan')).show(); }
-        function stopCam() { if(stream) stream.getTracks().forEach(t => t.stop()); }
+        function downloadPDF() { 
+            html2pdf().from(document.getElementById('pdf-area')).set({margin: 0, filename: 'H2_Rechnung.pdf', jsPDF: {format: 'a4'}}).save(); 
+        }
+
+        async function openScanner() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
+                document.getElementById('cam-video').srcObject = stream;
+                new bootstrap.Modal(document.getElementById('modal-scan')).show();
+            } catch (err) {
+                alert('Kamera-Zugriff fehlgeschlagen: ' + err.message);
+            }
+        }
+
+        function stopCam() {
+            if (stream) stream.getTracks().forEach(track => track.stop());
+        }
+
         async function captureAndScan() {
-            const v=document.getElementById('cam-video'); const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
-            const {data:{text}} = await Tesseract.recognize(c.toDataURL(),'deu'); const matches = text.match(/\d+[,.]\d{2}/g);
-            if(matches) { const amt = Math.max(...matches.map(m => parseFloat(m.replace(',','.')))); db.expenses.push({amt}); localStorage.setItem('h2_final_v9', JSON.stringify(db)); alert("Erkannt: "+amt+"€"); }
-            stopCam(); bootstrap.Modal.getInstance(document.getElementById('modal-scan')).hide();
+            const video = document.getElementById('cam-video');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            try {
+                const {data: {text}} = await Tesseract.recognize(canvas.toDataURL(), 'deu');
+                // Bessere Erkennung: Suche nach Schlüsselwörtern und nahen Beträgen
+                const lines = text.split('\n');
+                let amt = 0;
+                const keywords = ['gesamt', 'summe', 'zu zahlen', 'total', 'brutto'];
+                lines.forEach(line => {
+                    const lowerLine = line.toLowerCase();
+                    if (keywords.some(kw => lowerLine.includes(kw))) {
+                        const matches = line.match(/\d+[,.]\d{2}/g);
+                        if (matches) {
+                            const candidate = Math.max(...matches.map(m => parseFloat(m.replace(',', '.'))));
+                            if (candidate > amt) amt = candidate;
+                        }
+                    }
+                });
+                if (amt > 0) {
+                    db.expenses.push({amt, date: new Date().toLocaleDateString('de-DE')});
+                    localStorage.setItem('h2_final_v10', JSON.stringify(db));
+                    alert(`Erkannter Betrag: ${amt.toFixed(2)}€`);
+                } else {
+                    alert('Kein gültiger Betrag erkannt.');
+                }
+            } catch (err) {
+                alert('Scan-Fehler: ' + err.message);
+            }
+            stopCam();
+            bootstrap.Modal.getInstance(document.getElementById('modal-scan')).hide();
         }
 
         function saveCustomer() {
-            const c = { name: document.getElementById('c-name').value, street: document.getElementById('c-street').value, city: document.getElementById('c-city').value, mail: document.getElementById('c-mail').value, phone: document.getElementById('c-phone').value };
-            db.customers.push(c); localStorage.setItem('h2_final_v9', JSON.stringify(db)); openCustomerModal();
+            const name = document.getElementById('c-name').value.trim();
+            if (!name) { alert('Name erforderlich!'); return; }
+            const customer = {
+                name,
+                street: document.getElementById('c-street').value.trim(),
+                city: document.getElementById('c-city').value.trim(),
+                mail: document.getElementById('c-mail').value.trim(),
+                phone: document.getElementById('c-phone').value.trim()
+            };
+            db.customers.push(customer);
+            localStorage.setItem('h2_final_v10', JSON.stringify(db));
+            openCustomerModal();  // Liste aktualisieren
         }
+
         function openCustomerModal() {
-            const list = document.getElementById('cust-list'); list.innerHTML = '';
-            db.customers.forEach((c, i) => list.innerHTML += `<button onclick="selectCust(${i})" class="list-group-item list-group-item-action small">${c.name}</button>`);
+            const list = document.getElementById('cust-list');
+            list.innerHTML = '';
+            db.customers.forEach((c, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'list-group-item list-group-item-action small';
+                btn.textContent = c.name;
+                btn.onclick = () => {
+                    selectCust(c);
+                    bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
+                };
+                list.appendChild(btn);
+            });
+            // Formulare leeren
+            document.getElementById('c-name').value = '';
+            document.getElementById('c-street').value = '';
+            document.getElementById('c-city').value = '';
+            document.getElementById('c-mail').value = '';
+            document.getElementById('c-phone').value = '';
             new bootstrap.Modal(document.getElementById('modal-cust')).show();
         }
-        function selectCust(i) {
-            const c = db.customers[i]; document.getElementById('cust-display').innerHTML = `<span>${c.name}</span><br><span>${c.street}</span><br><span>${c.city}</span><br><span>📧 ${c.mail}</span><br><span>📞 ${c.phone}</span>`;
-            bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
+
+        function selectCust(customer, fromLoad = false) {
+            document.getElementById('cust-display').innerHTML = `
+                <span>${customer.name}</span><br>
+                <span>${customer.street}</span><br>
+                <span>${customer.city}</span><br>
+                <span>📧 ${customer.mail}</span><br>
+                <span>📞 ${customer.phone}</span>
+            `;
+            if (!fromLoad) bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
         }
-        addRow();
+
+        // Initialisierung
+        resetInvoice();
     </script>
 </body>
 </html>
