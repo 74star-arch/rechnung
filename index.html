@@ -3,286 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2TechService AI-SYSTEM 2026</title>
+    <title>H2TechService Business Pro 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        :root { --primary: #007bff; --success: #198754; --danger: #dc3545; }
-        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; font-size: 10px; padding: 5px; }
-        
-        /* DIN A4 KOMPRESSION: Erzwungen auf 1 Blatt */
-        .invoice-box { 
-            width: 210mm; 
-            height: 296mm; 
-            margin: 0 auto; 
-            background: white; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.1); 
-            overflow: hidden; 
-        }
-        
-        .header-bar { background: linear-gradient(135deg, #004085, var(--primary)); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        #logo-preview { max-height: 50px; max-width: 160px; object-fit: contain; }
-        .content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
-        
-        #cam-overlay { position: absolute; top: 15%; left: 10%; width: 80%; height: 70%; border: 3px dashed #00ff00; border-radius: 15px; pointer-events: none; z-index: 10; }
-        
-        .address-block { line-height: 1.4; margin-bottom: 15px; font-size: 10px; display: block; }
-        .address-block span { display: block; }
-
-        .section-title { font-size: 9px; font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; margin-bottom: 6px; text-transform: uppercase; }
-        
-        @media print { 
-            .no-print { display: none !important; } 
-            body { padding: 0; background: white; }
-            .invoice-box { box-shadow: none; border: none; margin: 0; width: 100%; height: 100%; }
-        }
-        
-        .status-paid { color: var(--success); font-weight: bold; }
-        .status-open { color: var(--danger); font-weight: bold; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        :root { --h2-blue: #004085; --h2-light: #007bff; --h2-dark: #2c3e50; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; font-size: 10px; padding: 5px; }
+        .invoice-box { width: 210mm; height: 296mm; margin: 0 auto; background: white; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+        .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 8px; text-transform: uppercase; }
+        .address-data { line-height: 1.5; margin-bottom: 20px; font-size: 10.5px; }
+        .address-data span { display: block; width: 100%; }
+        .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 12px; border-radius: 5px; font-size: 11px; }
+        .totals-box { background: var(--h2-dark); color: white; padding: 12px; border-radius: 8px; }
+        @media print { .no-print { display: none !important; } body { padding: 0; } .invoice-box { box-shadow: none; border: none; margin: 0; width: 100%; height: 100%; } }
     </style>
 </head>
 <body>
 
     <div class="container no-print text-center mb-2">
-        <div class="btn-group shadow-sm bg-white p-1 rounded flex-wrap">
-            <button id="save-invoice" class="btn btn-success btn-sm">💾 Sichern</button>
-            <button id="open-cam-btn" class="btn btn-warning btn-sm">📸 Quittung Scan</button>
-            <button id="btn-cust" class="btn btn-info btn-sm text-white">👥 Kunden</button>
-            <button id="show-archive" class="btn btn-dark btn-sm">📊 Bilanz & Steuer</button>
-            <button id="make-pdf" class="btn btn-danger btn-sm">📄 PDF</button>
+        <div class="btn-group shadow-sm bg-white p-2 rounded flex-wrap">
+            <button onclick="saveInvoice()" class="btn btn-success btn-sm">💾 Speichern</button>
+            <button onclick="openCustomerModal()" class="btn btn-info btn-sm text-white">👥 Kunden</button>
+            <button onclick="openScanner()" class="btn btn-warning btn-sm">📸 Scan</button>
+            <button onclick="showStats()" class="btn btn-dark btn-sm">📊 Bilanz</button>
             <button onclick="window.print()" class="btn btn-secondary btn-sm">🖨️ Druck</button>
+            <button onclick="downloadPDF()" class="btn btn-danger btn-sm">📄 PDF</button>
+            <button onclick="share('whatsapp')" class="btn btn-outline-success btn-sm">🟢 WA</button>
+            <button onclick="share('telegram')" class="btn btn-outline-info btn-sm">🔵 TG</button>
         </div>
     </div>
 
     <div id="pdf-area">
-    <div class="invoice-box">
-        <div class="header-bar">
-            <div onclick="document.getElementById('logo-upload').click()" style="cursor: pointer;">
-                <img id="logo-preview" src="" class="d-none">
-                <div id="logo-text" class="small border p-1 no-print">Logo +</div>
-                <input type="file" id="logo-upload" class="d-none" accept="image/*">
+        <div class="invoice-box">
+            <div class="header-bar">
+                <div><h2 class="m-0">H2TechService</h2><small>Inhaber Osman Tuncer</small></div>
+                <h1 class="m-0" style="letter-spacing: 5px; font-weight: 800;">RECHNUNG</h1>
             </div>
-            <h2 class="m-0" style="letter-spacing: 4px; font-weight: bold;">RECHNUNG</h2>
-        </div>
-
-        <div class="content">
-            <div class="row">
-                <div class="col-6">
-                    <div class="section-title">Absender</div>
-                    <div class="address-block">
-                        <strong>H2TechService</strong>
-                        <span>Suntalstraße 48</span>
-                        <span>31552 Rodenberg</span>
-                        <span>74star@gmail.com</span>
-                        <span>+49 176 66658777</span>
-                        <span>Steuer-ID: 41/320/887966</span>
-                        <strong>Inhaber: Osman Tuncer</strong>
+            
+            <div class="content">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="section-title">Absender</div>
+                        <div class="address-data">
+                            <strong style="font-size: 12px; color: var(--h2-blue); display: block; margin-bottom: 3px;">H2TechService</strong>
+                            <span>Suntalstraße 48</span>
+                            <span>31552 Rodenberg</span>
+                            <span>📧 74star@gmail.com</span>
+                            <span>📞 +49 176 66658777</span>
+                            <span>Steuer-ID: 41/320/887966</span>
+                        </div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <div class="mb-3"><b>Nr:</b> <span id="inv-nr">H2-2026-001</span><br><b>Datum:</b> <span id="inv-date"></span></div>
+                        <div class="section-title">Empfänger</div>
+                        <div id="cust-display" class="address-data fw-bold text-primary">
+                            <span>(Kunde wählen...)</span>
+                        </div>
                     </div>
                 </div>
-                <div class="col-6 text-end">
-                    <div class="mb-3">
-                        <strong>Nr:</strong> <span id="inv-nr">H2-2026-001</span><br>
-                        <strong>Datum:</strong> <span id="inv-date"></span>
-                    </div>
-                    <div class="section-title">Empfänger</div>
-                    <div id="cust-print" class="address-block fw-bold text-primary">
-                        <span class="text-muted fw-normal">(Kunde wählen...)</span>
-                    </div>
-                </div>
-            </div>
 
-            <table class="table table-sm border mt-3" style="font-size: 9px;">
-                <thead class="table-light">
-                    <tr><th>Beschreibung</th><th class="text-center">MwSt</th><th class="text-center">Menge</th><th class="text-end">Preis</th><th class="text-end">Gesamt</th><th class="no-print"></th></tr>
-                </thead>
-                <tbody id="inv-items"></tbody>
-            </table>
-            <button onclick="addRow()" class="btn btn-xs btn-outline-primary no-print">+ Position</button>
+                <table class="table table-sm border mt-4">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Leistungsbeschreibung</th>
+                            <th class="text-center" style="width:50px;">Menge</th>
+                            <th class="text-end" style="width:80px;">Einzel (€)</th>
+                            <th class="text-center" style="width:60px;">MwSt %</th>
+                            <th class="text-center" style="width:80px;">MwSt Betrag</th>
+                            <th class="text-end" style="width:90px;">Gesamt (€)</th>
+                            <th class="no-print"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="inv-items"></tbody>
+                </table>
+                <button onclick="addRow()" class="btn btn-xs btn-outline-primary no-print">+ Position</button>
 
-            <div class="row mt-auto pt-3 border-top">
-                <div class="col-7">
-                    <div class="section-title">Zahlungshinweis</div>
-                    <div class="p-2 bg-light rounded" style="font-size: 9px;">
-                        <strong>Bankinhaber: Osman Tuncer</strong><br>
-                        IBAN: LT78 3250 0925 1892 8659 |BIC:Revolt21<br>
-                        <span id="k-info" class="d-none fw-bold text-danger">Kleinunternehmerregelung gemäß §19 UStG.</span>
+                <div class="row mt-auto pt-4 border-top">
+                    <div class="col-7">
+                        <div class="payment-box">
+                            <strong>Bankverbindung Osman Tuncer</strong><br>
+                            <span>IBAN: <b>LT78 3250 0925 1892 8659</b></span><br>
+                            <span>BIC: <b>REVOLT21</b></span>
+                        </div>
                     </div>
-                    <div class="form-check form-switch no-print mt-2">
-                        <input class="form-check-input" type="checkbox" id="kleinunternehmer">
-                        <label class="form-check-label small">Kleinunternehmer</label>
-                    </div>
-                </div>
-                <div class="col-5">
-                    <div class="p-2 bg-light border rounded">
-                        <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
-                        <div class="d-flex justify-content-between small text-muted"><span>MwSt:</span><span id="sum-t">0,00 €</span></div>
-                        <hr class="my-1">
-                        <div class="d-flex justify-content-between fw-bold text-primary" style="font-size: 1.1em;">
-                            <span>GESAMT:</span><span id="sum-g">0,00 €</span>
+                    <div class="col-5">
+                        <div class="totals-box">
+                            <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
+                            <div class="d-flex justify-content-between small opacity-75"><span>MwSt gesamt:</span><span id="sum-t">0,00 €</span></div>
+                            <hr class="my-1">
+                            <div class="d-flex justify-content-between fw-bold" style="font-size: 1.2em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
 
-    <div class="modal fade" id="modal-camera" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content bg-dark">
-                <div class="modal-body p-0 position-relative">
-                    <video id="cam-video" autoplay playsinline style="width: 100%; height: 80vh; object-fit: cover;"></video>
-                    <div id="cam-overlay"></div>
-                    <div id="ai-status" class="position-absolute top-50 start-50 translate-middle d-none bg-dark p-3 rounded text-white text-center shadow-lg">
-                        <div class="loader"></div><br>KI analysiert Beleg...
-                    </div>
-                    <div class="position-absolute bottom-0 w-100 text-center mb-4">
-                        <button id="capture-btn" class="btn btn-light btn-lg rounded-circle shadow" style="width:80px; height:80px; border:5px solid #00ff00;">📸</button>
-                        <button class="btn btn-danger btn-sm ms-3" data-bs-dismiss="modal">X</button>
-                    </div>
-                    <canvas id="cam-canvas" class="d-none"></canvas>
-                </div>
+    <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuer-Pool</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body text-center">
+            <div class="row g-2 mb-3">
+                <div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0€</b></div></div>
+                <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0€</b></div></div>
+                <div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0€</b></div></div>
+                <div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0€</b></div></div>
             </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
-        <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Status</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body">
-            <div class="row g-1 text-center mb-3">
-                <div class="col-3"><div class="card bg-success text-white p-1 small">Bezahlt<br><b id="s-paid-sum">0€</b></div></div>
-                <div class="col-3"><div class="card bg-danger text-white p-1 small">Offen<br><b id="s-open-sum">0€</b></div></div>
-                <div class="col-3"><div class="card bg-warning p-1 small">MwSt<br><b id="s-tax">0€</b></div></div>
-                <div class="col-3"><div class="card bg-primary text-white p-1 small">Gewinn<br><b id="s-win">0€</b></div></div>
-            </div>
-            <button onclick="exportFullExcel()" class="btn btn-success w-100 mb-2 btn-sm">📥 Excel Export</button>
-            <table class="table table-sm border" style="font-size: 8px;">
-                <thead><tr><th>Nr</th><th>Kunde</th><th>Summe</th><th>Status</th><th>Aktion</th></tr></thead>
-                <tbody id="arc-table"></tbody>
-            </table>
+            <button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">📗 Excel/CSV Export</button>
+            <table class="table table-sm x-small text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th></tr></thead><tbody id="stat-table"></tbody></table>
         </div>
     </div></div></div>
 
-    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-info text-white"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
-        <div class="mb-2 p-2 border rounded">
-            <input type="text" id="m-name" class="form-control form-control-sm mb-1" placeholder="Firma / Name">
-            <input type="text" id="m-street" class="form-control form-control-sm mb-1" placeholder="Straße">
-            <input type="text" id="m-city" class="form-control form-control-sm mb-1" placeholder="PLZ Ort">
-            <input type="email" id="m-email" class="form-control form-control-sm mb-1" placeholder="E-Mail">
-            <input type="text" id="m-tel" class="form-control form-control-sm mb-1" placeholder="Telefon">
-            <input type="text" id="m-taxid" class="form-control form-control-sm mb-1" placeholder="Steuer-ID">
-            <button onclick="saveCust()" class="btn btn-primary btn-sm w-100 mt-1">Kunde Speichern</button>
+    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="text" id="c-name" class="form-control mb-1" placeholder="Name">
+            <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße">
+            <input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort">
+            <input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail">
+            <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefon">
+            <button onclick="saveCustomer()" class="btn btn-primary btn-sm w-100 mt-2">Speichern</button>
+            <div id="cust-list" class="list-group mt-3"></div>
         </div>
-        <div id="cust-list" class="list-group"></div>
-    </div></div></div></div>
+    </div></div></div>
+
+    <div class="modal fade" id="modal-scan" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-warning"><h6>📸 Beleg Scanner</h6><button class="btn-close" data-bs-dismiss="modal" onclick="stopCam()"></button></div>
+        <div class="modal-body text-center"><video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline></video><button onclick="captureAndScan()" class="btn btn-primary mt-3 w-100">Scan</button></div>
+    </div></div></div>
 
     <script>
+        let db = JSON.parse(localStorage.getItem('h2_final_v9') || '{"invoices":[], "expenses":[], "customers":[]}');
         document.getElementById('inv-date').textContent = new Date().toLocaleDateString('de-DE');
-        const video = document.getElementById('cam-video');
-        const canvas = document.getElementById('cam-canvas');
+        let stream = null;
 
         function addRow() {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td><input type="text" class="form-control form-control-sm border-0 p-0"></td>
-                <td><input type="number" class="form-control form-control-sm border-0 p-0 text-center tx" value="19"></td>
-                <td><input type="number" class="form-control form-control-sm border-0 p-0 text-center qt" value="1"></td>
-                <td><input type="number" class="form-control form-control-sm border-0 p-0 text-end pr" value="0"></td>
-                <td class="text-end fw-bold lt">0,00 €</td><td class="no-print"><button onclick="this.closest('tr').remove();calc();" class="btn btn-sm text-danger">×</button></td>`;
+                <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="1" oninput="calc()"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="0" oninput="calc()"></td>
+                <td><input type="number" class="form-control form-control-sm border-0 text-center tx" value="19" oninput="calc()"></td>
+                <td class="text-center tax-val">0,00 €</td>
+                <td class="text-end fw-bold lt">0,00 €</td>
+                <td class="no-print"><button onclick="this.closest('tr').remove();calc();" class="btn btn-sm text-danger">×</button></td>`;
             document.getElementById('inv-items').appendChild(tr);
-            tr.querySelectorAll('input').forEach(i => i.oninput = calc);
-            calc();
         }
 
         function calc() {
-            let n=0, t=0; const isK = document.getElementById('kleinunternehmer').checked;
-            document.getElementById('k-info').classList.toggle('d-none', !isK);
+            let n=0, t=0;
             document.querySelectorAll('#inv-items tr').forEach(r => {
-                const q = r.querySelector('.qt').value, p = r.querySelector('.pr').value, tx = isK?0:r.querySelector('.tx').value;
-                const net = q * p; n += net; t += (net * tx / 100);
-                r.querySelector('.lt').textContent = (net + (net * tx / 100)).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+                const q=parseFloat(r.querySelector('.qt').value)||0, p=parseFloat(r.querySelector('.pr').value)||0, txR=parseFloat(r.querySelector('.tx').value)||0;
+                const net = q*p; const tax = net*(txR/100);
+                r.querySelector('.tax-val').textContent = tax.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+                r.querySelector('.lt').textContent = (net+tax).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+                n+=net; t+=tax;
             });
             document.getElementById('sum-n').textContent = n.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             document.getElementById('sum-t').textContent = t.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
             document.getElementById('sum-g').textContent = (n+t).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
         }
 
-        document.getElementById('open-cam-btn').onclick = async () => {
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = s;
-                new bootstrap.Modal(document.getElementById('modal-camera')).show();
-            } catch (e) { alert("Kamerafehler"); }
-        };
-
-        document.getElementById('capture-btn').onclick = () => {
-            const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-            document.getElementById('ai-status').classList.remove('d-none');
-            Tesseract.recognize(canvas.toDataURL('image/jpeg'), 'deu').then(({ data: { text } }) => {
-                const t = text.toLowerCase();
-                const val = parseFloat((t.match(/(\d+,\d{2})/) || ["0,00"])[0].replace(',','.'));
-                let ex = JSON.parse(localStorage.getItem('h2_ex')||'[]');
-                ex.unshift({ store: t.includes('bauhaus')?'Bauhaus':'Beleg', val, date: new Date().toLocaleDateString('de-DE') });
-                localStorage.setItem('h2_ex', JSON.stringify(ex));
-                document.getElementById('ai-status').classList.add('d-none');
-                video.srcObject.getTracks().forEach(tr => tr.stop());
-                bootstrap.Modal.getInstance(document.getElementById('modal-camera')).hide();
-                alert("Scan Erfolg: " + val.toFixed(2) + " €");
-            });
-        };
-
-        function saveCust() {
-            const c = { name: document.getElementById('m-name').value, street: document.getElementById('m-street').value, city: document.getElementById('m-city').value, email: document.getElementById('m-email').value, tel: document.getElementById('m-tel').value, taxid: document.getElementById('m-taxid').value };
-            let l = JSON.parse(localStorage.getItem('h2_cl')||'[]'); l.push(c); localStorage.setItem('h2_cl', JSON.stringify(l)); renderCust();
+        function saveInvoice() {
+            const b = parseFloat(document.getElementById('sum-g').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
+            const m = parseFloat(document.getElementById('sum-t').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
+            db.invoices.push({ date: new Date().toLocaleDateString('de-DE'), nr: document.getElementById('inv-nr').textContent, brutto: b, mwst: m });
+            localStorage.setItem('h2_final_v9', JSON.stringify(db)); alert("Gespeichert!");
         }
 
-        function renderCust() {
-            const l = JSON.parse(localStorage.getItem('h2_cl')||'[]');
-            document.getElementById('cust-list').innerHTML = l.map((c, i) => `<div class="list-group-item list-group-item-action small" onclick='useCustByIndex(${i})'><b>${c.name}</b></div>`).join('');
-        }
-
-        window.useCustByIndex = i => {
-            const c = JSON.parse(localStorage.getItem('h2_cl'))[i];
-            document.getElementById('cust-print').innerHTML = `<span>${c.name}</span><span>${c.street}</span><span>${c.city}</span><span>${c.email}</span><span>${c.tel}</span>${c.taxid ? `<span>Steuer-ID: ${c.taxid}</span>` : ''}`;
-        };
-
-        document.getElementById('save-invoice').onclick = () => {
-            let a = JSON.parse(localStorage.getItem('h2_ar')||'[]');
-            const net = parseFloat(document.getElementById('sum-n').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
-            const tax = parseFloat(document.getElementById('sum-t').textContent.replace(/[^-0-9,]/g,'').replace(',','.'));
-            a.push({ nr: document.getElementById('inv-nr').textContent, date: new Date().toLocaleDateString('de-DE'), cust: document.getElementById('cust-print').querySelector('span').innerText, net, tax, gross: net+tax, paid: false });
-            localStorage.setItem('h2_ar', JSON.stringify(a));
-            localStorage.setItem('h2_cn', (parseInt(localStorage.getItem('h2_cn')||1)+1));
-            alert("Bilanz aktualisiert!");
-        };
-
-        document.getElementById('show-archive').onclick = () => {
-            const invs = JSON.parse(localStorage.getItem('h2_ar')||'[]');
-            document.getElementById('arc-table').innerHTML = invs.map((i, idx) => `<tr><td>${i.nr}</td><td>${i.cust}</td><td>${i.gross.toFixed(2)}€</td><td class="${i.paid?'status-paid':'status-open'}">${i.paid?'JA':'OFFEN'}</td><td><button class="btn btn-xs btn-outline-dark" onclick="togglePaid(${idx})">Status</button></td></tr>`).join('');
+        function showStats() {
+            let b=0, m=0, a=0; const table = document.getElementById('stat-table'); table.innerHTML = '';
+            db.invoices.forEach(i => { b += i.brutto; m += i.mwst; table.innerHTML += `<tr class="table-success"><td>Rechnung</td><td>${i.nr}</td><td>+${i.mwst.toFixed(2)}€</td><td>${i.brutto.toFixed(2)}€</td></tr>`; });
+            db.expenses.forEach(ex => { a += ex.amt; table.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg</td><td>-</td><td>-${ex.amt.toFixed(2)}€</td></tr>`; });
+            document.getElementById('st-brutto').innerText = b.toFixed(2) + "€"; document.getElementById('st-steuer').innerText = m.toFixed(2) + "€";
+            document.getElementById('st-ausg').innerText = a.toFixed(2) + "€"; document.getElementById('st-gewinn').innerText = (b-m-a).toFixed(2) + "€";
             new bootstrap.Modal(document.getElementById('modal-stats')).show();
-        };
+        }
 
-        window.togglePaid = (idx) => {
-            let a = JSON.parse(localStorage.getItem('h2_ar')||'[]'); a[idx].paid = !a[idx].paid;
-            localStorage.setItem('h2_ar', JSON.stringify(a)); document.getElementById('show-archive').onclick();
-        };
+        function share(p) { 
+            const msg = encodeURIComponent("H2TechService Rechnung: " + document.getElementById('sum-g').textContent);
+            window.open(p === 'whatsapp' ? `https://wa.me/?text=${msg}` : `https://t.me/share/url?url=${msg}`);
+        }
 
-        document.getElementById('make-pdf').onclick = () => {
-            html2pdf().set({ margin:0, filename: `Rechnung.pdf`, html2canvas:{scale:3}, jsPDF:{unit:'mm', format:'a4'} }).from(document.getElementById('pdf-area')).save();
-        };
+        function exportToCSV() {
+            let csv = "Datum;Typ;Info;MwSt;Betrag\n";
+            db.invoices.forEach(i => csv += `${i.date};Rechnung;${i.nr};${i.mwst.toFixed(2)};${i.brutto.toFixed(2)}\n`);
+            db.expenses.forEach(ex => csv += `${new Date().toLocaleDateString()};Ausgabe;Beleg;-;${ex.amt.toFixed(2)}\n`);
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); link.download = "H2_Bilanz.csv"; link.click();
+        }
 
+        function downloadPDF() { html2pdf().from(document.getElementById('pdf-area')).set({margin:0, filename:'H2_Rechnung.pdf', jsPDF:{format:'a4'}}).save(); }
+        async function openScanner() { stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); document.getElementById('cam-video').srcObject = stream; new bootstrap.Modal(document.getElementById('modal-scan')).show(); }
+        function stopCam() { if(stream) stream.getTracks().forEach(t => t.stop()); }
+        async function captureAndScan() {
+            const v=document.getElementById('cam-video'); const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
+            const {data:{text}} = await Tesseract.recognize(c.toDataURL(),'deu'); const matches = text.match(/\d+[,.]\d{2}/g);
+            if(matches) { const amt = Math.max(...matches.map(m => parseFloat(m.replace(',','.')))); db.expenses.push({amt}); localStorage.setItem('h2_final_v9', JSON.stringify(db)); alert("Erkannt: "+amt+"€"); }
+            stopCam(); bootstrap.Modal.getInstance(document.getElementById('modal-scan')).hide();
+        }
+
+        function saveCustomer() {
+            const c = { name: document.getElementById('c-name').value, street: document.getElementById('c-street').value, city: document.getElementById('c-city').value, mail: document.getElementById('c-mail').value, phone: document.getElementById('c-phone').value };
+            db.customers.push(c); localStorage.setItem('h2_final_v9', JSON.stringify(db)); openCustomerModal();
+        }
+        function openCustomerModal() {
+            const list = document.getElementById('cust-list'); list.innerHTML = '';
+            db.customers.forEach((c, i) => list.innerHTML += `<button onclick="selectCust(${i})" class="list-group-item list-group-item-action small">${c.name}</button>`);
+            new bootstrap.Modal(document.getElementById('modal-cust')).show();
+        }
+        function selectCust(i) {
+            const c = db.customers[i]; document.getElementById('cust-display').innerHTML = `<span>${c.name}</span><span>${c.street}</span><span>${c.city}</span><span>📧 ${c.mail}</span><span>📞 ${c.phone}</span>`;
+            bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
+        }
         addRow();
-        document.getElementById('btn-cust').onclick = () => { renderCust(); new bootstrap.Modal(document.getElementById('modal-cust')).show(); };
-        if(localStorage.getItem('h2_lo')) { document.getElementById('logo-preview').src = localStorage.getItem('h2_lo'); document.getElementById('logo-preview').classList.remove('d-none'); document.getElementById('logo-text').classList.add('d-none'); }
-        document.getElementById('logo-upload').onchange = e => { const r = new FileReader(); r.onload = ev => { localStorage.setItem('h2_lo', ev.target.result); location.reload(); }; r.readAsDataURL(e.target.files[0]); };
-        document.getElementById('kleinunternehmer').onclick = calc;
     </script>
 </body>
 </html>
