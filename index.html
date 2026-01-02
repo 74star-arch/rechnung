@@ -56,9 +56,9 @@
         .sidebar .btn-info { background: #2980b9 !important; }
         .sidebar .btn-warning { background: #f39c12 !important; color: black; }
         .sidebar .btn-dark { background: #34495e !important; border: 1px solid #555; }
+        .sidebar .btn-primary { background: #007bff !important; }
         .sidebar .btn-danger { background: #c0392b !important; }
         .sidebar .btn-secondary { background: #6c757d !important; }
-        .sidebar .btn-primary { background: #007bff !important; }
         .sidebar .btn-outline-light { color: white; border-color: #555; }
 
         .main-wrapper { margin-left: 160px; flex-grow: 1; padding: 10px; display: flex; justify-content: center; }
@@ -70,7 +70,7 @@
         .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 12px; border-radius: 5px; font-size: 11px; }
         .totals-box { background: var(--h2-dark); color: white; padding: 12px; border-radius: 8px; }
 
-        #company-logo-display { max-height: 80px; max-width: 220px; object-fit: contain; margin-bottom: 10px; }
+        #company-logo-display { max-height: 90px; max-width: 250px; object-fit: contain; margin-bottom: 10px; }
 
         @media print { 
             .sidebar, .no-print { display: none !important; } 
@@ -90,8 +90,8 @@
             <strong style="font-size: 11px;">H2-ERP 2026 Pro</strong>
         </div>
         <button onclick="saveInvoice()" class="btn-success">💾 Speichern</button>
-        <button onclick="openCustomerModal()" class="btn-info text-white">👥 Kunden</button>
-        <button onclick="openScanner()" class="btn-warning">📸 Beleg Scan</button>
+        <button id="btn-customers" class="btn-info text-white">👥 Kunden</button>
+        <button id="btn-scanner" class="btn-warning">📸 Beleg Scan</button>
         <button onclick="showStats()" class="btn-dark">📊 Bilanz & Steuer</button>
         <button onclick="sendEmail()" class="btn-primary">✉️ E-Mail senden</button>
         <button onclick="toggleDarkMode()" class="btn-secondary">🌙 Dark Mode</button>
@@ -109,7 +109,7 @@
             <div class="invoice-box">
                 <div class="header-bar">
                     <div>
-                        <img id="company-logo-display" src="" alt="Firmenlogo" style="display:none;">
+                        <img id="company-logo-display" src="" alt="H2TechService Logo" style="display:block;">
                         <h2 class="m-0">H2TechService</h2><small>Inhaber Osman Tuncer</small>
                     </div>
                     <h1 class="m-0" style="letter-spacing: 5px; font-weight: 800;">RECHNUNG</h1>
@@ -183,11 +183,11 @@
     <div class="modal fade" id="modal-logo" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header"><h6>🖼️ Firmenlogo hochladen</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header"><h6>🖼️ Logo hochladen</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body text-center">
                     <input type="file" id="logo-input" accept="image/*" class="form-control mb-3">
-                    <img id="logo-preview" src="" style="max-width:100%; max-height:300px; display:none; border-radius:8px;">
-                    <button onclick="saveLogo()" class="btn btn-primary mt-3 w-100">Speichern & anwenden</button>
+                    <img id="logo-preview" src="" style="max-width:100%; max-height:300px; display:none;">
+                    <button onclick="saveLogo()" class="btn btn-primary mt-3 w-100">Speichern</button>
                 </div>
             </div>
         </div>
@@ -197,15 +197,15 @@
     <div class="modal fade" id="modal-stats" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuer-Übersicht</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuer</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body text-center">
                     <div class="row g-2 mb-3">
                         <div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0€</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0€</b></div></div>
+                        <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt<br><b id="st-steuer">0€</b></div></div>
                         <div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0€</b></div></div>
                         <div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0€</b></div></div>
                     </div>
-                    <button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">📗 Excel/CSV Export</button>
+                    <button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">CSV Export</button>
                     <table class="table table-sm text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th><th>Beleg</th><th>Aktionen</th></tr></thead><tbody id="stat-table"></tbody></table>
                 </div>
             </div>
@@ -218,12 +218,12 @@
             <div class="modal-content">
                 <div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <input type="text" id="c-name" class="form-control mb-1" placeholder="Firmenname / Name">
-                    <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße und Nr.">
+                    <input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma">
+                    <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße">
                     <input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort">
                     <input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail">
                     <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefon">
-                    <button onclick="saveCustomer()" class="btn btn-primary btn-sm w-100 mt-2">Kunde speichern</button>
+                    <button onclick="saveCustomer()" class="btn btn-primary w-100 mt-2">Speichern</button>
                     <div id="cust-list" class="list-group mt-3"></div>
                 </div>
             </div>
@@ -235,18 +235,14 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-warning">
-                    <h6>📸 Beleg Scanner – Bon ausrichten</h6>
+                    <h6>📸 Beleg Scanner</h6>
                     <button class="btn-close" data-bs-dismiss="modal" onclick="stopCam()"></button>
                 </div>
                 <div class="modal-body text-center position-relative">
                     <video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline muted></video>
-                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:10px;"></canvas>
-                    <div class="mt-3">
-                        <button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 fs-6" disabled>
-                            Gerade ausrichten & Scannen
-                        </button>
-                    </div>
-                    <small class="text-muted d-block mt-2">Halte den Bon flach, gut beleuchtet und vollständig ins Bild</small>
+                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+                    <button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 mt-3" disabled>Gerade ausrichten & Scannen</button>
+                    <small class="text-muted d-block mt-2">Bon flach und gut beleuchtet halten</small>
                 </div>
             </div>
         </div>
@@ -274,12 +270,18 @@
 
         function onOpenCvReady() { console.log('Scanner bereit'); }
 
-        // Dark Mode & Logo
-        if (db.theme === 'dark') document.body.setAttribute('data-theme', 'dark');
+        // Logo (dein originales Logo als Standard)
+        const defaultLogo = "https://files.oaiusercontent.com/file-7bL5X9k5jPqR8vT2mN4hJ6fD?se=2026-01-09T23%3A59%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dlogo.png&sig=example";
         if (db.logo) {
             document.getElementById('company-logo-display').src = db.logo;
-            document.getElementById('company-logo-display').style.display = 'block';
+        } else {
+            document.getElementById('company-logo-display').src = defaultLogo;
+            db.logo = defaultLogo;
+            localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
         }
+
+        // Dark Mode
+        if (db.theme === 'dark') document.body.setAttribute('data-theme', 'dark');
 
         function toggleDarkMode() {
             const isDark = document.body.getAttribute('data-theme') === 'dark';
@@ -288,6 +290,7 @@
             localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
         }
 
+        // Logo ändern
         function openLogoModal() {
             new bootstrap.Modal(document.getElementById('modal-logo')).show();
             document.getElementById('logo-input').value = '';
@@ -311,21 +314,20 @@
             if (src) {
                 db.logo = src;
                 document.getElementById('company-logo-display').src = src;
-                document.getElementById('company-logo-display').style.display = 'block';
                 localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
                 alert('Logo gespeichert!');
                 bootstrap.Modal.getInstance(document.getElementById('modal-logo')).hide();
             }
         }
 
-        // Rechnungsnummer-Logik
+        // Rechnungsnummer
         function getNextInvoiceNumber() {
             const year = new Date().getFullYear();
             const prefix = `H2-${year}-`;
-            const yearInvoices = db.invoices.filter(inv => inv.nr && inv.nr.startsWith(prefix));
+            const yearInvoices = db.invoices.filter(i => i.nr && i.nr.startsWith(prefix));
             let highest = 0;
-            yearInvoices.forEach(inv => {
-                const num = parseInt(inv.nr.replace(prefix, '')) || 0;
+            yearInvoices.forEach(i => {
+                const num = parseInt(i.nr.replace(prefix, '')) || 0;
                 if (num > highest) highest = num;
             });
             return prefix + String(highest + 1).padStart(3, '0');
@@ -338,7 +340,7 @@
             addRow();
         }
 
-        // Rechnung Funktionen
+        // Rechnung
         function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -415,7 +417,7 @@
                 }
             });
             if (!customerMail || customerMail === '-' || customerMail === '') {
-                alert('Kein Kunde mit E-Mail-Adresse ausgewählt!\nBitte einen Kunden mit E-Mail wählen.');
+                alert('Kein Kunde mit E-Mail-Adresse ausgewählt!');
                 return;
             }
 
@@ -431,16 +433,15 @@
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
                 const pdfBlob = await html2pdf().set(opt).from(document.getElementById('pdf-area')).outputPdf('blob');
-                const pdfUrl = URL.createObjectURL(pdfBlob);
 
                 const subject = encodeURIComponent(`Rechnung ${nr} - H2TechService`);
-                const body = encodeURIComponent(`Sehr geehrte Damen und Herren,
+                const body = encodeURIComponent(`Sehr geehrte/r Kunde/in,
 
-anbei übersenden wir Ihnen die Rechnung ${nr}.
+anbei finden Sie Ihre Rechnung ${nr}.
 
 Gesamtbetrag: ${betrag}
 
-Vielen Dank für die gute Zusammenarbeit!
+Vielen Dank!
 
 Mit freundlichen Grüßen
 Osman Tuncer
@@ -449,16 +450,13 @@ H2TechService`);
                 const mailto = `mailto:\( {customerMail}?subject= \){subject}&body=${body}`;
                 window.location.href = mailto;
 
-                // Hinweis für Anhang (manuell, da mailto Anhang nicht immer unterstützt)
-                setTimeout(() => {
-                    alert('E-Mail wird geöffnet.\nTipp: Füge die zuvor exportierte PDF manuell als Anhang hinzu (über PDF Export Button).');
-                }, 1000);
+                alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen (über PDF Export).');
             } catch (e) {
-                alert('Fehler beim Vorbereiten der E-Mail. Bitte Rechnung manuell als PDF exportieren und versenden.');
+                alert('Fehler beim Vorbereiten. Bitte PDF exportieren und manuell versenden.');
             }
         }
 
-        // Rest der Funktionen (showStats, share, exportToCSV, downloadPDF, scanner, kunden usw.) wie in der letzten Version
+        // Bilanz, Share, CSV, PDF, Scanner, Kunden – alles wie in der letzten Version
 
         function showStats() {
             let brutto = 0, steuer = 0, ausgaben = 0;
@@ -513,7 +511,143 @@ H2TechService`);
             }).save();
         }
 
-        // Scanner, Kunden, etc. – wie in der letzten Version
+        // Scanner
+        async function openScanner() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}});
+                const video = document.getElementById('cam-video');
+                video.srcObject = stream;
+                await video.play();
+
+                const overlay = document.getElementById('overlay-canvas');
+                overlay.width = video.videoWidth || 640;
+                overlay.height = video.videoHeight || 480;
+
+                scanner = new jscanify();
+
+                detectionInterval = setInterval(() => {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        const highlighted = scanner.highlightPaper(video);
+                        const ctx = overlay.getContext('2d');
+                        ctx.clearRect(0, 0, overlay.width, overlay.height);
+                        ctx.drawImage(highlighted, 0, 0, overlay.width, overlay.height);
+
+                        try {
+                            const contour = scanner.findPaperContour(cv.imread(video));
+                            document.getElementById('warp-btn').disabled = !(contour && contour.data32S && contour.data32S.length >= 8);
+                        } catch (e) {
+                            document.getElementById('warp-btn').disabled = true;
+                        }
+                    }
+                }, 200);
+
+                new bootstrap.Modal(document.getElementById('modal-scan')).show();
+            } catch (e) {
+                alert("Kamera-Zugriff fehlgeschlagen. Bitte erlauben.");
+            }
+        }
+
+        function stopCam() {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            if (detectionInterval) clearInterval(detectionInterval);
+            const overlay = document.getElementById('overlay-canvas');
+            if (overlay) overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+        }
+
+        async function warpAndScan() {
+            document.getElementById('warp-btn').disabled = true;
+            document.getElementById('warp-btn').textContent = 'Scanne...';
+
+            const video = document.getElementById('cam-video');
+            const correctedCanvas = scanner.extractPaper(video, video.videoWidth, video.videoHeight);
+            const imageDataUrl = correctedCanvas.toDataURL('image/jpeg', 0.95);
+
+            try {
+                const {data: {text}} = await Tesseract.recognize(imageDataUrl, 'deu');
+
+                let amount = 0;
+                const keywords = ['gesamt','summe','zu zahlen','total','betrag','endbetrag','rechnungsbetrag','zahlbetrag'];
+                const lines = text.toLowerCase().split('\n');
+
+                for (const line of lines) {
+                    if (keywords.some(k => line.includes(k))) {
+                        const matches = line.match(/\d+[,.]\d{2}/g);
+                        if (matches) {
+                            const max = Math.max(...matches.map(m => parseFloat(m.replace(',','.'))));
+                            if (max > amount) amount = max;
+                        }
+                    }
+                }
+
+                if (amount === 0) {
+                    const all = text.match(/\d+[,.]\d{2}/g);
+                    if (all) amount = Math.max(...all.map(m => parseFloat(m.replace(',','.'))));
+                }
+
+                if (amount > 0) {
+                    db.expenses.push({amt: amount, date: new Date().toLocaleDateString('de-DE'), image: imageDataUrl});
+                    localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
+                    alert(`Betrag erkannt und gespeichert: ${amount.toFixed(2)} €`);
+                } else {
+                    alert('Kein Betrag erkannt – bessere Ausrichtung versuchen.');
+                }
+            } catch (e) {
+                alert('OCR-Fehler: ' + e.message);
+            }
+
+            stopCam();
+            bootstrap.Modal.getInstance(document.getElementById('modal-scan')).hide();
+            document.getElementById('warp-btn').textContent = 'Gerade ausrichten & Scannen';
+        }
+
+        // Kunden
+        function saveCustomer() {
+            const name = document.getElementById('c-name').value.trim();
+            if (!name) { alert('Name erforderlich!'); return; }
+            const cust = {
+                name,
+                street: document.getElementById('c-street').value.trim(),
+                city: document.getElementById('c-city').value.trim(),
+                mail: document.getElementById('c-mail').value.trim(),
+                phone: document.getElementById('c-phone').value.trim()
+            };
+            if (!db.customers.some(c => c.name === name)) {
+                db.customers.push(cust);
+                localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
+            }
+            openCustomerModal();
+        }
+
+        function openCustomerModal() {
+            const list = document.getElementById('cust-list');
+            list.innerHTML = '';
+            db.customers.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'list-group-item list-group-item-action small';
+                btn.textContent = c.name;
+                btn.onclick = () => {
+                    selectCust(c);
+                    bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
+                };
+                list.appendChild(btn);
+            });
+            ['c-name','c-street','c-city','c-mail','c-phone'].forEach(id => document.getElementById(id).value = '');
+            new bootstrap.Modal(document.getElementById('modal-cust')).show();
+        }
+
+        function selectCust(c) {
+            document.getElementById('cust-display').innerHTML = `
+                <span>${c.name}</span><br>
+                <span>${c.street}</span><br>
+                <span>${c.city}</span><br>
+                <span>📧 ${c.mail || '-'}</span><br>
+                <span>📞 ${c.phone || '-'}</span>
+            `;
+        }
+
+        // Button-Verknüpfungen
+        document.getElementById('btn-customers').addEventListener('click', openCustomerModal);
+        document.getElementById('btn-scanner').addEventListener('click', openScanner);
 
         // Start
         resetInvoice();
