@@ -89,18 +89,18 @@
         <div class="text-white text-center mb-3 border-bottom pb-2">
             <strong style="font-size: 11px;">H2-ERP 2026 Pro</strong>
         </div>
-        <button onclick="saveInvoice()" class="btn-success">💾 Speichern</button>
-        <button id="btn-customers" class="btn-info text-white">👥 Kunden</button>
-        <button id="btn-scanner" class="btn-warning">📸 Beleg Scan</button>
+        <button onclick="saveInvoice()" class="btn-success">💾 Rechnung speichern</button>
+        <button id="btn-customers" class="btn-info text-white">👥 Kunden verwalten</button>
+        <button id="btn-scanner" class="btn-warning">📸 Beleg scannen</button>
         <button onclick="showStats()" class="btn-dark">📊 Bilanz & Steuer</button>
-        <button onclick="sendEmail()" class="btn-primary">✉️ E-Mail senden</button>
+        <button onclick="sendEmail()" class="btn-primary">✉️ Per E-Mail senden</button>
         <button onclick="toggleDarkMode()" class="btn-secondary">🌙 Dark Mode</button>
         <button onclick="openLogoModal()" class="btn btn-outline-light btn-sm">🖼️ Logo ändern</button>
         <button onclick="window.print()" class="btn btn-secondary btn-sm" style="background:#7f8c8d">🖨️ Drucken</button>
-        <button onclick="downloadPDF()" class="btn-danger">📄 PDF Export</button>
+        <button onclick="downloadPDF()" class="btn-danger">📄 Als PDF exportieren</button>
         <div class="mt-auto">
-            <button onclick="share('whatsapp')" class="btn btn-outline-success btn-sm w-100 mb-1" style="font-size: 8px;">🟢 WhatsApp</button>
-            <button onclick="share('telegram')" class="btn btn-outline-info btn-sm w-100" style="font-size: 8px;">🔵 Telegram</button>
+            <button onclick="share('whatsapp')" class="btn btn-outline-success btn-sm w-100 mb-1" style="font-size: 8px;">🟢 Per WhatsApp</button>
+            <button onclick="share('telegram')" class="btn btn-outline-info btn-sm w-100" style="font-size: 8px;">🔵 Per Telegram</button>
         </div>
     </div>
 
@@ -151,9 +151,9 @@
                         <tbody id="inv-items"></tbody>
                     </table>
                     <div class="no-print mb-4">
-                        <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">+ 19%</button>
-                        <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">+ 7%</button>
-                        <button onclick="addRow('',1,0,0)" class="btn btn-sm btn-outline-success me-1">+ 0%</button>
+                        <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">+ 19% Position</button>
+                        <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">+ 7% Position</button>
+                        <button onclick="addRow('',1,0,0)" class="btn btn-sm btn-outline-success me-1">+ 0% Position</button>
                         <button onclick="addRow()" class="btn btn-sm btn-outline-primary">+ Leere Position</button>
                     </div>
 
@@ -187,7 +187,7 @@
                 <div class="modal-body text-center">
                     <input type="file" id="logo-input" accept="image/*" class="form-control mb-3">
                     <img id="logo-preview" src="" style="max-width:100%; max-height:300px; display:none;">
-                    <button onclick="saveLogo()" class="btn btn-primary mt-3 w-100">Speichern</button>
+                    <button onclick="saveLogo()" class="btn btn-primary mt-3 w-100">Logo speichern</button>
                 </div>
             </div>
         </div>
@@ -197,11 +197,11 @@
     <div class="modal fade" id="modal-stats" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuer</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuerübersicht</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body text-center">
                     <div class="row g-2 mb-3">
                         <div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0€</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt<br><b id="st-steuer">0€</b></div></div>
+                        <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0€</b></div></div>
                         <div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0€</b></div></div>
                         <div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0€</b></div></div>
                     </div>
@@ -218,12 +218,12 @@
             <div class="modal-content">
                 <div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma">
-                    <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße">
+                    <input type="text" id="c-name" class="form-control mb-1" placeholder="Name oder Firma">
+                    <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße und Hausnummer">
                     <input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort">
-                    <input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail">
-                    <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefon">
-                    <button onclick="saveCustomer()" class="btn btn-primary w-100 mt-2">Speichern</button>
+                    <input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail-Adresse">
+                    <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefonnummer">
+                    <button onclick="saveCustomer()" class="btn btn-primary w-100 mt-2">Kunde speichern</button>
                     <div id="cust-list" class="list-group mt-3"></div>
                 </div>
             </div>
@@ -235,14 +235,14 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-warning">
-                    <h6>📸 Beleg Scanner</h6>
+                    <h6>📸 Beleg scannen</h6>
                     <button class="btn-close" data-bs-dismiss="modal" onclick="stopCam()"></button>
                 </div>
                 <div class="modal-body text-center position-relative">
                     <video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline muted></video>
-                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:10px;"></canvas>
                     <button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 mt-3" disabled>Gerade ausrichten & Scannen</button>
-                    <small class="text-muted d-block mt-2">Bon flach und gut beleuchtet halten</small>
+                    <small class="text-muted d-block mt-2">Beleg flach und gut beleuchtet halten</small>
                 </div>
             </div>
         </div>
@@ -268,9 +268,9 @@
         let scanner = null;
         let detectionInterval = null;
 
-        function onOpenCvReady() { console.log('Scanner bereit'); }
+        function onOpenCvReady() { console.log('OpenCV bereit'); }
 
-        // Logo (dein originales Logo als Standard)
+        // Logo – dein Logo als Standard
         const defaultLogo = "https://files.oaiusercontent.com/file-7bL5X9k5jPqR8vT2mN4hJ6fD?se=2026-01-09T23%3A59%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dlogo.png&sig=example";
         if (db.logo) {
             document.getElementById('company-logo-display').src = db.logo;
@@ -340,7 +340,7 @@
             addRow();
         }
 
-        // Rechnung
+        // Rechnung Funktionen
         function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -424,18 +424,8 @@
             const nr = document.getElementById('inv-nr').textContent.trim();
             const betrag = document.getElementById('sum-g').textContent;
 
-            try {
-                const opt = {
-                    margin: 0,
-                    filename: `Rechnung_${nr}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-                const pdfBlob = await html2pdf().set(opt).from(document.getElementById('pdf-area')).outputPdf('blob');
-
-                const subject = encodeURIComponent(`Rechnung ${nr} - H2TechService`);
-                const body = encodeURIComponent(`Sehr geehrte/r Kunde/in,
+            const subject = encodeURIComponent(`Rechnung ${nr} - H2TechService`);
+            const body = encodeURIComponent(`Sehr geehrte/r Kunde/in,
 
 anbei finden Sie Ihre Rechnung ${nr}.
 
@@ -447,17 +437,12 @@ Mit freundlichen Grüßen
 Osman Tuncer
 H2TechService`);
 
-                const mailto = `mailto:\( {customerMail}?subject= \){subject}&body=${body}`;
-                window.location.href = mailto;
-
-                alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen (über PDF Export).');
-            } catch (e) {
-                alert('Fehler beim Vorbereiten. Bitte PDF exportieren und manuell versenden.');
-            }
+            const mailto = `mailto:\( {customerMail}?subject= \){subject}&body=${body}`;
+            window.location.href = mailto;
+            alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen (über PDF Export).');
         }
 
-        // Bilanz, Share, CSV, PDF, Scanner, Kunden – alles wie in der letzten Version
-
+        // Bilanz
         function showStats() {
             let brutto = 0, steuer = 0, ausgaben = 0;
             const tbody = document.getElementById('stat-table');
@@ -511,40 +496,49 @@ H2TechService`);
             }).save();
         }
 
-        // Scanner
+        // Scanner – mit Fallback für Samsung-Geräte
         async function openScanner() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}});
-                const video = document.getElementById('cam-video');
-                video.srcObject = stream;
-                await video.play();
-
-                const overlay = document.getElementById('overlay-canvas');
-                overlay.width = video.videoWidth || 640;
-                overlay.height = video.videoHeight || 480;
-
-                scanner = new jscanify();
-
-                detectionInterval = setInterval(() => {
-                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                        const highlighted = scanner.highlightPaper(video);
-                        const ctx = overlay.getContext('2d');
-                        ctx.clearRect(0, 0, overlay.width, overlay.height);
-                        ctx.drawImage(highlighted, 0, 0, overlay.width, overlay.height);
-
-                        try {
-                            const contour = scanner.findPaperContour(cv.imread(video));
-                            document.getElementById('warp-btn').disabled = !(contour && contour.data32S && contour.data32S.length >= 8);
-                        } catch (e) {
-                            document.getElementById('warp-btn').disabled = true;
-                        }
-                    }
-                }, 200);
-
-                new bootstrap.Modal(document.getElementById('modal-scan')).show();
+                let constraints = { video: { facingMode: "environment" } };
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
             } catch (e) {
-                alert("Kamera-Zugriff fehlgeschlagen. Bitte erlauben.");
+                try {
+                    let constraints = { video: { facingMode: "user" } };
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    alert('Rückkamera nicht verfügbar – Frontkamera wird verwendet.');
+                } catch (err) {
+                    alert('Kamera-Zugriff fehlgeschlagen. Bitte Berechtigung prüfen und Seite neu laden.');
+                    return;
+                }
             }
+
+            const video = document.getElementById('cam-video');
+            video.srcObject = stream;
+            await video.play();
+
+            const overlay = document.getElementById('overlay-canvas');
+            overlay.width = video.videoWidth || 640;
+            overlay.height = video.videoHeight || 480;
+
+            scanner = new jscanify();
+
+            detectionInterval = setInterval(() => {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    const highlighted = scanner.highlightPaper(video);
+                    const ctx = overlay.getContext('2d');
+                    ctx.clearRect(0, 0, overlay.width, overlay.height);
+                    ctx.drawImage(highlighted, 0, 0, overlay.width, overlay.height);
+
+                    try {
+                        const contour = scanner.findPaperContour(cv.imread(video));
+                        document.getElementById('warp-btn').disabled = !(contour && contour.data32S && contour.data32S.length >= 8);
+                    } catch (e) {
+                        document.getElementById('warp-btn').disabled = true;
+                    }
+                }
+            }, 200);
+
+            new bootstrap.Modal(document.getElementById('modal-scan')).show();
         }
 
         function stopCam() {
@@ -645,9 +639,11 @@ H2TechService`);
             `;
         }
 
-        // Button-Verknüpfungen
-        document.getElementById('btn-customers').addEventListener('click', openCustomerModal);
-        document.getElementById('btn-scanner').addEventListener('click', openScanner);
+        // Button-Verknüpfungen (wichtig für stabile Öffnung)
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('btn-customers').addEventListener('click', openCustomerModal);
+            document.getElementById('btn-scanner').addEventListener('click', openScanner);
+        });
 
         // Start
         resetInvoice();
