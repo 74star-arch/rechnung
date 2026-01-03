@@ -62,21 +62,41 @@
         .sidebar .btn-outline-light { color: white; border-color: #555; }
 
         .main-wrapper { margin-left: 160px; flex-grow: 1; padding: 10px; display: flex; justify-content: center; }
-        .invoice-box { width: 210mm; min-height: 296mm; background: var(--card-light); display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); transition: 0.3s; }
-        .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
-        .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 8px; text-transform: uppercase; }
-        .address-data { line-height: 1.5; margin-bottom: 20px; font-size: 10.5px; }
-        .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 12px; border-radius: 5px; font-size: 11px; }
-        .totals-box { background: var(--h2-dark); color: white; padding: 12px; border-radius: 8px; }
+        .invoice-box { 
+            width: 210mm; 
+            height: 297mm; 
+            background: var(--card-light); 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+            transition: 0.3s; 
+            overflow: hidden;
+        }
+        .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 15px 30px; flex-grow: 1; display: flex; flex-direction: column; }
+        .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 6px; text-transform: uppercase; }
+        .address-data { line-height: 1.4; margin-bottom: 12px; font-size: 10.5px; }
+        .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 8px; border-radius: 5px; font-size: 10px; margin-top: auto; }
+        .totals-box { background: var(--h2-dark); color: white; padding: 8px; border-radius: 8px; font-size: 11px; }
 
-        #company-logo-display { max-height: 90px; max-width: 250px; object-fit: contain; margin-bottom: 10px; }
+        #company-logo-display { max-height: 70px; max-width: 220px; object-fit: contain; margin-bottom: 8px; }
+
+        .table { font-size: 10px; margin-bottom: 8px; }
+        .table th, .table td { padding: 4px; vertical-align: middle; }
 
         @media print { 
             .sidebar, .no-print { display: none !important; } 
             .main-wrapper { margin-left: 0; padding: 0; } 
-            .invoice-box { box-shadow: none; border: none; width: 100%; height: 100%; background: white !important; } 
-            body { background: white !important; color: black !important; }
+            .invoice-box { 
+                box-shadow: none; 
+                border: none; 
+                width: 210mm; 
+                height: 297mm; 
+                background: white !important; 
+                overflow: hidden;
+            } 
+            body { background: white !important; color: black !important; margin: 0; padding: 0; }
+            @page { size: A4; margin: 0; }
         }
 
         #overlay-canvas { border-radius: 10px; }
@@ -96,8 +116,8 @@
         <button onclick="sendEmail()" class="btn-primary">✉️ Per E-Mail senden</button>
         <button onclick="toggleDarkMode()" class="btn-secondary">🌙 Dark Mode</button>
         <button onclick="openLogoModal()" class="btn btn-outline-light btn-sm">🖼️ Logo ändern</button>
-        <button onclick="window.print()" class="btn btn-secondary btn-sm" style="background:#7f8c8d">🖨️ Drucken</button>
-        <button onclick="downloadPDF()" class="btn-danger">📄 Als PDF exportieren</button>
+        <button id="btn-print" class="btn btn-secondary btn-sm" style="background:#7f8c8d">🖨️ Drucken</button>
+        <button id="btn-pdf" class="btn-danger">📄 Als PDF exportieren</button>
         <div class="mt-auto">
             <button onclick="share('whatsapp')" class="btn btn-outline-success btn-sm w-100 mb-1" style="font-size: 8px;">🟢 Per WhatsApp</button>
             <button onclick="share('telegram')" class="btn btn-outline-info btn-sm w-100" style="font-size: 8px;">🔵 Per Telegram</button>
@@ -137,7 +157,7 @@
                         </div>
                     </div>
 
-                    <table class="table table-sm border mt-4">
+                    <table class="table table-sm border mt-3">
                         <thead>
                             <tr class="table-light">
                                 <th>Leistungsbeschreibung</th>
@@ -150,14 +170,15 @@
                         </thead>
                         <tbody id="inv-items"></tbody>
                     </table>
-                    <div class="no-print mb-4">
+
+                    <div class="no-print mb-3">
                         <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">+ 19% Position</button>
                         <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">+ 7% Position</button>
                         <button onclick="addRow('',1,0,0)" class="btn btn-sm btn-outline-success me-1">+ 0% Position</button>
                         <button onclick="addRow()" class="btn btn-sm btn-outline-primary">+ Leere Position</button>
                     </div>
 
-                    <div class="row mt-auto pt-4 border-top">
+                    <div class="row mt-auto pt-3 border-top">
                         <div class="col-7">
                             <div class="payment-box">
                                 <strong>Bankverbindung Osman Tuncer</strong><br>
@@ -179,7 +200,7 @@
         </div>
     </div>
 
-    <!-- Logo Modal -->
+    <!-- Modals -->
     <div class="modal fade" id="modal-logo" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -193,7 +214,6 @@
         </div>
     </div>
 
-    <!-- Bilanz Modal -->
     <div class="modal fade" id="modal-stats" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -212,7 +232,6 @@
         </div>
     </div>
 
-    <!-- Kunden Modal -->
     <div class="modal fade" id="modal-cust" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -230,7 +249,6 @@
         </div>
     </div>
 
-    <!-- Beleg Scanner Modal -->
     <div class="modal fade" id="modal-scan" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -240,7 +258,7 @@
                 </div>
                 <div class="modal-body text-center position-relative">
                     <video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline muted></video>
-                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:10px;"></canvas>
+                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
                     <button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 mt-3" disabled>Gerade ausrichten & Scannen</button>
                     <small class="text-muted d-block mt-2">Beleg flach und gut beleuchtet halten</small>
                 </div>
@@ -248,7 +266,6 @@
         </div>
     </div>
 
-    <!-- Beleg Vollbild Modal -->
     <div class="modal fade" id="modal-image" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -270,7 +287,7 @@
 
         function onOpenCvReady() { console.log('OpenCV bereit'); }
 
-        // Logo – dein Logo als Standard
+        // Logo
         const defaultLogo = "https://files.oaiusercontent.com/file-7bL5X9k5jPqR8vT2mN4hJ6fD?se=2026-01-09T23%3A59%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dlogo.png&sig=example";
         if (db.logo) {
             document.getElementById('company-logo-display').src = db.logo;
@@ -340,7 +357,7 @@
             addRow();
         }
 
-        // Rechnung Funktionen
+        // Rechnung
         function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -442,7 +459,7 @@ H2TechService`);
             alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen (über PDF Export).');
         }
 
-        // Bilanz
+        // Bilanz – korrekt mit Beschreibung
         function showStats() {
             let brutto = 0, steuer = 0, ausgaben = 0;
             const tbody = document.getElementById('stat-table');
@@ -450,8 +467,16 @@ H2TechService`);
             db.invoices.forEach((inv, i) => {
                 brutto += inv.gross || 0;
                 steuer += inv.mwst || 0;
-                tbody.innerHTML += `<tr class="table-success"><td>Rechnung</td><td>\( {inv.nr}</td><td>+ \){(inv.mwst||0).toFixed(2)}€</td><td>${(inv.gross||0).toFixed(2)}€</td><td></td>
-                    <td><button class="btn btn-xs btn-info" onclick="loadInvoice(${i})">Laden</button></td></tr>`;
+                const desc = inv.items.length === 1 ? inv.items[0].desc : (inv.items.length > 1 ? inv.items[0].desc + ' u.a.' : 'Rechnung');
+                const mwstRate = inv.items.length > 0 ? inv.items[0].tax + '%' : '-';
+                tbody.innerHTML += `<tr class="table-success">
+                    <td>Rechnung</td>
+                    <td>${desc}</td>
+                    <td>${mwstRate}</td>
+                    <td>${(inv.gross||0).toFixed(2)}€</td>
+                    <td></td>
+                    <td><button class="btn btn-xs btn-info" onclick="loadInvoice(${i})">Laden</button></td>
+                </tr>`;
             });
             db.expenses.forEach(ex => {
                 ausgaben += ex.amt || 0;
@@ -488,15 +513,17 @@ H2TechService`);
         }
 
         function downloadPDF() {
-            const nr = document.getElementById('inv-nr').textContent;
+            const nr = document.getElementById('inv-nr').textContent.trim() || 'Entwurf';
             html2pdf().from(document.getElementById('pdf-area')).set({
                 margin: 0,
                 filename: `H2_Rechnung_${nr}.pdf`,
-                jsPDF: {format: 'a4', unit: 'mm'}
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             }).save();
         }
 
-        // Scanner – mit Fallback für Samsung-Geräte
+        // Scanner
         async function openScanner() {
             try {
                 let constraints = { video: { facingMode: "environment" } };
@@ -639,10 +666,12 @@ H2TechService`);
             `;
         }
 
-        // Button-Verknüpfungen (wichtig für stabile Öffnung)
+        // Alle Buttons sicher verknüpfen
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('btn-customers').addEventListener('click', openCustomerModal);
             document.getElementById('btn-scanner').addEventListener('click', openScanner);
+            document.getElementById('btn-print').addEventListener('click', () => window.print());
+            document.getElementById('btn-pdf').addEventListener('click', downloadPDF);
         });
 
         // Start
