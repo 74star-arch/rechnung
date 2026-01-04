@@ -59,7 +59,7 @@
         .sidebar .btn-primary { background: #007bff !important; }
         .sidebar .btn-danger { background: #c0392b !important; }
         .sidebar .btn-secondary { background: #6c757d !important; }
-        .sidebar .btn-archive { background: #8e44ad !important; } /* Lila für Archiv */
+        .sidebar .btn-archive { background: #8e44ad !important; }
 
         .main-wrapper { margin-left: 160px; flex-grow: 1; padding: 10px; display: flex; justify-content: center; }
         .invoice-box { 
@@ -84,8 +84,10 @@
         .table { font-size: 9.5px; margin-bottom: 6px; }
         .table th, .table td { padding: 3px; vertical-align: middle; }
 
+        .customer-actions { margin-top: 10px; display: none; } /* Sichtbar, wenn Kunde ausgewählt */
+
         @media print { 
-            .sidebar, .no-print { display: none !important; } 
+            .sidebar, .no-print, .customer-actions { display: none !important; } 
             .main-wrapper { margin-left: 0; padding: 0; } 
             .invoice-box { 
                 box-shadow: none; 
@@ -101,6 +103,7 @@
 
         #overlay-canvas { border-radius: 10px; }
         .receipt-thumb { max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #444; }
+        .cust-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; }
     </style>
 </head>
 <body>
@@ -154,6 +157,10 @@
                             <div class="section-title">Empfänger</div>
                             <div id="cust-display" class="address-data fw-bold text-primary">
                                 <span>(Kunde wählen...)</span>
+                            </div>
+                            <div id="customer-actions" class="customer-actions no-print text-end mt-2">
+                                <button id="btn-edit-customer" class="btn btn-sm btn-warning me-1">✏️ Bearbeiten</button>
+                                <button id="btn-delete-customer" class="btn btn-sm btn-danger">🗑️ Löschen</button>
                             </div>
                         </div>
                     </div>
@@ -243,7 +250,9 @@
                     <input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort">
                     <input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail-Adresse">
                     <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefonnummer">
-                    <button onclick="saveCustomer()" class="btn btn-primary w-100 mt-2">Kunde speichern</button>
+                    <button id="btn-save-customer" class="btn btn-primary w-100 mt-2">Kunde speichern</button>
+                    <hr class="my-3">
+                    <h6 class="text-center">Gespeicherte Kunden</h6>
                     <div id="cust-list" class="list-group mt-3"></div>
                 </div>
             </div>
@@ -278,7 +287,6 @@
         </div>
     </div>
 
-    <!-- Archiv Modal -->
     <div class="modal fade" id="modal-archive" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -312,6 +320,8 @@
         let stream = null;
         let scanner = null;
         let detectionInterval = null;
+        let currentEditIndex = -1;
+        let selectedCustomerIndex = -1;
 
         function onOpenCvReady() { console.log('OpenCV bereit'); }
 
@@ -382,6 +392,8 @@
             document.getElementById('inv-nr').textContent = getNextInvoiceNumber();
             document.getElementById('inv-items').innerHTML = '';
             document.getElementById('cust-display').innerHTML = '<span>(Kunde wählen...)</span>';
+            document.getElementById('customer-actions').style.display = 'none';
+            selectedCustomerIndex = -1;
             addRow();
         }
 
@@ -429,8 +441,7 @@
                 tax: parseFloat(r.querySelector('.tx').value) || 0
             }));
 
-            const customerName = document.querySelector('#cust-display span')?.textContent?.trim();
-            const customer = (customerName && customerName !== '(Kunde wählen...)') ? db.customers.find(c => c.name === customerName) : null;
+            const customer = selectedCustomerIndex !== -1 ? db.customers[selectedCustomerIndex] : null;
 
             const gross = parseFloat(document.getElementById('sum-g').textContent.replace(/[^0-9,.]/g,'').replace(',','.')) || 0;
             const mwst = parseFloat(document.getElementById('sum-t').textContent.replace(/[^0-9,.]/g,'').replace(',','.')) || 0;
@@ -447,9 +458,15 @@
             document.getElementById('inv-date').textContent = inv.date;
             document.getElementById('inv-items').innerHTML = '';
             inv.items.forEach(it => addRow(it.desc, it.qty, it.price, it.tax));
-            if (inv.customer) selectCust(inv.customer);
+            if (inv.customer) {
+                const index = db.customers.findIndex(c => c.name === inv.customer.name);
+                if (index !== -1) selectCust(index);
+            } else {
+                document.getElementById('cust-display').innerHTML = '<span>(Kunde wählen...)</span>';
+                document.getElementById('customer-actions').style.display = 'none';
+                selectedCustomerIndex = -1;
+            }
             calc();
-            bootstrap.Modal.getInstance(document.getElementById('modal-stats')).hide();
         }
 
         // E-Mail senden
@@ -649,10 +666,14 @@ H2TechService`);
             document.getElementById('warp-btn').textContent = 'Gerade ausrichten & Scannen';
         }
 
-        // Kunden
+        // Kundenverwaltung – mit Bearbeiten/Löschen direkt auf der Rechnung
         function saveCustomer() {
             const name = document.getElementById('c-name').value.trim();
-            if (!name) { alert('Name erforderlich!'); return; }
+            if (!name) {
+                alert('Name erforderlich!');
+                return;
+            }
+
             const cust = {
                 name,
                 street: document.getElementById('c-street').value.trim(),
@@ -660,39 +681,112 @@ H2TechService`);
                 mail: document.getElementById('c-mail').value.trim(),
                 phone: document.getElementById('c-phone').value.trim()
             };
-            if (!db.customers.some(c => c.name === name)) {
+
+            if (currentEditIndex === -1) {
                 db.customers.push(cust);
-                localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
+                alert('Neuer Kunde gespeichert!');
+            } else {
+                db.customers[currentEditIndex] = cust;
+                alert('Kunde geändert!');
+                if (selectedCustomerIndex === currentEditIndex) {
+                    selectCust(currentEditIndex);
+                }
             }
+
+            localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
+            currentEditIndex = -1;
             openCustomerModal();
         }
 
         function openCustomerModal() {
             const list = document.getElementById('cust-list');
             list.innerHTML = '';
-            db.customers.forEach(c => {
-                const btn = document.createElement('button');
-                btn.className = 'list-group-item list-group-item-action small';
-                btn.textContent = c.name;
-                btn.onclick = () => {
-                    selectCust(c);
-                    bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
-                };
-                list.appendChild(btn);
-            });
+
+            const btn = document.getElementById('btn-save-customer');
+            btn.textContent = 'Kunde speichern';
+            btn.onclick = saveCustomer;
+            currentEditIndex = -1;
+
             ['c-name','c-street','c-city','c-mail','c-phone'].forEach(id => document.getElementById(id).value = '');
+
+            db.customers.forEach((c, index) => {
+                const div = document.createElement('div');
+                div.className = 'list-group-item cust-item small';
+                div.innerHTML = `
+                    <div>
+                        <strong>${c.name}</strong><br>
+                        ${c.street || '-'}<br>
+                        ${c.city || '-'}<br>
+                        📧 ${c.mail || '-'}<br>
+                        📞 ${c.phone || '-'}
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                        <button class="btn btn-sm btn-info" onclick="selectCust(${index})">Auswählen</button>
+                        <button class="btn btn-sm btn-warning" onclick="editCustomer(${index})">✏️ Ändern</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCustomer(${index})">🗑️ Löschen</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
             new bootstrap.Modal(document.getElementById('modal-cust')).show();
         }
 
-        function selectCust(c) {
+        function editCustomer(index) {
+            const c = db.customers[index];
+            document.getElementById('c-name').value = c.name;
+            document.getElementById('c-street').value = c.street || '';
+            document.getElementById('c-city').value = c.city || '';
+            document.getElementById('c-mail').value = c.mail || '';
+            document.getElementById('c-phone').value = c.phone || '';
+
+            currentEditIndex = index;
+
+            const btn = document.getElementById('btn-save-customer');
+            btn.textContent = 'Kunde ändern';
+        }
+
+        function deleteCustomer(index) {
+            if (confirm(`Kunde "${db.customers[index].name}" wirklich löschen?`)) {
+                db.customers.splice(index, 1);
+                localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
+                openCustomerModal();
+                if (selectedCustomerIndex === index) {
+                    document.getElementById('cust-display').innerHTML = '<span>(Kunde wählen...)</span>';
+                    document.getElementById('customer-actions').style.display = 'none';
+                    selectedCustomerIndex = -1;
+                }
+                alert('Kunde gelöscht!');
+            }
+        }
+
+        function selectCust(index) {
+            const c = db.customers[index];
             document.getElementById('cust-display').innerHTML = `
                 <span>${c.name}</span><br>
-                <span>${c.street}</span><br>
-                <span>${c.city}</span><br>
+                <span>${c.street || ''}</span><br>
+                <span>${c.city || ''}</span><br>
                 <span>📧 ${c.mail || '-'}</span><br>
                 <span>📞 ${c.phone || '-'}</span>
             `;
+            selectedCustomerIndex = index;
+            document.getElementById('customer-actions').style.display = 'block';
+            bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
         }
+
+        // Bearbeiten/Löschen Buttons auf der Rechnung
+        document.getElementById('btn-edit-customer').addEventListener('click', () => {
+            if (selectedCustomerIndex !== -1) {
+                editCustomer(selectedCustomerIndex);
+                openCustomerModal();
+            }
+        });
+
+        document.getElementById('btn-delete-customer').addEventListener('click', () => {
+            if (selectedCustomerIndex !== -1) {
+                deleteCustomer(selectedCustomerIndex);
+            }
+        });
 
         // Archiv
         function openArchive() {
@@ -702,10 +796,9 @@ H2TechService`);
             search.value = '';
             search.oninput = filterArchive;
 
-            // Neueste Rechnungen zuerst
             const sortedInvoices = [...db.invoices].sort((a, b) => b.nr.localeCompare(a.nr));
 
-            sortedInvoices.forEach((inv, originalIndex) => {
+            sortedInvoices.forEach((inv, i) => {
                 const kunde = inv.customer ? inv.customer.name : '(Kein Kunde)';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
