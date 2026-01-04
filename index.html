@@ -59,7 +59,7 @@
         .sidebar .btn-primary { background: #007bff !important; }
         .sidebar .btn-danger { background: #c0392b !important; }
         .sidebar .btn-secondary { background: #6c757d !important; }
-        .sidebar .btn-outline-light { color: white; border-color: #555; }
+        .sidebar .btn-archive { background: #8e44ad !important; } /* Lila für Archiv */
 
         .main-wrapper { margin-left: 160px; flex-grow: 1; padding: 10px; display: flex; justify-content: center; }
         .invoice-box { 
@@ -72,17 +72,17 @@
             transition: 0.3s; 
             overflow: hidden;
         }
-        .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .content { padding: 15px 30px; flex-grow: 1; display: flex; flex-direction: column; }
-        .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 6px; text-transform: uppercase; }
-        .address-data { line-height: 1.4; margin-bottom: 12px; font-size: 10.5px; }
+        .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 12px 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 5px; text-transform: uppercase; }
+        .address-data { line-height: 1.3; margin-bottom: 10px; font-size: 10px; }
         .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 8px; border-radius: 5px; font-size: 10px; margin-top: auto; }
         .totals-box { background: var(--h2-dark); color: white; padding: 8px; border-radius: 8px; font-size: 11px; }
 
-        #company-logo-display { max-height: 70px; max-width: 220px; object-fit: contain; margin-bottom: 8px; }
+        #company-logo-display { max-height: 65px; max-width: 210px; object-fit: contain; margin-bottom: 6px; }
 
-        .table { font-size: 10px; margin-bottom: 8px; }
-        .table th, .table td { padding: 4px; vertical-align: middle; }
+        .table { font-size: 9.5px; margin-bottom: 6px; }
+        .table th, .table td { padding: 3px; vertical-align: middle; }
 
         @media print { 
             .sidebar, .no-print { display: none !important; } 
@@ -109,18 +109,19 @@
         <div class="text-white text-center mb-3 border-bottom pb-2">
             <strong style="font-size: 11px;">H2-ERP 2026 Pro</strong>
         </div>
-        <button onclick="saveInvoice()" class="btn-success">💾 Rechnung speichern</button>
+        <button id="btn-save" class="btn-success">💾 Rechnung speichern</button>
         <button id="btn-customers" class="btn-info text-white">👥 Kunden verwalten</button>
         <button id="btn-scanner" class="btn-warning">📸 Beleg scannen</button>
-        <button onclick="showStats()" class="btn-dark">📊 Bilanz & Steuer</button>
-        <button onclick="sendEmail()" class="btn-primary">✉️ Per E-Mail senden</button>
-        <button onclick="toggleDarkMode()" class="btn-secondary">🌙 Dark Mode</button>
-        <button onclick="openLogoModal()" class="btn btn-outline-light btn-sm">🖼️ Logo ändern</button>
+        <button id="btn-stats" class="btn-dark">📊 Bilanz & Steuer</button>
+        <button id="btn-email" class="btn-primary">✉️ Per E-Mail senden</button>
+        <button id="btn-darkmode" class="btn-secondary">🌙 Dark Mode</button>
+        <button id="btn-logo" class="btn btn-outline-light btn-sm">🖼️ Logo ändern</button>
+        <button id="btn-archive" class="btn-archive">📂 Archiv</button>
         <button id="btn-print" class="btn btn-secondary btn-sm" style="background:#7f8c8d">🖨️ Drucken</button>
         <button id="btn-pdf" class="btn-danger">📄 Als PDF exportieren</button>
         <div class="mt-auto">
-            <button onclick="share('whatsapp')" class="btn btn-outline-success btn-sm w-100 mb-1" style="font-size: 8px;">🟢 Per WhatsApp</button>
-            <button onclick="share('telegram')" class="btn btn-outline-info btn-sm w-100" style="font-size: 8px;">🔵 Per Telegram</button>
+            <button id="btn-whatsapp" class="btn btn-outline-success btn-sm w-100 mb-1" style="font-size: 8px;">🟢 Per WhatsApp</button>
+            <button id="btn-telegram" class="btn btn-outline-info btn-sm w-100" style="font-size: 8px;">🔵 Per Telegram</button>
         </div>
     </div>
 
@@ -140,7 +141,7 @@
                         <div class="col-6">
                             <div class="section-title">Absender</div>
                             <div class="address-data">
-                                <strong style="font-size: 12px; color: var(--h2-blue); display: block; margin-bottom: 3px;">H2TechService</strong>
+                                <strong style="font-size: 11px; color: var(--h2-blue); display: block; margin-bottom: 2px;">H2TechService</strong>
                                 <span>Suntalstraße 48</span><br>
                                 <span>31552 Rodenberg</span><br>
                                 <span>📧 74star@gmail.com</span><br>
@@ -157,28 +158,28 @@
                         </div>
                     </div>
 
-                    <table class="table table-sm border mt-3">
+                    <table class="table table-sm border mt-2">
                         <thead>
                             <tr class="table-light">
                                 <th>Leistungsbeschreibung</th>
-                                <th class="text-center" style="width:50px;">Stk</th>
-                                <th class="text-end" style="width:80px;">Einzel (€)</th>
-                                <th class="text-center" style="width:60px;">MwSt %</th>
-                                <th class="text-end" style="width:90px;">Gesamt (€)</th>
+                                <th class="text-center" style="width:45px;">Stk</th>
+                                <th class="text-end" style="width:70px;">Einzel (€)</th>
+                                <th class="text-center" style="width:55px;">MwSt %</th>
+                                <th class="text-end" style="width:80px;">Gesamt (€)</th>
                                 <th class="no-print"></th>
                             </tr>
                         </thead>
                         <tbody id="inv-items"></tbody>
                     </table>
 
-                    <div class="no-print mb-3">
+                    <div class="no-print mb-2">
                         <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">+ 19% Position</button>
                         <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">+ 7% Position</button>
                         <button onclick="addRow('',1,0,0)" class="btn btn-sm btn-outline-success me-1">+ 0% Position</button>
                         <button onclick="addRow()" class="btn btn-sm btn-outline-primary">+ Leere Position</button>
                     </div>
 
-                    <div class="row mt-auto pt-3 border-top">
+                    <div class="row mt-auto pt-2 border-top">
                         <div class="col-7">
                             <div class="payment-box">
                                 <strong>Bankverbindung Osman Tuncer</strong><br>
@@ -191,7 +192,7 @@
                                 <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
                                 <div class="d-flex justify-content-between small opacity-75"><span>MwSt gesamt:</span><span id="sum-t">0,00 €</span></div>
                                 <hr class="my-1">
-                                <div class="d-flex justify-content-between fw-bold" style="font-size: 1.2em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
+                                <div class="d-flex justify-content-between fw-bold" style="font-size: 1.1em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
                             </div>
                         </div>
                     </div>
@@ -272,6 +273,33 @@
                 <div class="modal-header"><h6>Beleg-Vorschau</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body text-center bg-dark">
                     <img id="full-image" src="" style="max-width:100%; max-height:80vh; border-radius:8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archiv Modal -->
+    <div class="modal fade" id="modal-archive" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-purple text-white">
+                    <h6>📂 Rechnungsarchiv</h6>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="archive-search" class="form-control mb-3" placeholder="Suche nach Nr., Kunde oder Datum...">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nr.</th>
+                                <th>Datum</th>
+                                <th>Kunde</th>
+                                <th>Gesamt</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-list"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -456,10 +484,10 @@ H2TechService`);
 
             const mailto = `mailto:\( {customerMail}?subject= \){subject}&body=${body}`;
             window.location.href = mailto;
-            alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen (über PDF Export).');
+            alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen.');
         }
 
-        // Bilanz – korrekt mit Beschreibung
+        // Bilanz
         function showStats() {
             let brutto = 0, steuer = 0, ausgaben = 0;
             const tbody = document.getElementById('stat-table');
@@ -518,7 +546,7 @@ H2TechService`);
                 margin: 0,
                 filename: `H2_Rechnung_${nr}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             }).save();
         }
@@ -666,12 +694,56 @@ H2TechService`);
             `;
         }
 
-        // Alle Buttons sicher verknüpfen
+        // Archiv
+        function openArchive() {
+            const tbody = document.getElementById('archive-list');
+            tbody.innerHTML = '';
+            const search = document.getElementById('archive-search');
+            search.value = '';
+            search.oninput = filterArchive;
+
+            // Neueste Rechnungen zuerst
+            const sortedInvoices = [...db.invoices].sort((a, b) => b.nr.localeCompare(a.nr));
+
+            sortedInvoices.forEach((inv, originalIndex) => {
+                const kunde = inv.customer ? inv.customer.name : '(Kein Kunde)';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${inv.nr}</td>
+                    <td>${inv.date}</td>
+                    <td>${kunde}</td>
+                    <td>${(inv.gross||0).toFixed(2)} €</td>
+                    <td><button class="btn btn-sm btn-info" onclick="loadInvoice(${db.invoices.indexOf(inv)}); bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();">Laden</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            new bootstrap.Modal(document.getElementById('modal-archive')).show();
+        }
+
+        function filterArchive() {
+            const term = document.getElementById('archive-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#archive-list tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        }
+
+        // Alle Buttons verknüpfen
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('btn-save').addEventListener('click', saveInvoice);
             document.getElementById('btn-customers').addEventListener('click', openCustomerModal);
             document.getElementById('btn-scanner').addEventListener('click', openScanner);
+            document.getElementById('btn-stats').addEventListener('click', showStats);
+            document.getElementById('btn-email').addEventListener('click', sendEmail);
+            document.getElementById('btn-darkmode').addEventListener('click', toggleDarkMode);
+            document.getElementById('btn-logo').addEventListener('click', openLogoModal);
+            document.getElementById('btn-archive').addEventListener('click', openArchive);
             document.getElementById('btn-print').addEventListener('click', () => window.print());
             document.getElementById('btn-pdf').addEventListener('click', downloadPDF);
+            document.getElementById('btn-whatsapp').addEventListener('click', () => share('whatsapp'));
+            document.getElementById('btn-telegram').addEventListener('click', () => share('telegram'));
         });
 
         // Start
