@@ -84,7 +84,7 @@
         .table { font-size: 9.5px; margin-bottom: 6px; }
         .table th, .table td { padding: 3px; vertical-align: middle; }
 
-        .customer-actions { margin-top: 10px; display: none; } /* Sichtbar, wenn Kunde ausgewählt */
+        .customer-actions { margin-top: 10px; display: none; }
 
         @media print { 
             .sidebar, .no-print, .customer-actions { display: none !important; } 
@@ -459,7 +459,7 @@
             document.getElementById('inv-items').innerHTML = '';
             inv.items.forEach(it => addRow(it.desc, it.qty, it.price, it.tax));
             if (inv.customer) {
-                const index = db.customers.findIndex(c => c.name === inv.customer.name);
+                const index = db.customers.findIndex(c => c.name === inv.customer.name && c.street === inv.customer.street && c.city === inv.customer.city);
                 if (index !== -1) selectCust(index);
             } else {
                 document.getElementById('cust-display').innerHTML = '<span>(Kunde wählen...)</span>';
@@ -518,7 +518,7 @@ H2TechService`);
                     <td>Rechnung</td>
                     <td>${desc}</td>
                     <td>${mwstRate}</td>
-                    <td>${(inv.gross||0).toFixed(2)}€</td>
+                    <td>${(inv.gross||0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</td>
                     <td></td>
                     <td><button class="btn btn-xs btn-info" onclick="loadInvoice(${i})">Laden</button></td>
                 </tr>`;
@@ -526,12 +526,12 @@ H2TechService`);
             db.expenses.forEach(ex => {
                 ausgaben += ex.amt || 0;
                 const img = ex.image ? `<img src="\( {ex.image}" class="receipt-thumb" onclick="showFullImage(' \){ex.image}')">` : '–';
-                tbody.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg \( {ex.date}</td><td>-</td><td>- \){(ex.amt||0).toFixed(2)}€</td><td>${img}</td><td></td></tr>`;
+                tbody.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg \( {ex.date}</td><td>-</td><td>- \){(ex.amt||0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</td><td>${img}</td><td></td></tr>`;
             });
-            document.getElementById('st-brutto').textContent = brutto.toFixed(2) + '€';
-            document.getElementById('st-steuer').textContent = steuer.toFixed(2) + '€';
-            document.getElementById('st-ausg').textContent = ausgaben.toFixed(2) + '€';
-            document.getElementById('st-gewinn').textContent = (brutto - steuer - ausgaben).toFixed(2) + '€';
+            document.getElementById('st-brutto').textContent = brutto.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+            document.getElementById('st-steuer').textContent = steuer.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+            document.getElementById('st-ausg').textContent = ausgaben.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+            document.getElementById('st-gewinn').textContent = (brutto - steuer - ausgaben).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
             new bootstrap.Modal(document.getElementById('modal-stats')).show();
         }
 
@@ -653,7 +653,7 @@ H2TechService`);
                 if (amount > 0) {
                     db.expenses.push({amt: amount, date: new Date().toLocaleDateString('de-DE'), image: imageDataUrl});
                     localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-                    alert(`Betrag erkannt und gespeichert: ${amount.toFixed(2)} €`);
+                    alert(`Betrag erkannt und gespeichert: ${amount.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €`);
                 } else {
                     alert('Kein Betrag erkannt – bessere Ausrichtung versuchen.');
                 }
@@ -666,7 +666,7 @@ H2TechService`);
             document.getElementById('warp-btn').textContent = 'Gerade ausrichten & Scannen';
         }
 
-        // Kundenverwaltung – mit Bearbeiten/Löschen direkt auf der Rechnung
+        // Kundenverwaltung
         function saveCustomer() {
             const name = document.getElementById('c-name').value.trim();
             if (!name) {
@@ -774,7 +774,6 @@ H2TechService`);
             bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
         }
 
-        // Bearbeiten/Löschen Buttons auf der Rechnung
         document.getElementById('btn-edit-customer').addEventListener('click', () => {
             if (selectedCustomerIndex !== -1) {
                 editCustomer(selectedCustomerIndex);
@@ -788,7 +787,7 @@ H2TechService`);
             }
         });
 
-        // Archiv
+        // Archiv – mit korrekter Formatierung
         function openArchive() {
             const tbody = document.getElementById('archive-list');
             tbody.innerHTML = '';
@@ -798,15 +797,16 @@ H2TechService`);
 
             const sortedInvoices = [...db.invoices].sort((a, b) => b.nr.localeCompare(a.nr));
 
-            sortedInvoices.forEach((inv, i) => {
+            sortedInvoices.forEach((inv) => {
                 const kunde = inv.customer ? inv.customer.name : '(Kein Kunde)';
+                const grossFormatted = (inv.gross || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${inv.nr}</td>
                     <td>${inv.date}</td>
                     <td>${kunde}</td>
-                    <td>${(inv.gross||0).toFixed(2)} €</td>
-                    <td><button class="btn btn-sm btn-info" onclick="loadInvoice(${db.invoices.indexOf(inv)}); bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();">Laden</button></td>
+                    <td>${grossFormatted}</td>
+                    <td><button class="btn btn-sm btn-info" onclick="loadInvoice(db.invoices.findIndex(i => i.nr === '${inv.nr}')); bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();">Laden</button></td>
                 `;
                 tbody.appendChild(tr);
             });
