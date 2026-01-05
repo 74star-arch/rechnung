@@ -208,7 +208,7 @@
         </div>
     </div>
 
-    <!-- Alle Modals -->
+    <!-- Modals -->
     <div class="modal fade" id="modal-logo" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -228,10 +228,10 @@
                 <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuerübersicht</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body text-center">
                     <div class="row g-2 mb-3">
-                        <div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0€</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0€</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0€</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0€</b></div></div>
+                        <div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0,00 €</b></div></div>
+                        <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0,00 €</b></div></div>
+                        <div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0,00 €</b></div></div>
+                        <div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0,00 €</b></div></div>
                     </div>
                     <button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">CSV Export</button>
                     <table class="table table-sm text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th><th>Beleg</th><th>Aktionen</th></tr></thead><tbody id="stat-table"></tbody></table>
@@ -569,6 +569,7 @@
                 </tr>`;
             });
 
+            // KORREKTE ANZEIGE MIT TAUSENDER-PUNKT
             document.getElementById('st-brutto').textContent = formatEUR(brutto);
             document.getElementById('st-steuer').textContent = formatEUR(steuer);
             document.getElementById('st-ausg').textContent = formatEUR(ausgaben);
