@@ -322,9 +322,15 @@
         let detectionInterval = null;
         let currentEditIndex = -1;
         let selectedCustomerIndex = -1;
-        let currentArchiveEditIndex = -1; // Für Bearbeiten im Archiv
+        let currentArchiveEditIndex = -1;
 
         function onOpenCvReady() { console.log('OpenCV bereit'); }
+
+        // NEU: Sichere Euro-Formatierung – immer 1.400,00 € (wie auf der Rechnung)
+        function formatEUR(value) {
+            const num = parseFloat(value) || 0;
+            return num.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        }
 
         // Logo
         const defaultLogo = "https://files.oaiusercontent.com/file-7bL5X9k5jPqR8vT2mN4hJ6fD?se=2026-01-09T23%3A59%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dlogo.png&sig=example";
@@ -429,7 +435,7 @@
             document.getElementById('sum-g').textContent = (net + tax).toLocaleString('de-DE', {style:'currency',currency:'EUR'});
         }
 
-        // NEU: Prüfung auf doppelte Rechnungsnummer
+        // Speichern mit Duplikatprüfung
         function saveInvoice() {
             let nr = document.getElementById('inv-nr').textContent.trim();
             if (!nr || !/^[A-Za-z0-9\-]+$/.test(nr)) {
@@ -437,7 +443,6 @@
                 return;
             }
 
-            // Prüfen, ob Nummer schon existiert (außer bei Bearbeitung aus Archiv)
             const existingIndex = db.invoices.findIndex(i => i.nr === nr);
             if (existingIndex !== -1 && existingIndex !== currentArchiveEditIndex) {
                 alert(`Die Rechnungsnummer "${nr}" existiert bereits! Bitte eine andere Nummer wählen.`);
@@ -459,12 +464,10 @@
             const invoiceData = {date: new Date().toLocaleDateString('de-DE'), nr, gross, mwst, items, customer};
 
             if (currentArchiveEditIndex !== -1) {
-                // Bearbeiten: Alte Rechnung überschreiben
                 db.invoices[currentArchiveEditIndex] = invoiceData;
                 alert('Rechnung erfolgreich geändert!');
                 currentArchiveEditIndex = -1;
             } else {
-                // Neu anlegen
                 db.invoices.push(invoiceData);
                 alert('Rechnung erfolgreich gespeichert!');
             }
@@ -488,15 +491,14 @@
                 selectedCustomerIndex = -1;
             }
             calc();
-            currentArchiveEditIndex = i; // Merken, dass wir im Bearbeitungsmodus sind
+            currentArchiveEditIndex = i;
         }
 
-        // NEU: Rechnung aus Archiv löschen
         function deleteInvoiceFromArchive(index) {
             if (confirm(`Rechnung "${db.invoices[index].nr}" wirklich unwiderruflich löschen?`)) {
                 db.invoices.splice(index, 1);
                 localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-                openArchive(); // Liste neu laden
+                openArchive();
                 alert('Rechnung gelöscht!');
             }
         }
@@ -536,7 +538,7 @@ H2TechService`);
             alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen.');
         }
 
-        // Bilanz
+        // Bilanz & Steuer – jetzt mit korrektem Format
         function showStats() {
             let brutto = 0, steuer = 0, ausgaben = 0;
             const tbody = document.getElementById('stat-table');
@@ -550,7 +552,7 @@ H2TechService`);
                     <td>Rechnung</td>
                     <td>${desc}</td>
                     <td>${mwstRate}</td>
-                    <td>${(inv.gross||0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</td>
+                    <td>${formatEUR(inv.gross)}</td>
                     <td></td>
                     <td><button class="btn btn-xs btn-info" onclick="loadInvoice(${i})">Laden</button></td>
                 </tr>`;
@@ -558,12 +560,12 @@ H2TechService`);
             db.expenses.forEach(ex => {
                 ausgaben += ex.amt || 0;
                 const img = ex.image ? `<img src="\( {ex.image}" class="receipt-thumb" onclick="showFullImage(' \){ex.image}')">` : '–';
-                tbody.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg \( {ex.date}</td><td>-</td><td>- \){(ex.amt||0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</td><td>${img}</td><td></td></tr>`;
+                tbody.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg \( {ex.date}</td><td>-</td><td>- \){formatEUR(ex.amt)}</td><td>${img}</td><td></td></tr>`;
             });
-            document.getElementById('st-brutto').textContent = brutto.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
-            document.getElementById('st-steuer').textContent = steuer.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
-            document.getElementById('st-ausg').textContent = ausgaben.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
-            document.getElementById('st-gewinn').textContent = (brutto - steuer - ausgaben).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+            document.getElementById('st-brutto').textContent = formatEUR(brutto);
+            document.getElementById('st-steuer').textContent = formatEUR(steuer);
+            document.getElementById('st-ausg').textContent = formatEUR(ausgaben);
+            document.getElementById('st-gewinn').textContent = formatEUR(brutto - steuer - ausgaben);
             new bootstrap.Modal(document.getElementById('modal-stats')).show();
         }
 
@@ -685,7 +687,7 @@ H2TechService`);
                 if (amount > 0) {
                     db.expenses.push({amt: amount, date: new Date().toLocaleDateString('de-DE'), image: imageDataUrl});
                     localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-                    alert(`Betrag erkannt und gespeichert: ${amount.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €`);
+                    alert(`Betrag erkannt und gespeichert: ${formatEUR(amount)}`);
                 } else {
                     alert('Kein Betrag erkannt – bessere Ausrichtung versuchen.');
                 }
@@ -819,7 +821,7 @@ H2TechService`);
             }
         });
 
-        // Archiv – mit Bearbeiten und Löschen
+        // Archiv – jetzt mit korrektem Betragsformat
         function openArchive() {
             const tbody = document.getElementById('archive-list');
             tbody.innerHTML = '';
@@ -831,13 +833,12 @@ H2TechService`);
 
             sortedInvoices.forEach((inv, originalIndex) => {
                 const kunde = inv.customer ? inv.customer.name : '(Kein Kunde)';
-                const grossFormatted = (inv.gross || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${inv.nr}</td>
                     <td>${inv.date}</td>
                     <td>${kunde}</td>
-                    <td>${grossFormatted}</td>
+                    <td>${formatEUR(inv.gross)}</td>
                     <td>
                         <button class="btn btn-sm btn-info me-1" onclick="loadInvoice(${originalIndex}); bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();">✏️ Bearbeiten</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteInvoiceFromArchive(${originalIndex})">🗑️ Löschen</button>
