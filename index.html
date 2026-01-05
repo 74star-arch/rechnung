@@ -322,6 +322,7 @@
         let detectionInterval = null;
         let currentEditIndex = -1;
         let selectedCustomerIndex = -1;
+        let currentArchiveEditIndex = -1; // Für Bearbeiten im Archiv
 
         function onOpenCvReady() { console.log('OpenCV bereit'); }
 
@@ -395,6 +396,7 @@
             document.getElementById('customer-actions').style.display = 'none';
             selectedCustomerIndex = -1;
             addRow();
+            currentArchiveEditIndex = -1;
         }
 
         // Rechnung
@@ -427,10 +429,18 @@
             document.getElementById('sum-g').textContent = (net + tax).toLocaleString('de-DE', {style:'currency',currency:'EUR'});
         }
 
+        // NEU: Prüfung auf doppelte Rechnungsnummer
         function saveInvoice() {
             let nr = document.getElementById('inv-nr').textContent.trim();
             if (!nr || !/^[A-Za-z0-9\-]+$/.test(nr)) {
                 alert('Bitte eine gültige Rechnungsnummer eingeben!');
+                return;
+            }
+
+            // Prüfen, ob Nummer schon existiert (außer bei Bearbeitung aus Archiv)
+            const existingIndex = db.invoices.findIndex(i => i.nr === nr);
+            if (existingIndex !== -1 && existingIndex !== currentArchiveEditIndex) {
+                alert(`Die Rechnungsnummer "${nr}" existiert bereits! Bitte eine andere Nummer wählen.`);
                 return;
             }
 
@@ -446,9 +456,20 @@
             const gross = parseFloat(document.getElementById('sum-g').textContent.replace(/[^0-9,.]/g,'').replace(',','.')) || 0;
             const mwst = parseFloat(document.getElementById('sum-t').textContent.replace(/[^0-9,.]/g,'').replace(',','.')) || 0;
 
-            db.invoices.push({date: new Date().toLocaleDateString('de-DE'), nr, gross, mwst, items, customer});
+            const invoiceData = {date: new Date().toLocaleDateString('de-DE'), nr, gross, mwst, items, customer};
+
+            if (currentArchiveEditIndex !== -1) {
+                // Bearbeiten: Alte Rechnung überschreiben
+                db.invoices[currentArchiveEditIndex] = invoiceData;
+                alert('Rechnung erfolgreich geändert!');
+                currentArchiveEditIndex = -1;
+            } else {
+                // Neu anlegen
+                db.invoices.push(invoiceData);
+                alert('Rechnung erfolgreich gespeichert!');
+            }
+
             localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-            alert('Rechnung erfolgreich gespeichert!');
             resetInvoice();
         }
 
@@ -467,6 +488,17 @@
                 selectedCustomerIndex = -1;
             }
             calc();
+            currentArchiveEditIndex = i; // Merken, dass wir im Bearbeitungsmodus sind
+        }
+
+        // NEU: Rechnung aus Archiv löschen
+        function deleteInvoiceFromArchive(index) {
+            if (confirm(`Rechnung "${db.invoices[index].nr}" wirklich unwiderruflich löschen?`)) {
+                db.invoices.splice(index, 1);
+                localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
+                openArchive(); // Liste neu laden
+                alert('Rechnung gelöscht!');
+            }
         }
 
         // E-Mail senden
@@ -787,7 +819,7 @@ H2TechService`);
             }
         });
 
-        // Archiv – mit korrekter Formatierung
+        // Archiv – mit Bearbeiten und Löschen
         function openArchive() {
             const tbody = document.getElementById('archive-list');
             tbody.innerHTML = '';
@@ -797,7 +829,7 @@ H2TechService`);
 
             const sortedInvoices = [...db.invoices].sort((a, b) => b.nr.localeCompare(a.nr));
 
-            sortedInvoices.forEach((inv) => {
+            sortedInvoices.forEach((inv, originalIndex) => {
                 const kunde = inv.customer ? inv.customer.name : '(Kein Kunde)';
                 const grossFormatted = (inv.gross || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
                 const tr = document.createElement('tr');
@@ -806,7 +838,10 @@ H2TechService`);
                     <td>${inv.date}</td>
                     <td>${kunde}</td>
                     <td>${grossFormatted}</td>
-                    <td><button class="btn btn-sm btn-info" onclick="loadInvoice(db.invoices.findIndex(i => i.nr === '${inv.nr}')); bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();">Laden</button></td>
+                    <td>
+                        <button class="btn btn-sm btn-info me-1" onclick="loadInvoice(${originalIndex}); bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();">✏️ Bearbeiten</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteInvoiceFromArchive(${originalIndex})">🗑️ Löschen</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
