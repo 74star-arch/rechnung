@@ -208,7 +208,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Alle Modals -->
     <div class="modal fade" id="modal-logo" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -326,13 +326,11 @@
 
         function onOpenCvReady() { console.log('OpenCV bereit'); }
 
-        // NEU: Sichere Euro-Formatierung – immer 1.400,00 € (wie auf der Rechnung)
         function formatEUR(value) {
             const num = parseFloat(value) || 0;
             return num.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
         }
 
-        // Logo
         const defaultLogo = "https://files.oaiusercontent.com/file-7bL5X9k5jPqR8vT2mN4hJ6fD?se=2026-01-09T23%3A59%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dlogo.png&sig=example";
         if (db.logo) {
             document.getElementById('company-logo-display').src = db.logo;
@@ -342,7 +340,6 @@
             localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
         }
 
-        // Dark Mode
         if (db.theme === 'dark') document.body.setAttribute('data-theme', 'dark');
 
         function toggleDarkMode() {
@@ -352,7 +349,6 @@
             localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
         }
 
-        // Logo ändern
         function openLogoModal() {
             new bootstrap.Modal(document.getElementById('modal-logo')).show();
             document.getElementById('logo-input').value = '';
@@ -382,7 +378,6 @@
             }
         }
 
-        // Rechnungsnummer
         function getNextInvoiceNumber() {
             const year = new Date().getFullYear();
             const prefix = `H2-${year}-`;
@@ -405,7 +400,6 @@
             currentArchiveEditIndex = -1;
         }
 
-        // Rechnung
         function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -420,22 +414,24 @@
         }
 
         function calc() {
-            let net = 0, tax = 0;
+            let net = 0, tax = 0, grossTotal = 0;
             document.querySelectorAll('#inv-items tr').forEach(r => {
                 const q = parseFloat(r.querySelector('.qt').value) || 0;
                 const p = parseFloat(r.querySelector('.pr').value) || 0;
                 const t = parseFloat(r.querySelector('.tx').value) || 0;
-                const n = q * p;
-                const tx = n * (t / 100);
-                r.querySelector('.lt').textContent = (n + tx).toLocaleString('de-DE', {style:'currency',currency:'EUR'});
-                net += n; tax += tx;
+                const lineNet = q * p;
+                const lineTax = lineNet * (t / 100);
+                const lineGross = lineNet + lineTax;
+                r.querySelector('.lt').textContent = formatEUR(lineGross);
+                net += lineNet;
+                tax += lineTax;
+                grossTotal += lineGross;
             });
-            document.getElementById('sum-n').textContent = net.toLocaleString('de-DE', {style:'currency',currency:'EUR'});
-            document.getElementById('sum-t').textContent = tax.toLocaleString('de-DE', {style:'currency',currency:'EUR'});
-            document.getElementById('sum-g').textContent = (net + tax).toLocaleString('de-DE', {style:'currency',currency:'EUR'});
+            document.getElementById('sum-n').textContent = formatEUR(net);
+            document.getElementById('sum-t').textContent = formatEUR(tax);
+            document.getElementById('sum-g').textContent = formatEUR(grossTotal);
         }
 
-        // Speichern mit Duplikatprüfung
         function saveInvoice() {
             let nr = document.getElementById('inv-nr').textContent.trim();
             if (!nr || !/^[A-Za-z0-9\-]+$/.test(nr)) {
@@ -458,10 +454,24 @@
 
             const customer = selectedCustomerIndex !== -1 ? db.customers[selectedCustomerIndex] : null;
 
-            const gross = parseFloat(document.getElementById('sum-g').textContent.replace(/[^0-9,.]/g,'').replace(',','.')) || 0;
-            const mwst = parseFloat(document.getElementById('sum-t').textContent.replace(/[^0-9,.]/g,'').replace(',','.')) || 0;
+            let netTotal = 0, mwstTotal = 0, grossTotal = 0;
+            items.forEach(it => {
+                const lineNet = it.qty * it.price;
+                const lineMwst = lineNet * (it.tax / 100);
+                netTotal += lineNet;
+                mwstTotal += lineMwst;
+                grossTotal += lineNet + lineMwst;
+            });
 
-            const invoiceData = {date: new Date().toLocaleDateString('de-DE'), nr, gross, mwst, items, customer};
+            const invoiceData = {
+                date: new Date().toLocaleDateString('de-DE'),
+                nr,
+                gross: grossTotal,
+                mwst: mwstTotal,
+                net: netTotal,
+                items,
+                customer
+            };
 
             if (currentArchiveEditIndex !== -1) {
                 db.invoices[currentArchiveEditIndex] = invoiceData;
@@ -503,7 +513,6 @@
             }
         }
 
-        // E-Mail senden
         async function sendEmail() {
             const mailElements = document.querySelectorAll('#cust-display span');
             let customerMail = '';
@@ -521,51 +530,50 @@
             const betrag = document.getElementById('sum-g').textContent;
 
             const subject = encodeURIComponent(`Rechnung ${nr} - H2TechService`);
-            const body = encodeURIComponent(`Sehr geehrte/r Kunde/in,
+            const body = encodeURIComponent(`Sehr geehrte/r Kunde/in,\n\nanbei finden Sie Ihre Rechnung ${nr}.\n\nGesamtbetrag: ${betrag}\n\nVielen Dank!\n\nMit freundlichen Grüßen\nOsman Tuncer\nH2TechService`);
 
-anbei finden Sie Ihre Rechnung ${nr}.
-
-Gesamtbetrag: ${betrag}
-
-Vielen Dank!
-
-Mit freundlichen Grüßen
-Osman Tuncer
-H2TechService`);
-
-            const mailto = `mailto:\( {customerMail}?subject= \){subject}&body=${body}`;
-            window.location.href = mailto;
+            window.location.href = `mailto:\( {customerMail}?subject= \){subject}&body=${body}`;
             alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen.');
         }
 
-        // Bilanz & Steuer – jetzt mit korrektem Format
         function showStats() {
             let brutto = 0, steuer = 0, ausgaben = 0;
             const tbody = document.getElementById('stat-table');
             tbody.innerHTML = '';
+
             db.invoices.forEach((inv, i) => {
                 brutto += inv.gross || 0;
                 steuer += inv.mwst || 0;
-                const desc = inv.items.length === 1 ? inv.items[0].desc : (inv.items.length > 1 ? inv.items[0].desc + ' u.a.' : 'Rechnung');
+                const desc = inv.items.length > 0 ? (inv.items.length === 1 ? inv.items[0].desc : inv.items[0].desc + ' u.a.') : 'Rechnung';
                 const mwstRate = inv.items.length > 0 ? inv.items[0].tax + '%' : '-';
                 tbody.innerHTML += `<tr class="table-success">
                     <td>Rechnung</td>
-                    <td>${desc}</td>
+                    <td>${inv.nr} – ${desc}</td>
                     <td>${mwstRate}</td>
                     <td>${formatEUR(inv.gross)}</td>
                     <td></td>
                     <td><button class="btn btn-xs btn-info" onclick="loadInvoice(${i})">Laden</button></td>
                 </tr>`;
             });
+
             db.expenses.forEach(ex => {
                 ausgaben += ex.amt || 0;
                 const img = ex.image ? `<img src="\( {ex.image}" class="receipt-thumb" onclick="showFullImage(' \){ex.image}')">` : '–';
-                tbody.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg \( {ex.date}</td><td>-</td><td>- \){formatEUR(ex.amt)}</td><td>${img}</td><td></td></tr>`;
+                tbody.innerHTML += `<tr class="table-danger">
+                    <td>Ausgabe</td>
+                    <td>Beleg ${ex.date}</td>
+                    <td>-</td>
+                    <td>-${formatEUR(ex.amt)}</td>
+                    <td>${img}</td>
+                    <td></td>
+                </tr>`;
             });
+
             document.getElementById('st-brutto').textContent = formatEUR(brutto);
             document.getElementById('st-steuer').textContent = formatEUR(steuer);
             document.getElementById('st-ausg').textContent = formatEUR(ausgaben);
             document.getElementById('st-gewinn').textContent = formatEUR(brutto - steuer - ausgaben);
+
             new bootstrap.Modal(document.getElementById('modal-stats')).show();
         }
 
@@ -582,13 +590,23 @@ H2TechService`);
         }
 
         function exportToCSV() {
-            let csv = "Datum;Typ;Info;MwSt;Betrag\n";
-            db.invoices.forEach(i => csv += `\( {i.date};Rechnung; \){i.nr};\( {(i.mwst||0).toFixed(2)}; \){(i.gross||0).toFixed(2)}\n`);
-            db.expenses.forEach(e => csv += `\( {e.date};Ausgabe;Beleg;;- \){(e.amt||0).toFixed(2)}\n`);
+            let csv = "Datum;Typ;Rechnungs-Nr.;MwSt (€);Brutto (€)\n";
+
+            db.invoices.forEach(i => {
+                csv += `\( {i.date};Rechnung; \){i.nr};\( {(i.mwst || 0).toFixed(2).replace('.',',')}; \){(i.gross || 0).toFixed(2).replace('.',',')}\n`;
+            });
+
+            db.expenses.forEach(e => {
+                csv += `\( {e.date};Ausgabe;;0,00;- \){(e.amt || 0).toFixed(2).replace('.',',')}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+            a.href = url;
             a.download = 'H2_Bilanz_2026.csv';
             a.click();
+            URL.revokeObjectURL(url);
         }
 
         function downloadPDF() {
@@ -602,18 +620,15 @@ H2TechService`);
             }).save();
         }
 
-        // Scanner
         async function openScanner() {
             try {
-                let constraints = { video: { facingMode: "environment" } };
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             } catch (e) {
                 try {
-                    let constraints = { video: { facingMode: "user" } };
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                     alert('Rückkamera nicht verfügbar – Frontkamera wird verwendet.');
                 } catch (err) {
-                    alert('Kamera-Zugriff fehlgeschlagen. Bitte Berechtigung prüfen und Seite neu laden.');
+                    alert('Kamera-Zugriff fehlgeschlagen. Bitte Berechtigung prüfen.');
                     return;
                 }
             }
@@ -700,7 +715,6 @@ H2TechService`);
             document.getElementById('warp-btn').textContent = 'Gerade ausrichten & Scannen';
         }
 
-        // Kundenverwaltung
         function saveCustomer() {
             const name = document.getElementById('c-name').value.trim();
             if (!name) {
@@ -722,9 +736,7 @@ H2TechService`);
             } else {
                 db.customers[currentEditIndex] = cust;
                 alert('Kunde geändert!');
-                if (selectedCustomerIndex === currentEditIndex) {
-                    selectCust(currentEditIndex);
-                }
+                if (selectedCustomerIndex === currentEditIndex) selectCust(currentEditIndex);
             }
 
             localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
@@ -775,9 +787,7 @@ H2TechService`);
             document.getElementById('c-phone').value = c.phone || '';
 
             currentEditIndex = index;
-
-            const btn = document.getElementById('btn-save-customer');
-            btn.textContent = 'Kunde ändern';
+            document.getElementById('btn-save-customer').textContent = 'Kunde ändern';
         }
 
         function deleteCustomer(index) {
@@ -816,12 +826,9 @@ H2TechService`);
         });
 
         document.getElementById('btn-delete-customer').addEventListener('click', () => {
-            if (selectedCustomerIndex !== -1) {
-                deleteCustomer(selectedCustomerIndex);
-            }
+            if (selectedCustomerIndex !== -1) deleteCustomer(selectedCustomerIndex);
         });
 
-        // Archiv – jetzt mit korrektem Betragsformat
         function openArchive() {
             const tbody = document.getElementById('archive-list');
             tbody.innerHTML = '';
@@ -859,7 +866,6 @@ H2TechService`);
             });
         }
 
-        // Alle Buttons verknüpfen
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('btn-save').addEventListener('click', saveInvoice);
             document.getElementById('btn-customers').addEventListener('click', openCustomerModal);
@@ -875,7 +881,6 @@ H2TechService`);
             document.getElementById('btn-telegram').addEventListener('click', () => share('telegram'));
         });
 
-        // Start
         resetInvoice();
     </script>
 </body>
