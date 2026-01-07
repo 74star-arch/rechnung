@@ -159,8 +159,15 @@
         .receipt-thumb { max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #444; }
         .cust-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; }
         
-        /* Flagge in der MwSt-Spalte etwas kleiner für besseren Platz */
-        .flag { font-size: 14px; margin-right: 4px; }
+        /* Stil für die Flaggen-Bilder */
+        .flag-img {
+            width: 20px;
+            height: 14px;
+            margin-right: 6px;
+            vertical-align: middle;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+        }
     </style>
 </head>
 <body>
@@ -273,9 +280,15 @@
                     </table>
 
                     <div class="no-print mb-2">
-                        <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">🇩🇪 + 19% Position</button>
-                        <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">🇩🇪 + 7% Position</button>
-                        <button onclick="addRow('🇨🇭 Leistung an Kunde in der Schweiz – MwSt.-frei gem. § 4 Nr. 1 UStG (Ausfuhrlieferung)',1,0,0)" class="btn btn-sm btn-outline-primary me-1">🇨🇭 + 0% Position (Schweiz)</button>
+                        <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">
+                            <img src="https://flagcdn.com/de.svg" class="flag-img"> + 19% Position
+                        </button>
+                        <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">
+                            <img src="https://flagcdn.com/de.svg" class="flag-img"> + 7% Position
+                        </button>
+                        <button onclick="addRow('Leistung an Kunde in der Schweiz – MwSt.-frei gem. § 4 Nr. 1 UStG (Ausfuhrlieferung)',1,0,0)" class="btn btn-sm btn-outline-primary me-1">
+                            <img src="https://flagcdn.com/ch.svg" class="flag-img"> + 0% Position (Schweiz)
+                        </button>
                         <button onclick="addRow()" class="btn btn-sm btn-outline-secondary">+ Leere Position</button>
                     </div>
 
@@ -301,8 +314,7 @@
         </div>
     </div>
 
-    <!-- Alle Modals (Logo, Stats, Kunden, Scanner, Image, Archiv) unverändert -->
-
+    <!-- Alle Modals (Logo, Stats, Kunden, Scanner, Image, Archiv) -->
     <div class="modal fade" id="modal-logo" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -334,7 +346,78 @@
         </div>
     </div>
 
-    <!-- Die anderen Modals (Kunden, Scanner, Image, Archiv) bleiben unverändert -->
+    <div class="modal fade" id="modal-cust" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="text" id="c-name" class="form-control mb-1" placeholder="Name oder Firma">
+                    <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße und Hausnummer">
+                    <input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort">
+                    <input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail-Adresse">
+                    <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefonnummer">
+                    <button id="btn-save-customer" class="btn btn-primary w-100 mt-2">Kunde speichern</button>
+                    <hr class="my-3">
+                    <h6 class="text-center">Gespeicherte Kunden</h6>
+                    <div id="cust-list" class="list-group mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-scan" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h6>📸 Beleg scannen</h6>
+                    <button class="btn-close" data-bs-dismiss="modal" onclick="stopCam()"></button>
+                </div>
+                <div class="modal-body text-center position-relative">
+                    <video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline muted></video>
+                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+                    <button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 mt-3" disabled>Gerade ausrichten & Scannen</button>
+                    <small class="text-muted d-block mt-2">Beleg flach und gut beleuchtet halten</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-image" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><h6>Beleg-Vorschau</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body text-center bg-dark">
+                    <img id="full-image" src="" style="max-width:100%; max-height:80vh; border-radius:8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-archive" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-purple text-white">
+                    <h6>📂 Rechnungsarchiv</h6>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="archive-search" class="form-control mb-3" placeholder="Suche nach Nr., Kunde oder Datum...">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nr.</th>
+                                <th>Datum</th>
+                                <th>Kunde</th>
+                                <th>Gesamt</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('h2_erp_2026_final') || '{"invoices":[],"expenses":[],"customers":[],"logo":"","theme":"light"}');
@@ -425,12 +508,15 @@
 
         function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
-            const flag = (tax > 0) ? '🇩🇪' : '🇨🇭';
+            const flagSrc = (tax > 0) ? 'https://flagcdn.com/de.svg' : 'https://flagcdn.com/ch.svg';
             tr.innerHTML = `
                 <td><input type="text" class="form-control form-control-sm border-0 p-0 desc" value="${desc}" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="${qty}" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="${price}" step="0.01" oninput="calc()"></td>
-                <td class="text-center"><span class="flag">\( {flag}</span> <input type="number" class="form-control form-control-sm border-0 text-center tx d-inline w-auto" style="width:50px;" value=" \){tax}" oninput="updateFlag(this); calc()"></td>
+                <td class="text-center">
+                    <img src="${flagSrc}" class="flag-img" alt="Flagge">
+                    <input type="number" class="form-control form-control-sm border-0 text-center tx d-inline w-auto" style="width:50px;" value="${tax}" oninput="updateFlag(this); calc()">
+                </td>
                 <td class="text-end fw-bold lt">0,00 €</td>
                 <td class="no-print"><button onclick="this.closest('tr').remove(); calc();" class="btn btn-sm text-danger">×</button></td>`;
             document.getElementById('inv-items').appendChild(tr);
@@ -439,9 +525,9 @@
 
         function updateFlag(input) {
             const tax = parseFloat(input.value) || 0;
-            const flagSpan = input.parentElement.querySelector('.flag');
-            if (flagSpan) {
-                flagSpan.textContent = (tax > 0) ? '🇩🇪' : '🇨🇭';
+            const img = input.parentElement.querySelector('img');
+            if (img) {
+                img.src = (tax > 0) ? 'https://flagcdn.com/de.svg' : 'https://flagcdn.com/ch.svg';
             }
         }
 
