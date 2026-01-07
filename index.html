@@ -39,43 +39,77 @@
         }
         
         .sidebar { 
-            width: 160px; 
-            background: var(--h2-dark); 
+            width: 180px;
+            background: linear-gradient(180deg, #1e2d3f, #2c3e50);
             height: 100vh; 
             position: fixed; 
             left: 0; 
             top: 0; 
             display: flex; 
             flex-direction: column; 
-            padding: 15px 10px; 
-            gap: 8px; 
+            padding: 20px 12px; 
+            gap: 10px; 
             z-index: 1000;
             overflow-y: auto;
-            pointer-events: auto; /* Buttons klickbar machen */
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
         }
+        
+        .sidebar .header-title {
+            color: #fff;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            letter-spacing: 1px;
+        }
+
         .sidebar button { 
-            font-size: 9px; 
-            text-align: left; 
-            padding: 8px; 
-            border-radius: 5px; 
+            font-size: 10px; 
+            font-weight: 500;
+            text-align: center;
+            padding: 12px 8px;
+            border-radius: 10px; 
             border: none; 
             width: 100%; 
             color: white;
-            transition: 0.2s;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-        .sidebar button:hover { opacity: 0.9; }
-        .sidebar .btn-success { background: #27ae60 !important; }
-        .sidebar .btn-info { background: #2980b9 !important; }
-        .sidebar .btn-warning { background: #f39c12 !important; color: black; }
-        .sidebar .btn-dark { background: #34495e !important; border: 1px solid #555; }
-        .sidebar .btn-primary { background: #007bff !important; }
-        .sidebar .btn-danger { background: #c0392b !important; }
-        .sidebar .btn-secondary { background: #6c757d !important; }
-        .sidebar .btn-archive { background: #8e44ad !important; }
+
+        .sidebar button .icon {
+            font-size: 20px;
+        }
+
+        .sidebar button .text {
+            font-size: 9px;
+            opacity: 0.9;
+        }
+
+        .sidebar button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,123,255,0.4);
+            background: rgba(0,123,255,0.3);
+        }
+
+        .sidebar #btn-save:hover { box-shadow: 0 8px 20px rgba(39,174,96,0.5); }
+        .sidebar #btn-customers:hover { box-shadow: 0 8px 20px rgba(41,128,185,0.5); }
+        .sidebar #btn-scanner:hover { box-shadow: 0 8px 20px rgba(243,156,18,0.5); }
+        .sidebar #btn-stats:hover { box-shadow: 0 8px 20px rgba(52,73,94,0.6); }
+        .sidebar #btn-email:hover { box-shadow: 0 8px 20px rgba(0,123,255,0.5); }
+        .sidebar #btn-archive:hover { box-shadow: 0 8px 20px rgba(142,68,173,0.5); }
+        .sidebar #btn-pdf:hover { box-shadow: 0 8px 20px rgba(220,53,69,0.5); }
 
         .main-wrapper { 
-            margin-left: 160px; 
+            margin-left: 180px; 
             flex-grow: 1; 
             padding: 10px; 
             display: flex; 
@@ -128,23 +162,59 @@
 </head>
 <body>
 
-    <div class="sidebar no-print shadow">
-        <div class="text-white text-center mb-3 border-bottom pb-2">
-            <strong style="font-size: 11px;">H2-ERP 2026 Pro</strong>
-        </div>
-        <button id="btn-save" class="btn-success">💾 Rechnung speichern</button>
-        <button id="btn-customers" class="btn-info text-white">👥 Kunden verwalten</button>
-        <button id="btn-scanner" class="btn-warning">📸 Beleg scannen</button>
-        <button id="btn-stats" class="btn-dark">📊 Bilanz & Steuer</button>
-        <button id="btn-email" class="btn-primary">✉️ Per E-Mail senden</button>
-        <button id="btn-darkmode" class="btn-secondary">🌙 Dark Mode</button>
-        <button id="btn-logo" class="btn btn-outline-light btn-sm">🖼️ Logo ändern</button>
-        <button id="btn-archive" class="btn-archive">📂 Archiv</button>
-        <button id="btn-print" class="btn btn-secondary btn-sm" style="background:#7f8c8d">🖨️ Drucken</button>
-        <button id="btn-pdf" class="btn-danger">📄 Als PDF exportieren</button>
-        <div class="mt-auto">
-            <button id="btn-whatsapp" class="btn btn-outline-success btn-sm w-100 mb-1" style="font-size: 8px;">🟢 Per WhatsApp</button>
-            <button id="btn-telegram" class="btn btn-outline-info btn-sm w-100" style="font-size: 8px;">🔵 Per Telegram</button>
+    <div class="sidebar no-print">
+        <div class="header-title">H2-ERP 2026 Pro</div>
+        
+        <button id="btn-save">
+            <span class="icon">💾</span>
+            <span class="text">Rechnung speichern</span>
+        </button>
+        <button id="btn-customers">
+            <span class="icon">👥</span>
+            <span class="text">Kunden verwalten</span>
+        </button>
+        <button id="btn-scanner">
+            <span class="icon">📸</span>
+            <span class="text">Beleg scannen</span>
+        </button>
+        <button id="btn-stats">
+            <span class="icon">📊</span>
+            <span class="text">Bilanz & Steuer</span>
+        </button>
+        <button id="btn-email">
+            <span class="icon">✉️</span>
+            <span class="text">Per E-Mail senden</span>
+        </button>
+        <button id="btn-darkmode">
+            <span class="icon">🌙</span>
+            <span class="text">Dark Mode</span>
+        </button>
+        <button id="btn-logo">
+            <span class="icon">🖼️</span>
+            <span class="text">Logo ändern</span>
+        </button>
+        <button id="btn-archive">
+            <span class="icon">📂</span>
+            <span class="text">Archiv</span>
+        </button>
+        <button id="btn-print">
+            <span class="icon">🖨️</span>
+            <span class="text">Drucken</span>
+        </button>
+        <button id="btn-pdf">
+            <span class="icon">📄</span>
+            <span class="text">Als PDF exportieren</span>
+        </button>
+        
+        <div class="mt-auto pt-3">
+            <button id="btn-whatsapp">
+                <span class="icon">🟢</span>
+                <span class="text">Per WhatsApp</span>
+            </button>
+            <button id="btn-telegram">
+                <span class="icon">🔵</span>
+                <span class="text">Per Telegram</span>
+            </button>
         </div>
     </div>
 
@@ -202,8 +272,8 @@
                     <div class="no-print mb-2">
                         <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">+ 19% Position</button>
                         <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">+ 7% Position</button>
-                        <button onclick="addRow('',1,0,0)" class="btn btn-sm btn-outline-success me-1">+ 0% Position</button>
-                        <button onclick="addRow()" class="btn btn-sm btn-outline-primary">+ Leere Position</button>
+                        <button onclick="addRow('🇨🇭 Leistung an Kunde in der Schweiz – MwSt.-frei gem. § 4 Nr. 1 UStG (Ausfuhrlieferung)',1,0,0)" class="btn btn-sm btn-outline-primary me-1">🇨🇭 + 0% Position (Schweiz)</button>
+                        <button onclick="addRow()" class="btn btn-sm btn-outline-secondary">+ Leere Position</button>
                     </div>
 
                     <div class="row mt-auto pt-2 border-top">
