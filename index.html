@@ -136,7 +136,17 @@
         #company-logo-display { max-height: 65px; max-width: 210px; object-fit: contain; margin-bottom: 6px; }
 
         .table { font-size: 9.5px; margin-bottom: 6px; }
-        .table th, .table td { padding: 3px; vertical-align: middle; }
+        .table th, .table td { padding: 4px 6px; vertical-align: middle; }
+
+        /* Breite + mehrzeilige Beschreibungs-Spalte */
+        .desc-input {
+            width: 100%;
+            min-height: 50px;
+            resize: vertical;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            background: transparent;
+        }
 
         .customer-actions { margin-top: 10px; display: none; }
 
@@ -149,17 +159,13 @@
                 width: 210mm; 
                 height: 297mm; 
                 background: white !important; 
-                overflow: hidden;
+                overflow: visible;
             } 
             body { background: white !important; color: black !important; margin: 0; padding: 0; }
             @page { size: A4; margin: 0; }
+            .desc-input { white-space: pre-wrap; word-wrap: break-word; border: none; }
         }
 
-        #overlay-canvas { border-radius: 10px; }
-        .receipt-thumb { max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #444; }
-        .cust-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; }
-        
-        /* Stil für die Flaggen-Bilder */
         .flag-img {
             width: 20px;
             height: 14px;
@@ -268,12 +274,12 @@
                     <table class="table table-sm border mt-2">
                         <thead>
                             <tr class="table-light">
-                                <th>Leistungsbeschreibung</th>
-                                <th class="text-center" style="width:45px;">Stk</th>
-                                <th class="text-end" style="width:70px;">Einzel (€)</th>
-                                <th class="text-center" style="width:70px;">MwSt %</th>
-                                <th class="text-end" style="width:80px;">Gesamt (€)</th>
-                                <th class="no-print"></th>
+                                <th style="width: 45%;">Leistungsbeschreibung</th>
+                                <th class="text-center" style="width: 8%;">Stk</th>
+                                <th class="text-end" style="width: 12%;">Einzel (€)</th>
+                                <th class="text-center" style="width: 12%;">MwSt %</th>
+                                <th class="text-end" style="width: 15%;">Gesamt (€)</th>
+                                <th class="no-print" style="width: 8%;"></th>
                             </tr>
                         </thead>
                         <tbody id="inv-items"></tbody>
@@ -281,13 +287,13 @@
 
                     <div class="no-print mb-2">
                         <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">
-                            <img src="https://flagcdn.com/de.svg" class="flag-img"> + 19% Position
+                            <img src="https://flagcdn.com/de.svg" class="flag-img" alt="DE"> + 19% Position
                         </button>
                         <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">
-                            <img src="https://flagcdn.com/de.svg" class="flag-img"> + 7% Position
+                            <img src="https://flagcdn.com/de.svg" class="flag-img" alt="DE"> + 7% Position
                         </button>
                         <button onclick="addRow('Leistung an Kunde in der Schweiz – MwSt.-frei gem. § 4 Nr. 1 UStG (Ausfuhrlieferung)',1,0,0)" class="btn btn-sm btn-outline-primary me-1">
-                            <img src="https://flagcdn.com/ch.svg" class="flag-img"> + 0% Position (Schweiz)
+                            <img src="https://flagcdn.com/ch.svg" class="flag-img" alt="CH"> + 0% Position (Schweiz)
                         </button>
                         <button onclick="addRow()" class="btn btn-sm btn-outline-secondary">+ Leere Position</button>
                     </div>
@@ -314,7 +320,7 @@
         </div>
     </div>
 
-    <!-- Alle Modals (Logo, Stats, Kunden, Scanner, Image, Archiv) -->
+    <!-- Modals -->
     <div class="modal fade" id="modal-logo" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -510,7 +516,7 @@
             const tr = document.createElement('tr');
             const flagSrc = (tax > 0) ? 'https://flagcdn.com/de.svg' : 'https://flagcdn.com/ch.svg';
             tr.innerHTML = `
-                <td><input type="text" class="form-control form-control-sm border-0 p-0 desc" value="${desc}" oninput="calc()"></td>
+                <td><textarea class="form-control form-control-sm border-0 p-0 desc-input" oninput="calc()" rows="2">${desc}</textarea></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="${qty}" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="${price}" step="0.01" oninput="calc()"></td>
                 <td class="text-center">
@@ -564,7 +570,7 @@
             }
 
             const items = Array.from(document.querySelectorAll('#inv-items tr')).map(r => ({
-                desc: r.querySelector('.desc').value.trim(),
+                desc: r.querySelector('.desc-input').value.trim(),
                 qty: parseFloat(r.querySelector('.qt').value) || 0,
                 price: parseFloat(r.querySelector('.pr').value) || 0,
                 tax: parseFloat(r.querySelector('.tx').value) || 0
