@@ -138,7 +138,6 @@
         .table { font-size: 9.5px; margin-bottom: 6px; }
         .table th, .table td { padding: 4px 6px; vertical-align: middle; }
 
-        /* Breite + mehrzeilige Beschreibungs-Spalte */
         .desc-input {
             width: 100%;
             min-height: 50px;
@@ -173,6 +172,7 @@
             vertical-align: middle;
             border: 1px solid #ccc;
             border-radius: 2px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -520,8 +520,8 @@
                 <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="${qty}" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="${price}" step="0.01" oninput="calc()"></td>
                 <td class="text-center">
-                    <img src="${flagSrc}" class="flag-img" alt="Flagge">
-                    <input type="number" class="form-control form-control-sm border-0 text-center tx d-inline w-auto" style="width:50px;" value="${tax}" oninput="updateFlag(this); calc()">
+                    <img src="${flagSrc}" class="flag-img" alt="Flagge" onclick="toggleFlag(this)">
+                    <input type="number" class="form-control form-control-sm border-0 text-center tx d-inline w-auto" style="width:50px;" value="${tax}" oninput="calc()">
                 </td>
                 <td class="text-end fw-bold lt">0,00 €</td>
                 <td class="no-print"><button onclick="this.closest('tr').remove(); calc();" class="btn btn-sm text-danger">×</button></td>`;
@@ -529,12 +529,17 @@
             calc();
         }
 
-        function updateFlag(input) {
-            const tax = parseFloat(input.value) || 0;
-            const img = input.parentElement.querySelector('img');
-            if (img) {
-                img.src = (tax > 0) ? 'https://flagcdn.com/de.svg' : 'https://flagcdn.com/ch.svg';
+        function toggleFlag(img) {
+            const currentSrc = img.src;
+            const newSrc = currentSrc.includes('de.svg') ? 'https://flagcdn.com/ch.svg' : 'https://flagcdn.com/de.svg';
+            img.src = newSrc;
+
+            const row = img.closest('tr');
+            const descTextarea = row.querySelector('.desc-input');
+            if (newSrc.includes('ch.svg') && descTextarea.value.trim() === '') {
+                descTextarea.value = 'Leistung an Kunde in der Schweiz – MwSt.-frei gem. § 4 Nr. 1 UStG (Ausfuhrlieferung)';
             }
+            calc();
         }
 
         function calc() {
