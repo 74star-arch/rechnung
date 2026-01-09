@@ -115,7 +115,7 @@
         .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
         .content { padding: 12px 25px; flex-grow: 1; display: flex; flex-direction: column; }
         .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 5px; text-transform: uppercase; }
-        .address-data { line-height: 1.4; margin-bottom: 10px; font-size: 10px; }
+        .address-data { line-height: 1.3; margin-bottom: 10px; font-size: 10px; }
         .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 8px; border-radius: 5px; font-size: 10px; margin-top: auto; }
         .totals-box { background: var(--h2-dark); color: white; padding: 8px; border-radius: 8px; font-size: 11px; }
 
@@ -132,11 +132,6 @@
             white-space: pre-wrap;
             background: transparent;
             border: none;
-        }
-
-        .mwst-euro {
-            font-weight: bold;
-            color: #004085;
         }
 
         .customer-actions { margin-top: 10px; display: none; }
@@ -242,11 +237,9 @@
                         <div class="col-6">
                             <div class="section-title">Absender</div>
                             <div class="address-data">
-                                <strong style="font-size: 11px; color: var(--h2-blue); display: block; margin-bottom: 4px;">H2TechService</strong>
-                                <span>Suntalstraße 48</span><br>
-                                <span>31552 Rodenberg</span><br><br>
-                                <span>📧 74star@gmail.com</span><br>
-                                <span>📞 +49 176 66658777</span><br><br>
+                                <strong style="font-size: 11px; color: var(--h2-blue); display: block; margin-bottom: 2px;">H2TechService</strong>
+                                <span>Suntalstraße 48, 31552 Rodenberg</span><br>
+                                <span>📧 74star@gmail.com | 📞 +49 176 66658777</span><br>
                                 <span>Steuer-ID: 41/320/887966</span>
                             </div>
                         </div>
@@ -312,108 +305,13 @@
         </div>
     </div>
 
-    <!-- Alle Modals vollständig -->
-    <div class="modal fade" id="modal-logo" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h6>🖼️ Logo hochladen</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body text-center">
-                    <input type="file" id="logo-input" accept="image/*" class="form-control mb-3">
-                    <img id="logo-preview" src="" style="max-width:100%; max-height:300px; display:none;">
-                    <button onclick="saveLogo()" class="btn btn-primary mt-3 w-100">Logo speichern</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-stats" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuerübersicht</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body text-center">
-                    <div class="row g-2 mb-3">
-                        <div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0,00 €</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0,00 €</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0,00 €</b></div></div>
-                        <div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0,00 €</b></div></div>
-                    </div>
-                    <button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">CSV Export</button>
-                    <table class="table table-sm text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th><th>Beleg</th><th>Aktionen</th></tr></thead><tbody id="stat-table"></tbody></table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-cust" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma">
-                    <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße">
-                    <input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort">
-                    <input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail">
-                    <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefon">
-                    <button id="btn-save-customer" class="btn btn-primary w-100 mt-2">Kunde speichern</button>
-                    <hr>
-                    <div id="cust-list" class="list-group mt-3"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-scan" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h6>📸 Beleg scannen</h6>
-                    <button class="btn-close" data-bs-dismiss="modal" onclick="stopCam()"></button>
-                </div>
-                <div class="modal-body text-center position-relative">
-                    <video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline muted></video>
-                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
-                    <button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 mt-3" disabled>Gerade ausrichten & Scannen</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-image" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h6>Beleg-Vorschau</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body text-center bg-dark">
-                    <img id="full-image" src="" style="max-width:100%; max-height:80vh; border-radius:8px;">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-archive" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-purple text-white">
-                    <h6>📂 Rechnungsarchiv</h6>
-                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="archive-search" class="form-control mb-3" placeholder="Suchen...">
-                    <table class="table table-sm table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nr.</th>
-                                <th>Datum</th>
-                                <th>Kunde</th>
-                                <th>Gesamt</th>
-                                <th>Aktion</th>
-                            </tr>
-                        </thead>
-                        <tbody id="archive-list"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Modals -->
+    <div class="modal fade" id="modal-logo" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>🖼️ Logo hochladen</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><input type="file" id="logo-input" accept="image/*" class="form-control mb-3"><img id="logo-preview" src="" style="max-width:100%; max-height:300px; display:none;"><button onclick="saveLogo()" class="btn btn-primary mt-3 w-100">Logo speichern</button></div></div></div></div>
+    <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuerübersicht</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div class="row g-2 mb-3"><div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0,00 €</b></div></div><div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0,00 €</b></div></div><div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0,00 €</b></div></div><div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0,00 €</b></div></div></div><button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">CSV Export</button><table class="table table-sm text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th><th>Beleg</th><th>Aktionen</th></tr></thead><tbody id="stat-table"></tbody></table></div></div></div></div>
+    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma"><input type="text" id="c-street" class="form-control mb-1" placeholder="Straße"><input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort"><input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail"><input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefon"><button id="btn-save-customer" class="btn btn-primary w-100 mt-2">Kunde speichern</button><hr><div id="cust-list" class="list-group mt-3"></div></div></div></div></div>
+    <div class="modal fade" id="modal-scan" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-warning"><h6>📸 Beleg scannen</h6><button class="btn-close" data-bs-dismiss="modal" onclick="stopCam()"></button></div><div class="modal-body text-center position-relative"><video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline muted></video><canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas><button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 mt-3" disabled>Gerade ausrichten & Scannen</button></div></div></div></div>
+    <div class="modal fade" id="modal-image" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Beleg-Vorschau</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center bg-dark"><img id="full-image" src="" style="max-width:100%; max-height:80vh; border-radius:8px;"></div></div></div></div>
+    <div class="modal fade" id="modal-archive" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-purple text-white"><h6>📂 Rechnungsarchiv</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="archive-search" class="form-control mb-3" placeholder="Suchen..."><table class="table table-sm table-hover"><thead class="table-light"><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Gesamt</th><th>Aktion</th></tr></thead><tbody id="archive-list"></tbody></table></div></div></div></div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('h2_erp_2026_final') || '{"invoices":[],"expenses":[],"customers":[],"logo":"","theme":"light"}');
@@ -499,7 +397,7 @@
         function openCustomerModal() {
             const list = document.getElementById('cust-list'); list.innerHTML = '';
             db.customers.forEach((c, i) => {
-                list.innerHTML += `<button class="list-group-item list-group-item-action small" onclick="selectCust(\( {i})"> \){c.name}</button>`;
+                list.innerHTML += `<button class="list-group-item list-group-item-action small" onclick="selectCust(${i})">${c.name}</button>`;
             });
             new bootstrap.Modal(document.getElementById('modal-cust')).show();
         }
@@ -516,7 +414,7 @@
         function selectCust(i) {
             const c = db.customers[i];
             selectedCustomerIndex = i;
-            document.getElementById('cust-display').innerHTML = `<span>\( {c.name}</span><br><span> \){c.street}</span><br><span>${c.city}</span>`;
+            document.getElementById('cust-display').innerHTML = `<span>${c.name}</span><br><span>${c.street}</span><br><span>${c.city}</span>`;
             document.getElementById('customer-actions').style.display = 'block';
             bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
         }
@@ -526,11 +424,11 @@
             let b = 0, s = 0, a = 0;
             db.invoices.forEach(i => {
                 b += i.gross; s += i.mwst;
-                tb.innerHTML += `<tr class="table-success"><td>RE</td><td>\( {i.nr}</td><td> \){i.mwst.toFixed(2)}</td><td>${i.gross.toFixed(2)}</td><td></td><td></td></tr>`;
+                tb.innerHTML += `<tr class="table-success"><td>RE</td><td>${i.nr}</td><td>${i.mwst.toFixed(2)}</td><td>${i.gross.toFixed(2)}</td><td></td><td></td></tr>`;
             });
             db.expenses.forEach(e => {
                 a += e.amt;
-                tb.innerHTML += `<tr class="table-danger"><td>EX</td><td>\( {e.date}</td><td>-</td><td>- \){e.amt.toFixed(2)}</td><td>IMG</td><td></td></tr>`;
+                tb.innerHTML += `<tr class="table-danger"><td>EX</td><td>${e.date}</td><td>-</td><td>-${e.amt.toFixed(2)}</td><td>IMG</td><td></td></tr>`;
             });
             document.getElementById('st-brutto').textContent = formatEUR(b);
             document.getElementById('st-steuer').textContent = formatEUR(s);
@@ -572,7 +470,7 @@
         function openArchive() {
             const list = document.getElementById('archive-list'); list.innerHTML = '';
             db.invoices.forEach((inv, i) => {
-                list.innerHTML += `<tr><td>\( {inv.nr}</td><td> \){inv.date}</td><td>\( {inv.customer?.name || '-'}</td><td> \){formatEUR(inv.gross)}</td><td><button class="btn btn-xs btn-info" onclick="loadArchive(${i})">Laden</button></td></tr>`;
+                list.innerHTML += `<tr><td>${inv.nr}</td><td>${inv.date}</td><td>${inv.customer?.name || '-'}</td><td>${formatEUR(inv.gross)}</td><td><button class="btn btn-xs btn-info" onclick="loadArchive(${i})">Laden</button></td></tr>`;
             });
             new bootstrap.Modal(document.getElementById('modal-archive')).show();
         }
@@ -583,7 +481,7 @@
             document.getElementById('inv-items').innerHTML = '';
             inv.items.forEach(it => addRow(it.desc, it.qty, it.price, it.tax));
             if(inv.customer) {
-                document.getElementById('cust-display').innerHTML = `<span>\( {inv.customer.name}</span><br><span> \){inv.customer.street}</span><br><span>${inv.customer.city}</span>`;
+                document.getElementById('cust-display').innerHTML = `<span>${inv.customer.name}</span><br><span>${inv.customer.street}</span><br><span>${inv.customer.city}</span>`;
             }
             calc();
             bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();
@@ -600,16 +498,6 @@
                 };
                 r.readAsDataURL(file);
             }
-        }
-
-        function exportToCSV() {
-            let csv = "Datum;Typ;Rechnungs-Nr.;MwSt (€);Brutto (€)\n";
-            db.invoices.forEach(i => csv += `\( {i.date};Rechnung; \){i.nr};\( {i.mwst.toFixed(2).replace('.',',')}; \){i.gross.toFixed(2).replace('.',',')}\n`);
-            db.expenses.forEach(e => csv += `\( {e.date};Ausgabe;;0,00;- \){e.amt.toFixed(2).replace('.',',')}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'H2_Bilanz_2026.csv'; a.click();
         }
 
         // Init
@@ -632,3 +520,4 @@
     </script>
 </body>
 </html>
+
