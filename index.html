@@ -3,337 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2TechService Business Pro 2026</title>
+    <title>H2TechService ERP Pro 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="https://docs.opencv.org/4.x/opencv.js" async onload="onOpenCvReady()"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jscanify@1.2.0/dist/jscanify.min.js"></script>
-
     <style>
         :root {
-            --h2-blue: #004085;
-            --h2-light: #007bff;
-            --h2-dark: #2c3e50;
-            --bg-light: #f4f7f6;
-            --text-light: #333;
-            --card-light: white;
+            --h2-blue: #004085; --h2-light: #007bff; --h2-dark: #2c3e50;
+            --bg-light: #f4f7f6; --text-light: #333; --card-light: white;
         }
         [data-theme="dark"] {
-            --bg-light: #121212;
-            --text-light: #e0e0e0;
-            --card-light: #1e1e1e;
-            background: #121212 !important;
-            color: #e0e0e0 !important;
+            --bg-light: #121212; --text-light: #e0e0e0; --card-light: #1e1e1e;
+            background: #121212 !important; color: #e0e0e0 !important;
         }
         body { 
-            background: var(--bg-light); 
-            color: var(--text-light); 
-            font-family: 'Segoe UI', sans-serif; 
-            font-size: 10px; 
-            margin: 0; 
-            display: flex; 
-            transition: 0.3s; 
-            min-height: 100vh;
+            background: var(--bg-light); color: var(--text-light); 
+            font-family: 'Segoe UI', sans-serif; font-size: 10px; margin: 0; 
+            display: flex; transition: 0.3s; min-height: 100vh;
         }
-        
         .sidebar { 
-            width: 180px;
-            background: linear-gradient(180deg, #1e2d3f, #2c3e50);
-            height: 100vh; 
-            position: fixed; 
-            left: 0; 
-            top: 0; 
-            display: flex; 
-            flex-direction: column; 
-            padding: 20px 12px; 
-            gap: 10px; 
-            z-index: 1000;
-            overflow-y: auto;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+            width: 170px; background: linear-gradient(180deg, #1e2d3f, #2c3e50);
+            height: 100vh; position: fixed; left: 0; top: 0; 
+            display: flex; flex-direction: column; padding: 15px 10px; gap: 8px; z-index: 1000;
         }
-        
-        .sidebar .header-title {
-            color: #fff;
-            font-size: 13px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            letter-spacing: 1px;
-        }
-
         .sidebar button { 
-            font-size: 10px; 
-            font-weight: 500;
-            text-align: center;
-            padding: 12px 8px;
-            border-radius: 10px; 
-            border: none; 
-            width: 100%; 
-            color: white;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 10px; padding: 10px; border-radius: 8px; border: none; 
+            width: 100%; color: white; background: rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
         }
-
-        .sidebar button .icon { font-size: 20px; }
-        .sidebar button .text { font-size: 9px; opacity: 0.9; }
-
-        .sidebar button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,123,255,0.4);
-            background: rgba(0,123,255,0.3);
-        }
-
-        .main-wrapper { 
-            margin-left: 180px; 
-            flex-grow: 1; 
-            padding: 10px; 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh;
-        }
+        .sidebar button:hover { background: var(--h2-light); }
+        .main-wrapper { margin-left: 170px; flex-grow: 1; padding: 10px; display: flex; justify-content: center; }
+        
         .invoice-box { 
-            width: 210mm; 
-            height: 297mm; 
-            background: var(--card-light); 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
-            transition: 0.3s; 
-            overflow: hidden;
-            padding: 0;
+            width: 210mm; height: 297mm; background: var(--card-light); 
+            display: flex; flex-direction: column; box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
-        .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .content { padding: 12px 25px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 5px; text-transform: uppercase; }
+        .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 15px 25px; flex-grow: 1; display: flex; flex-direction: column; }
         
-        .address-data { line-height: 1.4; margin-bottom: 10px; font-size: 10px; display: flex; flex-direction: column; }
-        .address-data span { display: block; }
+        /* Kunden-Adresse untereinander */
+        #cust-display span { display: block; line-height: 1.3; }
 
-        .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 8px; border-radius: 5px; font-size: 10px; margin-top: auto; }
-        .totals-box { background: var(--h2-dark); color: white; padding: 8px; border-radius: 8px; font-size: 11px; }
-
-        #company-logo-display { max-height: 65px; max-width: 210px; object-fit: contain; margin-bottom: 6px; }
-
-        /* Optimiertes Tabellen-Layout für Millionen-Beträge */
-        .table { font-size: 9px; margin-bottom: 6px; table-layout: fixed; width: 100%; border-collapse: collapse; }
-        .table th, .table td { padding: 4px 2px; vertical-align: middle; overflow: hidden; border: 1px solid #dee2e6; }
+        .table { font-size: 9.5px; width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; }
+        .table th, .table td { border: 1px solid #dee2e6; padding: 5px; vertical-align: middle; }
+        .col-desc { width: 40%; } .col-qty { width: 6%; } .col-price { width: 10%; } .col-tax-p { width: 6%; } .col-tax-e { width: 18%; } .col-total { width: 18%; } .col-action { width: 2%; }
         
-        .col-desc { width: 50%; } 
-        .col-qty { width: 6%; }
-        .col-price { width: 10%; }
-        .col-tax-p { width: 6%; }
-        .col-tax-e { width: 12%; } /* Breiter für Millionen */
-        .col-total { width: 13%; } /* Breiter für Millionen */
-        .col-action { width: 3%; }
+        .totals-box { background: var(--h2-dark); color: white; padding: 10px; border-radius: 8px; }
+        .desc-input { width: 100%; border: none; background: transparent; resize: none; font-size: 9.5px; }
+        input.form-control-sm { border: none; background: transparent; text-align: center; width: 100%; color: inherit; }
 
-        .desc-input {
-            width: 100%;
-            min-height: 25px;
-            resize: none;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            background: transparent;
-            border: none;
-            font-size: 9.5px;
-            line-height: 1.2;
-            padding: 2px;
-        }
-
-        .customer-actions { margin-top: 10px; display: none; }
-
-        .flag-img {
-            width: 14px;
-            height: 10px;
-            cursor: pointer;
-            margin-bottom: 2px;
-        }
-
-        input.form-control-sm {
-            padding: 1px;
-            font-size: 9px;
-            background: transparent;
-            border: none;
-            width: 100%;
-        }
-        
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-        @media print { 
-            .sidebar, .no-print, .customer-actions, .btn-sm { display: none !important; } 
-            .main-wrapper { margin-left: 0; padding: 0; } 
-            .invoice-box { box-shadow: none; border: none; width: 210mm; height: 297mm; background: white !important; overflow: hidden; } 
-            body { background: white !important; color: black !important; }
-            @page { size: A4; margin: 0; }
-        }
+        @media print { .sidebar, .no-print { display: none !important; } .main-wrapper { margin: 0; } .invoice-box { box-shadow: none; } }
     </style>
 </head>
 <body>
 
     <div class="sidebar no-print">
-        <div class="header-title">H2-ERP 2026 Pro</div>
-        <button id="btn-save"><span class="icon">💾</span><span class="text">Speichern</span></button>
-        <button id="btn-customers"><span class="icon">👥</span><span class="text">Kunden</span></button>
-        <button id="btn-scanner"><span class="icon">📸</span><span class="text">Scan</span></button>
-        <button id="btn-stats"><span class="icon">📊</span><span class="text">Bilanz</span></button>
-        <button id="btn-darkmode"><span class="icon">🌙</span><span class="text">Design</span></button>
-        <button id="btn-logo"><span class="icon">🖼️</span><span class="text">Logo</span></button>
-        <button id="btn-archive"><span class="icon">📂</span><span class="text">Archiv</span></button>
-        <button id="btn-print"><span class="icon">🖨️</span><span class="text">Drucken</span></button>
-        <button id="btn-pdf"><span class="icon">📄</span><span class="text">PDF</span></button>
+        <button onclick="saveInvoice()"><span>💾</span><span>Speichern</span></button>
+        <button onclick="openCustomerModal()"><span>👥</span><span>Kunden</span></button>
+        <button onclick="openStats()"><span>📊</span><span>Bilanz</span></button>
+        <button onclick="toggleDarkMode()"><span>🌙</span><span>Design</span></button>
+        <button onclick="document.getElementById('logo-trigger').click()"><span>🖼️</span><span>Logo</span></button>
+        <button onclick="openArchive()"><span>📂</span><span>Archiv</span></button>
+        <button onclick="window.print()"><span>🖨️</span><span>Drucken</span></button>
+        <button onclick="exportPDF()"><span>📄</span><span>PDF Export</span></button>
     </div>
 
     <div class="main-wrapper">
-        <div id="pdf-area">
-            <div class="invoice-box">
-                <div class="header-bar">
-                    <div>
-                        <img id="company-logo-display" src="" alt="Logo">
-                        <h2 class="m-0">H2TechService</h2><small>Inhaber Osman Tuncer</small>
-                    </div>
-                    <h1 class="m-0" style="letter-spacing: 5px; font-weight: 800;">RECHNUNG</h1>
+        <div id="pdf-area" class="invoice-box">
+            <div class="header-bar">
+                <div>
+                    <img id="logo-display" src="" style="max-height: 50px; display: block;">
+                    <h2 class="m-0">H2TechService</h2><small>Osman Tuncer</small>
                 </div>
-                
-                <div class="content">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="section-title">Absender</div>
-                            <div class="address-data">
-                                <strong style="color: var(--h2-blue);">H2TechService</strong>
-                                <span>Suntalstraße 48</span>
-                                <span>31552 Rodenberg</span>
-                                <span>📧 74star@gmail.com</span>
-                                <span>📞 +49 176 66658777</span>
-                                <span>Steuer-ID: 41/320/887966</span>
-                            </div>
-                        </div>
-                        <div class="col-6 text-end">
-                            <div class="mb-3"><b>Nr:</b> <span id="inv-nr" contenteditable="true">H2-2026-001</span><br><b>Datum:</b> <span id="inv-date"></span></div>
-                            <div class="section-title">Empfänger</div>
-                            <div id="cust-display" class="address-data fw-bold text-primary">
-                                <span>(Kunde wählen...)</span>
-                            </div>
-                        </div>
+                <h1 class="m-0">RECHNUNG</h1>
+            </div>
+            <div class="content">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-primary fw-bold">ABSENDER</small><br>
+                        <strong>H2TechService</strong><br>Suntalstraße 48<br>31552 Rodenberg<br>📧 74star@gmail.com
                     </div>
-
-                    <table class="table mt-2">
-                        <thead>
-                            <tr class="table-light text-center">
-                                <th class="col-desc">Leistungsbeschreibung</th>
-                                <th class="col-qty">Stk</th>
-                                <th class="col-price">Einzel (€)</th>
-                                <th class="col-tax-p">%</th>
-                                <th class="col-tax-e">MwSt (€)</th>
-                                <th class="col-total">Gesamt (€)</th>
-                                <th class="col-action no-print"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="inv-items"></tbody>
-                    </table>
-
-                    <div class="no-print mb-2">
-                        <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success">+ 19%</button>
-                        <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success">+ 7%</button>
-                        <button onclick="addRow()" class="btn btn-sm btn-outline-secondary">+ Leer</button>
+                    <div class="col-6 text-end">
+                        <b>Nr:</b> <span id="inv-nr" contenteditable="true">H2-2026-001</span><br>
+                        <b>Datum:</b> <span id="inv-date"></span><br><br>
+                        <small class="text-primary fw-bold">EMPFÄNGER</small>
+                        <div id="cust-display" class="fw-bold text-dark mt-1">Kunde wählen...</div>
                     </div>
+                </div>
 
-                    <div class="row mt-auto pt-2 border-top">
-                        <div class="col-7">
-                            <div class="payment-box">
-                                <strong>Bankverbindung Osman Tuncer</strong><br>
-                                <span>IBAN: <b>LT78 3250 0925 1892 8659</b></span><br>
-                                <span>BIC: <b>REVOLT21</b></span>
-                            </div>
-                        </div>
-                        <div class="col-5">
-                            <div class="totals-box">
-                                <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
-                                <div class="d-flex justify-content-between small opacity-75"><span>MwSt gesamt:</span><span id="sum-t">0,00 €</span></div>
-                                <hr class="my-1 border-white opacity-25">
-                                <div class="d-flex justify-content-between fw-bold" style="font-size: 1.1em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
-                            </div>
-                        </div>
+                <table class="table">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th class="col-desc">Beschreibung</th>
+                            <th class="col-qty">Stk</th>
+                            <th class="col-price">€</th>
+                            <th class="col-tax-p">%</th>
+                            <th class="col-tax-e">MwSt (€)</th>
+                            <th class="col-total">Gesamt (€)</th>
+                            <th class="col-action no-print"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="inv-items"></tbody>
+                </table>
+                <button class="btn btn-sm btn-outline-primary no-print mt-2" onclick="addRow()">+ Zeile</button>
+
+                <div class="row mt-auto pt-3 border-top">
+                    <div class="col-7"><div class="p-2 border rounded small"><strong>Bank:</strong> Osman Tuncer<br>IBAN: LT78 3250 0925 1892 8659</div></div>
+                    <div class="col-5 totals-box">
+                        <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
+                        <div class="d-flex justify-content-between"><span>MwSt:</span><span id="sum-t">0,00 €</span></div>
+                        <div class="d-flex justify-content-between fw-bold border-top mt-1"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modal-logo" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>🖼️ Logo</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><input type="file" id="logo-input" accept="image/*" class="form-control mb-3"><button onclick="saveLogo()" class="btn btn-primary w-100">Logo speichern</button></div></div></div></div>
-    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma"><input type="text" id="c-street" class="form-control mb-1" placeholder="Straße"><input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort"><button id="btn-save-customer" class="btn btn-primary w-100 mt-2">Kunde speichern</button><hr><div id="cust-list" class="list-group mt-3"></div></div></div></div></div>
+    <input type="file" id="logo-trigger" class="d-none" onchange="saveLogo()">
+    
+    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+        <input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma">
+        <input type="text" id="c-street" class="form-control mb-1" placeholder="Straße">
+        <input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort">
+        <input type="text" id="c-mail" class="form-control mb-1" placeholder="E-Mail">
+        <input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefon">
+        <button class="btn btn-primary w-100 mt-2" onclick="addCustomer()">Speichern</button><hr><div id="cust-list" class="list-group"></div>
+    </div></div></div></div>
+
+    <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>📊 Bilanz & Ausgaben</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+        <div class="row text-center">
+            <div class="col-6 mb-2"><div class="card p-2 bg-success text-white">Einnahmen (Brutto)<br><b id="st-brutto">0,00 €</b></div></div>
+            <div class="col-6 mb-2"><div class="card p-2 bg-info text-white">MwSt fällig<br><b id="st-tax">0,00 €</b></div></div>
+            <div class="col-12"><div class="card p-2 bg-danger text-white">Ausgaben eingeben (€)<br>
+                <input type="number" id="st-exp-input" class="form-control form-control-sm text-center" oninput="saveExpenses()" step="0.01">
+            </div></div>
+            <div class="col-12 mt-2"><div class="card p-2 bg-dark text-white">Gewinn (Netto - Ausgaben)<br><b id="st-profit">0,00 €</b></div></div>
+        </div>
+    </div></div></div></div>
+
+    <div class="modal fade" id="modal-archive" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Archiv</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><table class="table"><thead><tr><th>Nr.</th><th>Datum</th><th>Betrag</th><th>Aktion</th></tr></thead><tbody id="archive-list"></tbody></table></div></div></div></div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('h2_erp_2026_final') || '{"invoices":[],"expenses":[],"customers":[],"logo":"","theme":"light"}');
-        let selectedCustomerIndex = -1;
-
-        function formatEUR(v) { 
-            return (parseFloat(v)||0).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; 
-        }
-
-        function addRow(desc = '', qty = 1, price = 0, tax = 19) {
+        let db = JSON.parse(localStorage.getItem('h2_erp_v2026') || '{"invoices":[],"customers":[],"logo":"","expenses":0,"theme":"light"}');
+        
+        function formatEUR(v) { return v.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
+        
+        function addRow(desc='', qty=1, price=0, tax=19) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="col-desc"><textarea class="desc-input" oninput="calc()">${desc}</textarea></td>
-                <td class="col-qty"><input type="number" class="form-control-sm text-center qt" value="${qty}" oninput="calc()"></td>
-                <td class="col-price"><input type="number" class="form-control-sm text-center pr" value="${price}" step="0.01" oninput="calc()"></td>
-                <td class="col-tax-p text-center"><input type="number" class="form-control-sm text-center tx" value="${tax}" oninput="calc()"></td>
-                <td class="col-tax-e text-center mwst-euro">0,00 €</td>
-                <td class="col-total text-center fw-bold lt">0,00 €</td>
-                <td class="col-action no-print text-center"><button onclick="this.closest('tr').remove(); calc();" class="btn btn-sm text-danger p-0">×</button></td>`;
-            document.getElementById('inv-items').appendChild(tr);
-            calc();
+            tr.innerHTML = `<td class="col-desc"><textarea class="desc-input" oninput="calc()">${desc}</textarea></td>
+                <td><input type="number" class="form-control-sm qt" value="${qty}" oninput="calc()"></td>
+                <td><input type="number" class="form-control-sm pr" value="${price}" oninput="calc()"></td>
+                <td><input type="number" class="form-control-sm tx" value="${tax}" oninput="calc()"></td>
+                <td class="text-center mw-e">0,00 €</td><td class="text-center fw-bold gs-e">0,00 €</td>
+                <td class="no-print text-center"><button onclick="this.closest('tr').remove();calc()" class="btn text-danger btn-sm p-0">×</button></td>`;
+            document.getElementById('inv-items').appendChild(tr); calc();
         }
 
         function calc() {
-            let n = 0, t = 0, g = 0;
+            let n=0, t=0, g=0;
             document.querySelectorAll('#inv-items tr').forEach(r => {
-                const qty = parseFloat(r.querySelector('.qt').value) || 0;
-                const pr = parseFloat(r.querySelector('.pr').value) || 0;
-                const tax = parseFloat(r.querySelector('.tx').value) || 0;
-                const lineNet = qty * pr;
-                const lineTax = lineNet * (tax / 100);
-                const lineGross = lineNet + lineTax;
-                r.querySelector('.mwst-euro').textContent = formatEUR(lineTax);
-                r.querySelector('.lt').textContent = formatEUR(lineGross);
-                n += lineNet; t += lineTax; g += lineGross;
+                let q = parseFloat(r.querySelector('.qt').value)||0, p = parseFloat(r.querySelector('.pr').value)||0, tx = parseFloat(r.querySelector('.tx').value)||0;
+                let ln = q*p, lt = ln*(tx/100), lg = ln+lt;
+                r.querySelector('.mw-e').textContent = formatEUR(lt); r.querySelector('.gs-e').textContent = formatEUR(lg);
+                n+=ln; t+=lt; g+=lg;
             });
-            document.getElementById('sum-n').textContent = formatEUR(n);
-            document.getElementById('sum-t').textContent = formatEUR(t);
-            document.getElementById('sum-g').textContent = formatEUR(g);
+            document.getElementById('sum-n').textContent = formatEUR(n); document.getElementById('sum-t').textContent = formatEUR(t); document.getElementById('sum-g').textContent = formatEUR(g);
         }
 
-        // Standard-Funktionen für Logo/Kunden
+        function addCustomer() {
+            const c = { 
+                n: document.getElementById('c-name').value, 
+                s: document.getElementById('c-street').value, 
+                z: document.getElementById('c-city').value,
+                m: document.getElementById('c-mail').value,
+                p: document.getElementById('c-phone').value
+            };
+            db.customers.push(c); localStorage.setItem('h2_erp_v2026', JSON.stringify(db)); renderCustomers();
+        }
+
+        function renderCustomers() {
+            const l = document.getElementById('cust-list'); l.innerHTML = '';
+            db.customers.forEach((c, i) => l.innerHTML += `<button class="list-group-item list-group-item-action" onclick="selectCust(${i})">${c.n}</button>`);
+        }
+
+        function selectCust(i) {
+            const c = db.customers[i];
+            document.getElementById('cust-display').innerHTML = `<span>${c.n}</span><span>${c.s}</span><span>${c.z}</span><span>${c.m}</span><span>${c.p}</span>`;
+            bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
+        }
+
+        function openStats() {
+            let br = 0, tx = 0, ne = 0;
+            db.invoices.forEach(i => {
+                br += i.gross; tx += i.tax; ne += i.net;
+            });
+            document.getElementById('st-brutto').textContent = formatEUR(br);
+            document.getElementById('st-tax').textContent = formatEUR(tx);
+            document.getElementById('st-exp-input').value = db.expenses;
+            document.getElementById('st-profit').textContent = formatEUR(ne - db.expenses);
+            new bootstrap.Modal(document.getElementById('modal-stats')).show();
+        }
+
+        function saveExpenses() {
+            db.expenses = parseFloat(document.getElementById('st-exp-input').value) || 0;
+            localStorage.setItem('h2_erp_v2026', JSON.stringify(db));
+            openStats();
+        }
+
+        function saveInvoice() {
+            const inv = {
+                nr: document.getElementById('inv-nr').textContent,
+                date: document.getElementById('inv-date').textContent,
+                gross: parseFloat(document.getElementById('sum-g').textContent.replace(/[^\d,]/g,'').replace(',','.')),
+                tax: parseFloat(document.getElementById('sum-t').textContent.replace(/[^\d,]/g,'').replace(',','.')),
+                net: parseFloat(document.getElementById('sum-n').textContent.replace(/[^\d,]/g,'').replace(',','.'))
+            };
+            db.invoices.push(inv); localStorage.setItem('h2_erp_v2026', JSON.stringify(db)); alert('Gespeichert!');
+        }
+
+        function openArchive() {
+            new bootstrap.Modal(document.getElementById('modal-archive')).show();
+            const l = document.getElementById('archive-list'); l.innerHTML = '';
+            db.invoices.forEach(i => l.innerHTML += `<tr><td>${i.nr}</td><td>${i.date}</td><td>${formatEUR(i.gross)}</td><td><button class="btn btn-sm btn-danger" onclick="db.invoices.splice(db.invoices.indexOf(i),1);localStorage.setItem('h2_erp_v2026', JSON.stringify(db));openArchive()">🗑️</button></td></tr>`);
+        }
+
+        function toggleDarkMode() {
+            db.theme = db.theme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', db.theme);
+            localStorage.setItem('h2_erp_v2026', JSON.stringify(db));
+        }
+
         function saveLogo() {
-            const file = document.getElementById('logo-input').files[0];
-            if(file) {
-                const r = new FileReader();
-                r.onload = e => {
-                    db.logo = e.target.result;
-                    document.getElementById('company-logo-display').src = db.logo;
-                    localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-                };
-                r.readAsDataURL(file);
-            }
+            const f = document.getElementById('logo-trigger').files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => { db.logo = e.target.result; document.getElementById('logo-display').src = db.logo; localStorage.setItem('h2_erp_v2026', JSON.stringify(db)); };
+            reader.readAsDataURL(f);
         }
 
-        document.getElementById('inv-date').textContent = new Date().toLocaleDateString('de-DE');
-        document.getElementById('company-logo-display').src = db.logo || "";
-        addRow('IT-Service & Technik Support', 1, 0, 19);
+        function exportPDF() {
+            html2pdf().from(document.getElementById('pdf-area')).set({margin: 0, filename: 'Rechnung.pdf', jsPDF: {unit:'mm', format:'a4', orientation:'portrait'}}).save();
+        }
 
-        document.getElementById('btn-print').onclick = () => window.print();
-        document.getElementById('btn-logo').onclick = () => new bootstrap.Modal(document.getElementById('modal-logo')).show();
-        document.getElementById('btn-pdf').onclick = () => html2pdf().from(document.getElementById('pdf-area')).set({margin: 0, filename: 'Rechnung.pdf', jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }}).save();
+        function openCustomerModal() { new bootstrap.Modal(document.getElementById('modal-cust')).show(); renderCustomers(); }
+
+        // Init
+        document.getElementById('inv-date').textContent = new Date().toLocaleDateString('de-DE');
+        document.getElementById('logo-display').src = db.logo || "";
+        document.body.setAttribute('data-theme', db.theme);
+        addRow('IT-Service & Support', 1, 0, 19);
     </script>
 </body>
 </html>
