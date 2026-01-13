@@ -19,7 +19,7 @@
         body { 
             background: var(--bg-light); color: var(--text-light); 
             font-family: 'Segoe UI', sans-serif; font-size: 10px; margin: 0; 
-            display: flex; transition: 0.3s; min-height: 100vh;
+            display: flex; min-height: 100vh;
         }
         .sidebar { 
             width: 170px; background: linear-gradient(180deg, #1e2d3f, #2c3e50);
@@ -51,7 +51,17 @@
         .desc-input { width: 100%; border: none; background: transparent; resize: none; font-size: 9.5px; }
         input.form-control-sm { border: none; background: transparent; text-align: center; width: 100%; color: inherit; }
 
-        @media print { .sidebar, .no-print { display: none !important; } .main-wrapper { margin: 0; } .invoice-box { box-shadow: none; } }
+        /* WICHTIG: ENTFERNT KOPF- UND FUSSZEILEN BEIM DRUCKEN */
+        @page {
+            size: A4;
+            margin: 0; /* Entfernt die Browser-Texte an den Ecken */
+        }
+        @media print { 
+            body { background: white !important; }
+            .sidebar, .no-print { display: none !important; } 
+            .main-wrapper { margin: 0; padding: 0; } 
+            .invoice-box { width: 210mm; height: 297mm; box-shadow: none; margin: 0; border: none; } 
+        }
     </style>
 </head>
 <body>
