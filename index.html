@@ -111,55 +111,71 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.1); 
             transition: 0.3s; 
             overflow: hidden;
+            padding: 0;
         }
         .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .content { padding: 12px 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .content { padding: 12px 25px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
         .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 5px; text-transform: uppercase; }
-        .address-data { line-height: 1.3; margin-bottom: 10px; font-size: 10px; }
+        
+        .address-data { line-height: 1.4; margin-bottom: 10px; font-size: 10px; display: flex; flex-direction: column; }
+        .address-data span { display: block; }
+
         .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 8px; border-radius: 5px; font-size: 10px; margin-top: auto; }
         .totals-box { background: var(--h2-dark); color: white; padding: 8px; border-radius: 8px; font-size: 11px; }
 
         #company-logo-display { max-height: 65px; max-width: 210px; object-fit: contain; margin-bottom: 6px; }
 
-        .table { font-size: 9.5px; margin-bottom: 6px; }
-        .table th, .table td { padding: 4px 4px; vertical-align: middle; }
+        /* Optimiertes Tabellen-Layout für Millionen-Beträge */
+        .table { font-size: 9px; margin-bottom: 6px; table-layout: fixed; width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 4px 2px; vertical-align: middle; overflow: hidden; border: 1px solid #dee2e6; }
+        
+        .col-desc { width: 50%; } 
+        .col-qty { width: 6%; }
+        .col-price { width: 10%; }
+        .col-tax-p { width: 6%; }
+        .col-tax-e { width: 12%; } /* Breiter für Millionen */
+        .col-total { width: 13%; } /* Breiter für Millionen */
+        .col-action { width: 3%; }
 
         .desc-input {
             width: 100%;
-            min-height: 40px;
-            resize: vertical;
+            min-height: 25px;
+            resize: none;
             word-wrap: break-word;
             white-space: pre-wrap;
             background: transparent;
             border: none;
+            font-size: 9.5px;
+            line-height: 1.2;
+            padding: 2px;
         }
 
         .customer-actions { margin-top: 10px; display: none; }
 
         .flag-img {
-            width: 18px;
-            height: 12px;
-            margin-right: 4px;
-            vertical-align: middle;
-            border: 1px solid #ccc;
-            border-radius: 2px;
+            width: 14px;
+            height: 10px;
             cursor: pointer;
+            margin-bottom: 2px;
         }
 
+        input.form-control-sm {
+            padding: 1px;
+            font-size: 9px;
+            background: transparent;
+            border: none;
+            width: 100%;
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
         @media print { 
-            .sidebar, .no-print, .customer-actions { display: none !important; } 
+            .sidebar, .no-print, .customer-actions, .btn-sm { display: none !important; } 
             .main-wrapper { margin-left: 0; padding: 0; } 
-            .invoice-box { 
-                box-shadow: none; 
-                border: none; 
-                width: 210mm; 
-                height: 297mm; 
-                background: white !important; 
-                overflow: hidden;
-            } 
-            body { background: white !important; color: black !important; margin: 0; padding: 0; }
+            .invoice-box { box-shadow: none; border: none; width: 210mm; height: 297mm; background: white !important; overflow: hidden; } 
+            body { background: white !important; color: black !important; }
             @page { size: A4; margin: 0; }
-            .desc-input { white-space: pre-wrap; word-wrap: break-word; border: none; }
         }
     </style>
 </head>
@@ -167,58 +183,15 @@
 
     <div class="sidebar no-print">
         <div class="header-title">H2-ERP 2026 Pro</div>
-        
-        <button id="btn-save">
-            <span class="icon">💾</span>
-            <span class="text">Rechnung speichern</span>
-        </button>
-        <button id="btn-customers">
-            <span class="icon">👥</span>
-            <span class="text">Kunden verwalten</span>
-        </button>
-        <button id="btn-scanner">
-            <span class="icon">📸</span>
-            <span class="text">Beleg scannen</span>
-        </button>
-        <button id="btn-stats">
-            <span class="icon">📊</span>
-            <span class="text">Bilanz & Steuer</span>
-        </button>
-        <button id="btn-email">
-            <span class="icon">✉️</span>
-            <span class="text">Per E-Mail senden</span>
-        </button>
-        <button id="btn-darkmode">
-            <span class="icon">🌙</span>
-            <span class="text">Dark Mode</span>
-        </button>
-        <button id="btn-logo">
-            <span class="icon">🖼️</span>
-            <span class="text">Logo ändern</span>
-        </button>
-        <button id="btn-archive">
-            <span class="icon">📂</span>
-            <span class="text">Archiv</span>
-        </button>
-        <button id="btn-print">
-            <span class="icon">🖨️</span>
-            <span class="text">Drucken</span>
-        </button>
-        <button id="btn-pdf">
-            <span class="icon">📄</span>
-            <span class="text">Als PDF exportieren</span>
-        </button>
-        
-        <div class="mt-auto pt-3">
-            <button id="btn-whatsapp">
-                <span class="icon">🟢</span>
-                <span class="text">Per WhatsApp</span>
-            </button>
-            <button id="btn-telegram">
-                <span class="icon">🔵</span>
-                <span class="text">Per Telegram</span>
-            </button>
-        </div>
+        <button id="btn-save"><span class="icon">💾</span><span class="text">Speichern</span></button>
+        <button id="btn-customers"><span class="icon">👥</span><span class="text">Kunden</span></button>
+        <button id="btn-scanner"><span class="icon">📸</span><span class="text">Scan</span></button>
+        <button id="btn-stats"><span class="icon">📊</span><span class="text">Bilanz</span></button>
+        <button id="btn-darkmode"><span class="icon">🌙</span><span class="text">Design</span></button>
+        <button id="btn-logo"><span class="icon">🖼️</span><span class="text">Logo</span></button>
+        <button id="btn-archive"><span class="icon">📂</span><span class="text">Archiv</span></button>
+        <button id="btn-print"><span class="icon">🖨️</span><span class="text">Drucken</span></button>
+        <button id="btn-pdf"><span class="icon">📄</span><span class="text">PDF</span></button>
     </div>
 
     <div class="main-wrapper">
@@ -226,7 +199,7 @@
             <div class="invoice-box">
                 <div class="header-bar">
                     <div>
-                        <img id="company-logo-display" src="" alt="H2TechService Logo">
+                        <img id="company-logo-display" src="" alt="Logo">
                         <h2 class="m-0">H2TechService</h2><small>Inhaber Osman Tuncer</small>
                     </div>
                     <h1 class="m-0" style="letter-spacing: 5px; font-weight: 800;">RECHNUNG</h1>
@@ -237,9 +210,11 @@
                         <div class="col-6">
                             <div class="section-title">Absender</div>
                             <div class="address-data">
-                                <strong style="font-size: 11px; color: var(--h2-blue); display: block; margin-bottom: 2px;">H2TechService</strong>
-                                <span>Suntalstraße 48, 31552 Rodenberg</span><br>
-                                <span>📧 74star@gmail.com | 📞 +49 176 66658777</span><br>
+                                <strong style="color: var(--h2-blue);">H2TechService</strong>
+                                <span>Suntalstraße 48</span>
+                                <span>31552 Rodenberg</span>
+                                <span>📧 74star@gmail.com</span>
+                                <span>📞 +49 176 66658777</span>
                                 <span>Steuer-ID: 41/320/887966</span>
                             </div>
                         </div>
@@ -249,38 +224,27 @@
                             <div id="cust-display" class="address-data fw-bold text-primary">
                                 <span>(Kunde wählen...)</span>
                             </div>
-                            <div id="customer-actions" class="customer-actions no-print text-end mt-2">
-                                <button id="btn-edit-customer" class="btn btn-sm btn-warning me-1">✏️ Bearbeiten</button>
-                                <button id="btn-delete-customer" class="btn btn-sm btn-danger">🗑️ Löschen</button>
-                            </div>
                         </div>
                     </div>
 
-                    <table class="table table-sm border mt-2">
+                    <table class="table mt-2">
                         <thead>
-                            <tr class="table-light">
-                                <th style="width: 70%;">Leistungsbeschreibung</th>
-                                <th class="text-center" style="width: 7%;">Stk</th>
-                                <th class="text-end" style="width: 12%;">Einzel (€)</th>
-                                <th class="text-center" style="width: 10%;">MwSt %</th>
-                                <th class="text-end" style="width: 12%;">MwSt (€)</th>
-                                <th class="text-end" style="width: 15%;">Gesamt (€)</th>
-                                <th class="no-print" style="width: 8%;"></th>
+                            <tr class="table-light text-center">
+                                <th class="col-desc">Leistungsbeschreibung</th>
+                                <th class="col-qty">Stk</th>
+                                <th class="col-price">Einzel (€)</th>
+                                <th class="col-tax-p">%</th>
+                                <th class="col-tax-e">MwSt (€)</th>
+                                <th class="col-total">Gesamt (€)</th>
+                                <th class="col-action no-print"></th>
                             </tr>
                         </thead>
                         <tbody id="inv-items"></tbody>
                     </table>
 
                     <div class="no-print mb-2">
-                        <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success me-1">
-                            <img src="https://flagcdn.com/de.svg" class="flag-img" alt="DE"> + 19%
-                        </button>
-                        <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success me-1">
-                            <img src="https://flagcdn.com/de.svg" class="flag-img" alt="DE"> + 7%
-                        </button>
-                        <button onclick="addRow('Leistung an Kunde in der Schweiz – MwSt.-frei gem. § 4 Nr. 1 UStG',1,0,0)" class="btn btn-sm btn-outline-primary me-1">
-                            <img src="https://flagcdn.com/ch.svg" class="flag-img" alt="CH"> + 0% (CH)
-                        </button>
+                        <button onclick="addRow('',1,0,19)" class="btn btn-sm btn-outline-success">+ 19%</button>
+                        <button onclick="addRow('',1,0,7)" class="btn btn-sm btn-outline-success">+ 7%</button>
                         <button onclick="addRow()" class="btn btn-sm btn-outline-secondary">+ Leer</button>
                     </div>
 
@@ -288,7 +252,8 @@
                         <div class="col-7">
                             <div class="payment-box">
                                 <strong>Bankverbindung Osman Tuncer</strong><br>
-                                <span>IBAN: <b>LT78 3250 0925 1892 8659</b> | BIC: <b>REVOLT21</b></span>
+                                <span>IBAN: <b>LT78 3250 0925 1892 8659</b></span><br>
+                                <span>BIC: <b>REVOLT21</b></span>
                             </div>
                         </div>
                         <div class="col-5">
@@ -305,54 +270,28 @@
         </div>
     </div>
 
-    <!-- Modals -->
-    <div class="modal fade" id="modal-logo" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>🖼️ Logo hochladen</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><input type="file" id="logo-input" accept="image/*" class="form-control mb-3"><img id="logo-preview" src="" style="max-width:100%; max-height:300px; display:none;"><button onclick="saveLogo()" class="btn btn-primary mt-3 w-100">Logo speichern</button></div></div></div></div>
-    <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-dark text-white"><h6>📊 Bilanz & Steuerübersicht</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div class="row g-2 mb-3"><div class="col-3"><div class="card p-2 bg-success text-white small">Brutto<br><b id="st-brutto">0,00 €</b></div></div><div class="col-3"><div class="card p-2 bg-info text-white small">MwSt-Pool<br><b id="st-steuer">0,00 €</b></div></div><div class="col-3"><div class="card p-2 bg-danger text-white small">Ausgaben<br><b id="st-ausg">0,00 €</b></div></div><div class="col-3"><div class="card p-2 bg-primary text-white small">Gewinn<br><b id="st-gewinn">0,00 €</b></div></div></div><button onclick="exportToCSV()" class="btn btn-success btn-sm w-100 mb-3">CSV Export</button><table class="table table-sm text-start"><thead><tr><th>Typ</th><th>Info</th><th>MwSt</th><th>Betrag</th><th>Beleg</th><th>Aktionen</th></tr></thead><tbody id="stat-table"></tbody></table></div></div></div></div>
-    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma"><input type="text" id="c-street" class="form-control mb-1" placeholder="Straße"><input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort"><input type="email" id="c-mail" class="form-control mb-1" placeholder="E-Mail"><input type="text" id="c-phone" class="form-control mb-1" placeholder="Telefon"><button id="btn-save-customer" class="btn btn-primary w-100 mt-2">Kunde speichern</button><hr><div id="cust-list" class="list-group mt-3"></div></div></div></div></div>
-    <div class="modal fade" id="modal-scan" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-warning"><h6>📸 Beleg scannen</h6><button class="btn-close" data-bs-dismiss="modal" onclick="stopCam()"></button></div><div class="modal-body text-center position-relative"><video id="cam-video" style="width:100%; border-radius:10px;" autoplay playsinline muted></video><canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas><button id="warp-btn" onclick="warpAndScan()" class="btn btn-success w-100 mt-3" disabled>Gerade ausrichten & Scannen</button></div></div></div></div>
-    <div class="modal fade" id="modal-image" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Beleg-Vorschau</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center bg-dark"><img id="full-image" src="" style="max-width:100%; max-height:80vh; border-radius:8px;"></div></div></div></div>
-    <div class="modal fade" id="modal-archive" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-purple text-white"><h6>📂 Rechnungsarchiv</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="archive-search" class="form-control mb-3" placeholder="Suchen..."><table class="table table-sm table-hover"><thead class="table-light"><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Gesamt</th><th>Aktion</th></tr></thead><tbody id="archive-list"></tbody></table></div></div></div></div>
+    <div class="modal fade" id="modal-logo" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>🖼️ Logo</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><input type="file" id="logo-input" accept="image/*" class="form-control mb-3"><button onclick="saveLogo()" class="btn btn-primary w-100">Logo speichern</button></div></div></div></div>
+    <div class="modal fade" id="modal-cust" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Kundenverwaltung</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="c-name" class="form-control mb-1" placeholder="Name/Firma"><input type="text" id="c-street" class="form-control mb-1" placeholder="Straße"><input type="text" id="c-city" class="form-control mb-1" placeholder="PLZ Ort"><button id="btn-save-customer" class="btn btn-primary w-100 mt-2">Kunde speichern</button><hr><div id="cust-list" class="list-group mt-3"></div></div></div></div></div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('h2_erp_2026_final') || '{"invoices":[],"expenses":[],"customers":[],"logo":"","theme":"light"}');
-        let stream = null; let scanner = null; let detectionInterval = null;
-        let currentEditIndex = -1; let selectedCustomerIndex = -1; let currentArchiveEditIndex = -1;
+        let selectedCustomerIndex = -1;
 
-        function onOpenCvReady() { console.log('OpenCV bereit'); }
-        function formatEUR(v) { return (parseFloat(v)||0).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
-
-        document.getElementById('company-logo-display').src = db.logo || "https://files.oaiusercontent.com/file-7bL5X9k5jPqR8vT2mN4hJ6fD?se=2026-01-09T23%3A59%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dlogo.png&sig=example";
-        if(db.theme === 'dark') document.body.setAttribute('data-theme', 'dark');
-
-        function toggleDarkMode() {
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-            db.theme = isDark ? 'light' : 'dark';
-            localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
+        function formatEUR(v) { 
+            return (parseFloat(v)||0).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; 
         }
 
         function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
-            const flagSrc = (tax > 0) ? 'https://flagcdn.com/de.svg' : 'https://flagcdn.com/ch.svg';
             tr.innerHTML = `
-                <td><textarea class="desc-input" oninput="calc()">${desc}</textarea></td>
-                <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="${qty}" oninput="calc()"></td>
-                <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="${price}" step="0.01" oninput="calc()"></td>
-                <td class="text-center">
-                    <img src="${flagSrc}" class="flag-img" onclick="toggleFlag(this)">
-                    <input type="number" class="form-control form-control-sm border-0 text-center tx d-inline w-auto" style="width:40px;" value="${tax}" oninput="calc()">
-                </td>
-                <td class="text-end mwst-euro">0,00 €</td>
-                <td class="text-end fw-bold lt">0,00 €</td>
-                <td class="no-print"><button onclick="this.closest('tr').remove(); calc();" class="btn btn-sm text-danger">×</button></td>`;
+                <td class="col-desc"><textarea class="desc-input" oninput="calc()">${desc}</textarea></td>
+                <td class="col-qty"><input type="number" class="form-control-sm text-center qt" value="${qty}" oninput="calc()"></td>
+                <td class="col-price"><input type="number" class="form-control-sm text-center pr" value="${price}" step="0.01" oninput="calc()"></td>
+                <td class="col-tax-p text-center"><input type="number" class="form-control-sm text-center tx" value="${tax}" oninput="calc()"></td>
+                <td class="col-tax-e text-center mwst-euro">0,00 €</td>
+                <td class="col-total text-center fw-bold lt">0,00 €</td>
+                <td class="col-action no-print text-center"><button onclick="this.closest('tr').remove(); calc();" class="btn btn-sm text-danger p-0">×</button></td>`;
             document.getElementById('inv-items').appendChild(tr);
-            calc();
-        }
-
-        function toggleFlag(img) {
-            img.src = img.src.includes('de.svg') ? 'https://flagcdn.com/ch.svg' : 'https://flagcdn.com/de.svg';
-            const tx = img.closest('tr').querySelector('.tx');
-            tx.value = img.src.includes('ch.svg') ? 0 : 19;
             calc();
         }
 
@@ -374,119 +313,7 @@
             document.getElementById('sum-g').textContent = formatEUR(g);
         }
 
-        function saveInvoice() {
-            const nr = document.getElementById('inv-nr').textContent.trim();
-            const items = Array.from(document.querySelectorAll('#inv-items tr')).map(r => ({
-                desc: r.querySelector('.desc-input').value.trim(),
-                qty: parseFloat(r.querySelector('.qt').value),
-                price: parseFloat(r.querySelector('.pr').value),
-                tax: parseFloat(r.querySelector('.tx').value)
-            }));
-            const inv = {
-                nr, items, date: new Date().toLocaleDateString('de-DE'),
-                net: parseFloat(document.getElementById('sum-n').textContent.replace(/[^\d,-]/g,'').replace(',','.')),
-                mwst: parseFloat(document.getElementById('sum-t').textContent.replace(/[^\d,-]/g,'').replace(',','.')),
-                gross: parseFloat(document.getElementById('sum-g').textContent.replace(/[^\d,-]/g,'').replace(',','.')),
-                customer: selectedCustomerIndex !== -1 ? db.customers[selectedCustomerIndex] : null
-            };
-            db.invoices.push(inv);
-            localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-            alert('Gespeichert!');
-        }
-
-        function openCustomerModal() {
-            const list = document.getElementById('cust-list'); list.innerHTML = '';
-            db.customers.forEach((c, i) => {
-                list.innerHTML += `<button class="list-group-item list-group-item-action small" onclick="selectCust(${i})">${c.name}</button>`;
-            });
-            new bootstrap.Modal(document.getElementById('modal-cust')).show();
-        }
-
-        function saveCustomer() {
-            const name = document.getElementById('c-name').value;
-            if(name) {
-                db.customers.push({name, street: document.getElementById('c-street').value, city: document.getElementById('c-city').value, mail: document.getElementById('c-mail').value, phone: document.getElementById('c-phone').value});
-                localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-                openCustomerModal();
-            }
-        }
-
-        function selectCust(i) {
-            const c = db.customers[i];
-            selectedCustomerIndex = i;
-            document.getElementById('cust-display').innerHTML = `<span>${c.name}</span><br><span>${c.street}</span><br><span>${c.city}</span>`;
-            document.getElementById('customer-actions').style.display = 'block';
-            bootstrap.Modal.getInstance(document.getElementById('modal-cust')).hide();
-        }
-
-        function showStats() {
-            const tb = document.getElementById('stat-table'); tb.innerHTML = '';
-            let b = 0, s = 0, a = 0;
-            db.invoices.forEach(i => {
-                b += i.gross; s += i.mwst;
-                tb.innerHTML += `<tr class="table-success"><td>RE</td><td>${i.nr}</td><td>${i.mwst.toFixed(2)}</td><td>${i.gross.toFixed(2)}</td><td></td><td></td></tr>`;
-            });
-            db.expenses.forEach(e => {
-                a += e.amt;
-                tb.innerHTML += `<tr class="table-danger"><td>EX</td><td>${e.date}</td><td>-</td><td>-${e.amt.toFixed(2)}</td><td>IMG</td><td></td></tr>`;
-            });
-            document.getElementById('st-brutto').textContent = formatEUR(b);
-            document.getElementById('st-steuer').textContent = formatEUR(s);
-            document.getElementById('st-ausg').textContent = formatEUR(a);
-            document.getElementById('st-gewinn').textContent = formatEUR(b - s - a);
-            new bootstrap.Modal(document.getElementById('modal-stats')).show();
-        }
-
-        async function openScanner() {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            const video = document.getElementById('cam-video'); video.srcObject = stream;
-            scanner = new jscanify();
-            detectionInterval = setInterval(() => {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    const ctx = document.getElementById('overlay-canvas').getContext('2d');
-                    ctx.drawImage(scanner.highlightPaper(video), 0, 0, 640, 480);
-                    document.getElementById('warp-btn').disabled = false;
-                }
-            }, 200);
-            new bootstrap.Modal(document.getElementById('modal-scan')).show();
-        }
-
-        function stopCam() { if(stream) stream.getTracks().forEach(t => t.stop()); clearInterval(detectionInterval); }
-
-        async function warpAndScan() {
-            const video = document.getElementById('cam-video');
-            const canvas = scanner.extractPaper(video, 800, 1000);
-            const {data: {text}} = await Tesseract.recognize(canvas.toDataURL(), 'deu');
-            const matches = text.match(/\d+[,.]\d{2}/g);
-            if(matches) {
-                const amt = Math.max(...matches.map(m => parseFloat(m.replace(',','.'))));
-                db.expenses.push({amt, date: new Date().toLocaleDateString('de-DE'), image: canvas.toDataURL()});
-                localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
-                alert("Beleg erkannt: " + amt + "€");
-            }
-            stopCam(); bootstrap.Modal.getInstance(document.getElementById('modal-scan')).hide();
-        }
-
-        function openArchive() {
-            const list = document.getElementById('archive-list'); list.innerHTML = '';
-            db.invoices.forEach((inv, i) => {
-                list.innerHTML += `<tr><td>${inv.nr}</td><td>${inv.date}</td><td>${inv.customer?.name || '-'}</td><td>${formatEUR(inv.gross)}</td><td><button class="btn btn-xs btn-info" onclick="loadArchive(${i})">Laden</button></td></tr>`;
-            });
-            new bootstrap.Modal(document.getElementById('modal-archive')).show();
-        }
-
-        function loadArchive(i) {
-            const inv = db.invoices[i];
-            document.getElementById('inv-nr').textContent = inv.nr;
-            document.getElementById('inv-items').innerHTML = '';
-            inv.items.forEach(it => addRow(it.desc, it.qty, it.price, it.tax));
-            if(inv.customer) {
-                document.getElementById('cust-display').innerHTML = `<span>${inv.customer.name}</span><br><span>${inv.customer.street}</span><br><span>${inv.customer.city}</span>`;
-            }
-            calc();
-            bootstrap.Modal.getInstance(document.getElementById('modal-archive')).hide();
-        }
-
+        // Standard-Funktionen für Logo/Kunden
         function saveLogo() {
             const file = document.getElementById('logo-input').files[0];
             if(file) {
@@ -500,24 +327,13 @@
             }
         }
 
-        // Init
         document.getElementById('inv-date').textContent = new Date().toLocaleDateString('de-DE');
+        document.getElementById('company-logo-display').src = db.logo || "";
         addRow('IT-Service & Technik Support', 1, 0, 19);
 
-        // Event Listeners
-        document.getElementById('btn-save').onclick = saveInvoice;
-        document.getElementById('btn-customers').onclick = openCustomerModal;
-        document.getElementById('btn-save-customer').onclick = saveCustomer;
-        document.getElementById('btn-scanner').onclick = openScanner;
-        document.getElementById('btn-stats').onclick = showStats;
-        document.getElementById('btn-logo').onclick = () => new bootstrap.Modal(document.getElementById('modal-logo')).show();
-        document.getElementById('btn-archive').onclick = openArchive;
         document.getElementById('btn-print').onclick = () => window.print();
-        document.getElementById('btn-pdf').onclick = () => html2pdf().from(document.getElementById('pdf-area')).save();
-        document.getElementById('btn-darkmode').onclick = toggleDarkMode;
-        document.getElementById('btn-whatsapp').onclick = () => window.open(`https://wa.me/?text=Rechnung%20${document.getElementById('inv-nr').textContent}`);
-        document.getElementById('btn-telegram').onclick = () => window.open(`https://t.me/share/url?url=Rechnung%20${document.getElementById('inv-nr').textContent}`);
+        document.getElementById('btn-logo').onclick = () => new bootstrap.Modal(document.getElementById('modal-logo')).show();
+        document.getElementById('btn-pdf').onclick = () => html2pdf().from(document.getElementById('pdf-area')).set({margin: 0, filename: 'Rechnung.pdf', jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }}).save();
     </script>
 </body>
 </html>
-
