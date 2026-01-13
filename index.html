@@ -41,7 +41,6 @@
         .header-bar { background: linear-gradient(135deg, var(--h2-blue), var(--h2-light)); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
         .content { padding: 15px 25px; flex-grow: 1; display: flex; flex-direction: column; }
         
-        /* Kunden-Adresse untereinander */
         #cust-display span { display: block; line-height: 1.3; }
 
         .table { font-size: 9.5px; width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; }
@@ -75,13 +74,18 @@
                     <img id="logo-display" src="" style="max-height: 50px; display: block;">
                     <h2 class="m-0">H2TechService</h2><small>Osman Tuncer</small>
                 </div>
-                <h1 class="m-0">RECHNUNG</h1>
+                <h1 class="m-0" style="letter-spacing: 3px;">RECHNUNG</h1>
             </div>
             <div class="content">
                 <div class="row">
                     <div class="col-6">
                         <small class="text-primary fw-bold">ABSENDER</small><br>
-                        <strong>H2TechService</strong><br>Suntalstraße 48<br>31552 Rodenberg<br>📧 74star@gmail.com
+                        <strong>H2TechService</strong><br>
+                        Suntalstraße 48<br>
+                        31552 Rodenberg<br>
+                        📧 74star@gmail.com<br>
+                        📞 +49 176 66658777<br>
+                        <b>Steuer-ID: 41/320/887966</b>
                     </div>
                     <div class="col-6 text-end">
                         <b>Nr:</b> <span id="inv-nr" contenteditable="true">H2-2026-001</span><br>
@@ -108,11 +112,12 @@
                 <button class="btn btn-sm btn-outline-primary no-print mt-2" onclick="addRow()">+ Zeile</button>
 
                 <div class="row mt-auto pt-3 border-top">
-                    <div class="col-7"><div class="p-2 border rounded small"><strong>Bank:</strong> Osman Tuncer<br>IBAN: LT78 3250 0925 1892 8659</div></div>
+                    <div class="col-7"><div class="p-2 border rounded small"><strong>Bank:</strong> Osman Tuncer<br>IBAN: LT78 3250 0925 1892 8659<br>BIC: REVOLT21</div></div>
                     <div class="col-5 totals-box">
                         <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
                         <div class="d-flex justify-content-between"><span>MwSt:</span><span id="sum-t">0,00 €</span></div>
-                        <div class="d-flex justify-content-between fw-bold border-top mt-1"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
+                        <hr class="my-1 border-white opacity-25">
+                        <div class="d-flex justify-content-between fw-bold"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
                     </div>
                 </div>
             </div>
@@ -132,10 +137,10 @@
 
     <div class="modal fade" id="modal-stats" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>📊 Bilanz & Ausgaben</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
         <div class="row text-center">
-            <div class="col-6 mb-2"><div class="card p-2 bg-success text-white">Einnahmen (Brutto)<br><b id="st-brutto">0,00 €</b></div></div>
+            <div class="col-6 mb-2"><div class="card p-2 bg-success text-white">Umsatz (Brutto)<br><b id="st-brutto">0,00 €</b></div></div>
             <div class="col-6 mb-2"><div class="card p-2 bg-info text-white">MwSt fällig<br><b id="st-tax">0,00 €</b></div></div>
-            <div class="col-12"><div class="card p-2 bg-danger text-white">Ausgaben eingeben (€)<br>
-                <input type="number" id="st-exp-input" class="form-control form-control-sm text-center" oninput="saveExpenses()" step="0.01">
+            <div class="col-12"><div class="card p-2 bg-danger text-white">Ausgaben (€)<br>
+                <input type="number" id="st-exp-input" class="form-control form-control-sm text-center bg-white text-dark" oninput="saveExpenses()" step="0.01">
             </div></div>
             <div class="col-12 mt-2"><div class="card p-2 bg-dark text-white">Gewinn (Netto - Ausgaben)<br><b id="st-profit">0,00 €</b></div></div>
         </div>
@@ -144,7 +149,7 @@
     <div class="modal fade" id="modal-archive" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Archiv</h6><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><table class="table"><thead><tr><th>Nr.</th><th>Datum</th><th>Betrag</th><th>Aktion</th></tr></thead><tbody id="archive-list"></tbody></table></div></div></div></div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('h2_erp_v2026') || '{"invoices":[],"customers":[],"logo":"","expenses":0,"theme":"light"}');
+        let db = JSON.parse(localStorage.getItem('h2_erp_final_2026') || '{"invoices":[],"customers":[],"logo":"","expenses":0,"theme":"light"}');
         
         function formatEUR(v) { return v.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
         
@@ -178,7 +183,7 @@
                 m: document.getElementById('c-mail').value,
                 p: document.getElementById('c-phone').value
             };
-            db.customers.push(c); localStorage.setItem('h2_erp_v2026', JSON.stringify(db)); renderCustomers();
+            if(c.n) { db.customers.push(c); localStorage.setItem('h2_erp_final_2026', JSON.stringify(db)); renderCustomers(); }
         }
 
         function renderCustomers() {
@@ -194,9 +199,7 @@
 
         function openStats() {
             let br = 0, tx = 0, ne = 0;
-            db.invoices.forEach(i => {
-                br += i.gross; tx += i.tax; ne += i.net;
-            });
+            db.invoices.forEach(i => { br += i.gross; tx += i.tax; ne += i.net; });
             document.getElementById('st-brutto').textContent = formatEUR(br);
             document.getElementById('st-tax').textContent = formatEUR(tx);
             document.getElementById('st-exp-input').value = db.expenses;
@@ -206,7 +209,7 @@
 
         function saveExpenses() {
             db.expenses = parseFloat(document.getElementById('st-exp-input').value) || 0;
-            localStorage.setItem('h2_erp_v2026', JSON.stringify(db));
+            localStorage.setItem('h2_erp_final_2026', JSON.stringify(db));
             openStats();
         }
 
@@ -218,25 +221,27 @@
                 tax: parseFloat(document.getElementById('sum-t').textContent.replace(/[^\d,]/g,'').replace(',','.')),
                 net: parseFloat(document.getElementById('sum-n').textContent.replace(/[^\d,]/g,'').replace(',','.'))
             };
-            db.invoices.push(inv); localStorage.setItem('h2_erp_v2026', JSON.stringify(db)); alert('Gespeichert!');
+            db.invoices.push(inv); localStorage.setItem('h2_erp_final_2026', JSON.stringify(db)); alert('Rechnung archiviert!');
         }
 
         function openArchive() {
             new bootstrap.Modal(document.getElementById('modal-archive')).show();
             const l = document.getElementById('archive-list'); l.innerHTML = '';
-            db.invoices.forEach(i => l.innerHTML += `<tr><td>${i.nr}</td><td>${i.date}</td><td>${formatEUR(i.gross)}</td><td><button class="btn btn-sm btn-danger" onclick="db.invoices.splice(db.invoices.indexOf(i),1);localStorage.setItem('h2_erp_v2026', JSON.stringify(db));openArchive()">🗑️</button></td></tr>`);
+            db.invoices.forEach((i, idx) => l.innerHTML += `<tr><td>${i.nr}</td><td>${i.date}</td><td>${formatEUR(i.gross)}</td><td><button class="btn btn-sm btn-danger" onclick="deleteInv(${idx})">🗑️</button></td></tr>`);
         }
+
+        function deleteInv(idx) { db.invoices.splice(idx, 1); localStorage.setItem('h2_erp_final_2026', JSON.stringify(db)); openArchive(); }
 
         function toggleDarkMode() {
             db.theme = db.theme === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', db.theme);
-            localStorage.setItem('h2_erp_v2026', JSON.stringify(db));
+            localStorage.setItem('h2_erp_final_2026', JSON.stringify(db));
         }
 
         function saveLogo() {
             const f = document.getElementById('logo-trigger').files[0];
             const reader = new FileReader();
-            reader.onload = (e) => { db.logo = e.target.result; document.getElementById('logo-display').src = db.logo; localStorage.setItem('h2_erp_v2026', JSON.stringify(db)); };
+            reader.onload = (e) => { db.logo = e.target.result; document.getElementById('logo-display').src = db.logo; localStorage.setItem('h2_erp_final_2026', JSON.stringify(db)); };
             reader.readAsDataURL(f);
         }
 
@@ -246,7 +251,6 @@
 
         function openCustomerModal() { new bootstrap.Modal(document.getElementById('modal-cust')).show(); renderCustomers(); }
 
-        // Init
         document.getElementById('inv-date').textContent = new Date().toLocaleDateString('de-DE');
         document.getElementById('logo-display').src = db.logo || "";
         document.body.setAttribute('data-theme', db.theme);
