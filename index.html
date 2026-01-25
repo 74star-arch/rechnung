@@ -77,26 +77,126 @@
         .section-title { font-size: 9px; font-weight: bold; color: var(--h2-light); border-bottom: 2px solid #f0f0f0; margin-bottom: 5px; text-transform: uppercase; }
         .address-data { line-height: 1.3; margin-bottom: 10px; font-size: 10px; }
         .payment-box { background: #f8f9fa; border-left: 5px solid var(--h2-blue); padding: 8px; border-radius: 5px; font-size: 10px; margin-top: auto; }
-        .totals-box { background: var(--h2-dark); color: white; padding: 8px; border-radius: 8px; font-size: 11px; }
+        .totals-box { background: var(--h2-dark); color: white; padding: 8px; border-radius: 8px; font-size: 13px; }
 
         #company-logo-display { max-height: 65px; max-width: 210px; object-fit: contain; margin-bottom: 6px; }
 
-        .table { font-size: 9.5px; margin-bottom: 6px; }
-        .table th, .table td { padding: 3px; vertical-align: middle; }
+        .table { font-size: 11px; margin-bottom: 6px; border-collapse: separate; border-spacing: 0; }
+        .table th, .table td { padding: 6px 8px; vertical-align: top; }
+
+        .table .mtax,
+        .table .lt {
+            font-size: 13px !important;
+            font-weight: bold;
+        }
+
+        .desc-cell {
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            overflow-wrap: anywhere !important;
+            hyphens: auto;
+            line-height: 1.45;
+            padding: 6px 8px !important;
+            vertical-align: top;
+        }
+
+        .table textarea.desc {
+            width: 100%;
+            min-height: 2.4em;
+            height: auto !important;
+            resize: vertical;
+            padding: 6px 8px;
+            border: 1px solid #ced4da !important;
+            border-radius: 4px;
+            background: #fff;
+            box-sizing: border-box;
+            font-size: 13px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-wrap: break-word;
+            overflow: hidden;
+            display: block;
+        }
+
+        #inv-items tr {
+            height: auto !important;
+            min-height: 48px;
+            vertical-align: top;
+        }
 
         .customer-actions { margin-top: 10px; display: none; }
 
         @media print { 
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            .invoice-box,
+            .header-bar,
+            .totals-box,
+            .payment-box,
+            .table-light,
+            .table-success,
+            .table-danger,
+            .bg-success,
+            .bg-info,
+            .bg-danger,
+            .bg-primary,
+            .bg-dark,
+            .bg-warning,
+            .bg-purple {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background: inherit !important;
+            }
+
+            .header-bar {
+                background: linear-gradient(135deg, #004085, #007bff) !important;
+                color: white !important;
+            }
+
+            .totals-box {
+                background: #2c3e50 !important;
+                color: white !important;
+            }
+
+            .payment-box {
+                background: #f8f9fa !important;
+                border-left: 5px solid #007bff !important;
+            }
+
+            .table-light {
+                background-color: #f8f9fa !important;
+            }
+
+            .desc-cell { 
+                white-space: normal !important; 
+                word-wrap: break-word !important; 
+                overflow-wrap: anywhere !important; 
+                hyphens: auto !important;
+            }
+
+            .table textarea.desc { 
+                border: none !important; 
+                resize: none !important; 
+                height: auto !important; 
+                overflow: visible !important;
+                padding: 0;
+                min-height: 0;
+                font-size: 11px !important;
+            }
+
+            .table .mtax,
+            .table .lt {
+                font-size: 13px !important;
+            }
+
             .sidebar, .no-print, .customer-actions { display: none !important; } 
             .main-wrapper { margin-left: 0; padding: 0; } 
-            .invoice-box { 
-                box-shadow: none; 
-                border: none; 
-                width: 210mm; 
-                height: 297mm; 
-                background: white !important; 
-                overflow: hidden;
-            } 
+            .invoice-box { box-shadow: none; border: none; width: 210mm; height: 297mm; background: white !important; overflow: hidden; }
             body { background: white !important; color: black !important; margin: 0; padding: 0; }
             @page { size: A4; margin: 0; }
         }
@@ -168,12 +268,13 @@
                     <table class="table table-sm border mt-2">
                         <thead>
                             <tr class="table-light">
-                                <th>Leistungsbeschreibung</th>
-                                <th class="text-center" style="width:45px;">Stk</th>
+                                <th style="width:41%;">Leistungsbeschreibung</th>
+                                <th class="text-center" style="width:60px;">Stk</th>
                                 <th class="text-end" style="width:70px;">Einzel (€)</th>
-                                <th class="text-center" style="width:55px;">MwSt %</th>
-                                <th class="text-end" style="width:80px;">Gesamt (€)</th>
-                                <th class="no-print"></th>
+                                <th class="text-center" style="width:65px;">MwSt %</th>
+                                <th class="text-end" style="width:70px;">MwSt €</th>
+                                <th class="text-end" style="width:70px;">Gesamt (€)</th>
+                                <th class="no-print" style="width:40px;"></th>
                             </tr>
                         </thead>
                         <tbody id="inv-items"></tbody>
@@ -199,7 +300,7 @@
                                 <div class="d-flex justify-content-between"><span>Netto:</span><span id="sum-n">0,00 €</span></div>
                                 <div class="d-flex justify-content-between small opacity-75"><span>MwSt gesamt:</span><span id="sum-t">0,00 €</span></div>
                                 <hr class="my-1">
-                                <div class="d-flex justify-content-between fw-bold" style="font-size: 1.1em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
+                                <div class="d-flex justify-content-between fw-bold" style="font-size: 1.3em;"><span>GESAMT:</span><span id="sum-g">0,00 €</span></div>
                             </div>
                         </div>
                     </div>
@@ -403,13 +504,23 @@
         function addRow(desc = '', qty = 1, price = 0, tax = 19) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><input type="text" class="form-control form-control-sm border-0 p-0 desc" value="${desc}" oninput="calc()"></td>
+                <td class="desc-cell">
+                    <textarea class="form-control form-control-sm border-0 p-0 desc" 
+                              oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; calc();"
+                              style="height:2.4em;">${desc.replace(/"/g, '&quot;')}</textarea>
+                </td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-center qt" value="${qty}" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-end pr" value="${price}" step="0.01" oninput="calc()"></td>
                 <td><input type="number" class="form-control form-control-sm border-0 text-center tx" value="${tax}" oninput="calc()"></td>
+                <td class="text-end fw-bold mtax">0,00 €</td>
                 <td class="text-end fw-bold lt">0,00 €</td>
                 <td class="no-print"><button onclick="this.closest('tr').remove();calc();" class="btn btn-sm text-danger">×</button></td>`;
             document.getElementById('inv-items').appendChild(tr);
+            
+            const textarea = tr.querySelector('textarea');
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+            
             calc();
         }
 
@@ -419,10 +530,13 @@
                 const q = parseFloat(r.querySelector('.qt').value) || 0;
                 const p = parseFloat(r.querySelector('.pr').value) || 0;
                 const t = parseFloat(r.querySelector('.tx').value) || 0;
-                const lineNet = q * p;
-                const lineTax = lineNet * (t / 100);
+                const lineNet  = q * p;
+                const lineTax  = lineNet * (t / 100);
                 const lineGross = lineNet + lineTax;
+
+                r.querySelector('.mtax').textContent = formatEUR(lineTax);
                 r.querySelector('.lt').textContent = formatEUR(lineGross);
+
                 net += lineNet;
                 tax += lineTax;
                 grossTotal += lineGross;
@@ -438,7 +552,6 @@
                 alert('Bitte eine gültige Rechnungsnummer eingeben!');
                 return;
             }
-
             const existingIndex = db.invoices.findIndex(i => i.nr === nr);
             if (existingIndex !== -1 && existingIndex !== currentArchiveEditIndex) {
                 alert(`Die Rechnungsnummer "${nr}" existiert bereits! Bitte eine andere Nummer wählen.`);
@@ -463,15 +576,7 @@
                 grossTotal += lineNet + lineMwst;
             });
 
-            const invoiceData = {
-                date: new Date().toLocaleDateString('de-DE'),
-                nr,
-                gross: grossTotal,
-                mwst: mwstTotal,
-                net: netTotal,
-                items,
-                customer
-            };
+            const invoiceData = {date: new Date().toLocaleDateString('de-DE'), nr, gross: grossTotal, mwst: mwstTotal, net: netTotal, items, customer};
 
             if (currentArchiveEditIndex !== -1) {
                 db.invoices[currentArchiveEditIndex] = invoiceData;
@@ -481,7 +586,6 @@
                 db.invoices.push(invoiceData);
                 alert('Rechnung erfolgreich gespeichert!');
             }
-
             localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
             resetInvoice();
         }
@@ -525,14 +629,11 @@
                 alert('Kein Kunde mit E-Mail-Adresse ausgewählt!');
                 return;
             }
-
             const nr = document.getElementById('inv-nr').textContent.trim();
             const betrag = document.getElementById('sum-g').textContent;
-
             const subject = encodeURIComponent(`Rechnung ${nr} - H2TechService`);
             const body = encodeURIComponent(`Sehr geehrte/r Kunde/in,\n\nanbei finden Sie Ihre Rechnung ${nr}.\n\nGesamtbetrag: ${betrag}\n\nVielen Dank!\n\nMit freundlichen Grüßen\nOsman Tuncer\nH2TechService`);
-
-            window.location.href = `mailto:\( {customerMail}?subject= \){subject}&body=${body}`;
+            window.location.href = `mailto:${customerMail}?subject=${subject}&body=${body}`;
             alert('E-Mail-Programm wird geöffnet. PDF bitte manuell anhängen.');
         }
 
@@ -540,41 +641,29 @@
             let brutto = 0, steuer = 0, ausgaben = 0;
             const tbody = document.getElementById('stat-table');
             tbody.innerHTML = '';
-
             db.invoices.forEach((inv, i) => {
                 brutto += inv.gross || 0;
                 steuer += inv.mwst || 0;
-                const desc = inv.items.length > 0 ? (inv.items.length === 1 ? inv.items[0].desc : inv.items[0].desc + ' u.a.') : 'Rechnung';
+                const desc = inv.items.length === 1 ? inv.items[0].desc : (inv.items.length > 1 ? inv.items[0].desc + ' u.a.' : 'Rechnung');
                 const mwstRate = inv.items.length > 0 ? inv.items[0].tax + '%' : '-';
                 tbody.innerHTML += `<tr class="table-success">
                     <td>Rechnung</td>
-                    <td>${inv.nr} – ${desc}</td>
+                    <td>${desc}</td>
                     <td>${mwstRate}</td>
                     <td>${formatEUR(inv.gross)}</td>
                     <td></td>
                     <td><button class="btn btn-xs btn-info" onclick="loadInvoice(${i})">Laden</button></td>
                 </tr>`;
             });
-
             db.expenses.forEach(ex => {
                 ausgaben += ex.amt || 0;
-                const img = ex.image ? `<img src="\( {ex.image}" class="receipt-thumb" onclick="showFullImage(' \){ex.image}')">` : '–';
-                tbody.innerHTML += `<tr class="table-danger">
-                    <td>Ausgabe</td>
-                    <td>Beleg ${ex.date}</td>
-                    <td>-</td>
-                    <td>-${formatEUR(ex.amt)}</td>
-                    <td>${img}</td>
-                    <td></td>
-                </tr>`;
+                const img = ex.image ? `<img src="${ex.image}" class="receipt-thumb" onclick="showFullImage('${ex.image}')">` : '–';
+                tbody.innerHTML += `<tr class="table-danger"><td>Ausgabe</td><td>Beleg ${ex.date}</td><td>-</td><td>-${formatEUR(ex.amt)}</td><td>${img}</td><td></td></tr>`;
             });
-
-            // KORREKTE ANZEIGE MIT TAUSENDER-PUNKT
             document.getElementById('st-brutto').textContent = formatEUR(brutto);
             document.getElementById('st-steuer').textContent = formatEUR(steuer);
             document.getElementById('st-ausg').textContent = formatEUR(ausgaben);
             document.getElementById('st-gewinn').textContent = formatEUR(brutto - steuer - ausgaben);
-
             new bootstrap.Modal(document.getElementById('modal-stats')).show();
         }
 
@@ -587,27 +676,17 @@
             const nr = document.getElementById('inv-nr').textContent;
             const betrag = document.getElementById('sum-g').textContent;
             const msg = encodeURIComponent(`H2TechService Rechnung ${nr}\nGesamtbetrag: ${betrag}\nVielen Dank!`);
-            window.open(p === 'whatsapp' ? `https://wa.me/?text=\( {msg}` : `https://t.me/share/url?url= \){msg}`);
+            window.open(p === 'whatsapp' ? `https://wa.me/?text=${msg}` : `https://t.me/share/url?url=${msg}`);
         }
 
         function exportToCSV() {
-            let csv = "Datum;Typ;Rechnungs-Nr.;MwSt (€);Brutto (€)\n";
-
-            db.invoices.forEach(i => {
-                csv += `\( {i.date};Rechnung; \){i.nr};\( {(i.mwst || 0).toFixed(2).replace('.',',')}; \){(i.gross || 0).toFixed(2).replace('.',',')}\n`;
-            });
-
-            db.expenses.forEach(e => {
-                csv += `\( {e.date};Ausgabe;;0,00;- \){(e.amt || 0).toFixed(2).replace('.',',')}\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
+            let csv = "Datum;Typ;Info;MwSt;Betrag\n";
+            db.invoices.forEach(i => csv += `${i.date};Rechnung;${i.nr};${(i.mwst||0).toFixed(2)};${(i.gross||0).toFixed(2)}\n`);
+            db.expenses.forEach(e => csv += `${e.date};Ausgabe;Beleg;;-${(e.amt||0).toFixed(2)}\n`);
             const a = document.createElement('a');
-            a.href = url;
+            a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
             a.download = 'H2_Bilanz_2026.csv';
             a.click();
-            URL.revokeObjectURL(url);
         }
 
         function downloadPDF() {
@@ -633,24 +712,19 @@
                     return;
                 }
             }
-
             const video = document.getElementById('cam-video');
             video.srcObject = stream;
             await video.play();
-
             const overlay = document.getElementById('overlay-canvas');
             overlay.width = video.videoWidth || 640;
             overlay.height = video.videoHeight || 480;
-
             scanner = new jscanify();
-
             detectionInterval = setInterval(() => {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     const highlighted = scanner.highlightPaper(video);
                     const ctx = overlay.getContext('2d');
                     ctx.clearRect(0, 0, overlay.width, overlay.height);
                     ctx.drawImage(highlighted, 0, 0, overlay.width, overlay.height);
-
                     try {
                         const contour = scanner.findPaperContour(cv.imread(video));
                         document.getElementById('warp-btn').disabled = !(contour && contour.data32S && contour.data32S.length >= 8);
@@ -659,7 +733,6 @@
                     }
                 }
             }, 200);
-
             new bootstrap.Modal(document.getElementById('modal-scan')).show();
         }
 
@@ -673,18 +746,14 @@
         async function warpAndScan() {
             document.getElementById('warp-btn').disabled = true;
             document.getElementById('warp-btn').textContent = 'Scanne...';
-
             const video = document.getElementById('cam-video');
             const correctedCanvas = scanner.extractPaper(video, video.videoWidth, video.videoHeight);
             const imageDataUrl = correctedCanvas.toDataURL('image/jpeg', 0.95);
-
             try {
                 const {data: {text}} = await Tesseract.recognize(imageDataUrl, 'deu');
-
                 let amount = 0;
                 const keywords = ['gesamt','summe','zu zahlen','total','betrag','endbetrag','rechnungsbetrag','zahlbetrag'];
                 const lines = text.toLowerCase().split('\n');
-
                 for (const line of lines) {
                     if (keywords.some(k => line.includes(k))) {
                         const matches = line.match(/\d+[,.]\d{2}/g);
@@ -694,12 +763,10 @@
                         }
                     }
                 }
-
                 if (amount === 0) {
                     const all = text.match(/\d+[,.]\d{2}/g);
                     if (all) amount = Math.max(...all.map(m => parseFloat(m.replace(',','.'))));
                 }
-
                 if (amount > 0) {
                     db.expenses.push({amt: amount, date: new Date().toLocaleDateString('de-DE'), image: imageDataUrl});
                     localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
@@ -710,7 +777,6 @@
             } catch (e) {
                 alert('OCR-Fehler: ' + e.message);
             }
-
             stopCam();
             bootstrap.Modal.getInstance(document.getElementById('modal-scan')).hide();
             document.getElementById('warp-btn').textContent = 'Gerade ausrichten & Scannen';
@@ -722,7 +788,6 @@
                 alert('Name erforderlich!');
                 return;
             }
-
             const cust = {
                 name,
                 street: document.getElementById('c-street').value.trim(),
@@ -730,7 +795,6 @@
                 mail: document.getElementById('c-mail').value.trim(),
                 phone: document.getElementById('c-phone').value.trim()
             };
-
             if (currentEditIndex === -1) {
                 db.customers.push(cust);
                 alert('Neuer Kunde gespeichert!');
@@ -739,7 +803,6 @@
                 alert('Kunde geändert!');
                 if (selectedCustomerIndex === currentEditIndex) selectCust(currentEditIndex);
             }
-
             localStorage.setItem('h2_erp_2026_final', JSON.stringify(db));
             currentEditIndex = -1;
             openCustomerModal();
@@ -748,14 +811,11 @@
         function openCustomerModal() {
             const list = document.getElementById('cust-list');
             list.innerHTML = '';
-
             const btn = document.getElementById('btn-save-customer');
             btn.textContent = 'Kunde speichern';
             btn.onclick = saveCustomer;
             currentEditIndex = -1;
-
             ['c-name','c-street','c-city','c-mail','c-phone'].forEach(id => document.getElementById(id).value = '');
-
             db.customers.forEach((c, index) => {
                 const div = document.createElement('div');
                 div.className = 'list-group-item cust-item small';
@@ -775,7 +835,6 @@
                 `;
                 list.appendChild(div);
             });
-
             new bootstrap.Modal(document.getElementById('modal-cust')).show();
         }
 
@@ -786,7 +845,6 @@
             document.getElementById('c-city').value = c.city || '';
             document.getElementById('c-mail').value = c.mail || '';
             document.getElementById('c-phone').value = c.phone || '';
-
             currentEditIndex = index;
             document.getElementById('btn-save-customer').textContent = 'Kunde ändern';
         }
@@ -836,9 +894,7 @@
             const search = document.getElementById('archive-search');
             search.value = '';
             search.oninput = filterArchive;
-
             const sortedInvoices = [...db.invoices].sort((a, b) => b.nr.localeCompare(a.nr));
-
             sortedInvoices.forEach((inv, originalIndex) => {
                 const kunde = inv.customer ? inv.customer.name : '(Kein Kunde)';
                 const tr = document.createElement('tr');
@@ -854,7 +910,6 @@
                 `;
                 tbody.appendChild(tr);
             });
-
             new bootstrap.Modal(document.getElementById('modal-archive')).show();
         }
 
